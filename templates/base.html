@@ -1,0 +1,397 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Tecknosfera{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/global.css' %}">
+    <style>
+        :root {
+            --headline: #094067;
+            --paragraph: #5f6c7b;
+            --secondary: #90b4ce;
+            --main: #ffffff;
+            --button: #3da9fc;
+            --highlight: #3da9fc;
+            --tertiary: #ef4565;
+            --stroke: #094067;
+            --sidebar-bg: #f3f3f3;
+            --sidebar-link: #333;
+            --sidebar-link-hover: #3da9fc;
+            --sidebar-title: #666;
+            --content-bg: #f9fafc;
+            --box-shadow: 0 2px 18px rgba(9,64,103,0.10);
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--content-bg);
+            color: var(--paragraph);
+        }
+        .topbar {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            height: 56px;
+            background: #fff;
+            color: var(--headline);
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            box-shadow: var(--box-shadow);
+            padding: 0 5px 0 2px;
+        }
+        .topbar-logo {
+            display: flex; align-items: center; gap: 11px;
+        }
+        .topbar-logo img.logo {
+            height: 38px;
+            width: auto;
+            vertical-align: middle;
+        }
+        .topbar-title {
+            font-weight: bold;
+            font-size: 1.25rem;
+            color: var(--headline);
+        }
+        .topbar-search {
+            flex: 1 1 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-left: 18px;
+        }
+        .topbar-search input[type="text"] {
+            width: 220px;
+            padding: 6px 12px;
+            border-radius: 5px;
+            border: 1px solid #dfe6e9;
+            font-size: 1rem;
+        }
+        .topbar-links {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            margin-left: 0px;
+            margin-right: 0;
+        }
+        .topbar-links a,
+        .topbar-user {
+            color: #4078c0;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .topbar-links a:hover { text-decoration: underline; }
+        .topbar-links a.btn-login {
+            background: #3da9fc;
+            color: #fff !important;
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-weight: 600;
+            transition: background 0.2s;
+            box-shadow: 0 2px 8px #09406720;
+            text-decoration: none;
+        }
+        .topbar-links a.btn-login:hover {
+            background: #094067;
+            color: #fff !important;
+        }
+        .topbar-user {
+            font-weight: 600;
+            color: #094067;
+            background: #f5f5f5;
+            padding: 6px 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-left: 0;
+            margin-right: 0;
+        }
+        .topbar-user .fa-user {
+            color: #3da9fc;
+        }
+        .topbar-links a.btn-logout {
+            background: #ef4565;
+            color: #fff !important;
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-weight: 600;
+            transition: background 0.2s;
+            box-shadow: 0 2px 8px #09406720;
+            text-decoration: none;
+        }
+        .topbar-links a.btn-logout:hover {
+            background: #094067;
+            color: #fff !important;
+        }
+        /* Menú horizontal y dropdown */
+        .menubar {
+            position: fixed;
+            top: 56px; left: 0;
+            width: 100%;
+            height: 44px;
+            background: #3a5068;
+            color: #fff;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            padding: 0 18px;
+            z-index: 25;
+            box-shadow: 0 2px 10px #3a506810;
+        }
+        .menubar .home-link {
+            margin-right: 22px;
+            font-weight: 600;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.07rem;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .menubar .nav {
+            display: flex;
+            gap: 16px;
+            list-style: none;
+            margin: 0; padding: 0;
+        }
+        .menubar .nav li {
+            position: relative;
+        }
+        .menubar .nav li > a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 14px;
+            border-radius: 3px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .menubar .nav li > a:hover { background: #24334b; }
+        .menubar .nav li .submenu {
+            display: none;
+            position: absolute;
+            top: 38px;
+            left: 0;
+            background: #fff;
+            color: #222;
+            min-width: 188px;
+            box-shadow: 0 4px 18px rgba(44,62,80,0.15);
+            border-radius: 7px;
+            z-index: 99;
+            flex-direction: column;
+        }
+        .menubar .nav li:hover .submenu,
+        .menubar .nav li:focus-within .submenu {
+            display: flex;
+        }
+        .menubar .nav li .submenu a {
+            color: #222;
+            padding: 10px 15px;
+            font-weight: 400;
+            text-decoration: none;
+            border-radius: 0;
+            transition: background 0.17s;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.98rem;
+        }
+        .menubar .nav li .submenu a:hover {
+            background: var(--button);
+            color: #fff;
+        }
+        .menubar .menu-right { margin-left: auto; }
+        .sidebar { display: none; }
+        .container-app {
+            margin-top: 100px;
+            margin-left: 0;
+            min-height: calc(100vh - 100px);
+            background: var(--content-bg);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        main {
+            background: var(--main);
+            border-radius: 18px;
+            box-shadow: var(--box-shadow);
+            padding: 48px 52px 48px 52px;
+            min-height: 60vh;
+            min-width: 600px;
+            width: fit-content;
+            max-width: 99vw;
+            margin: 42px auto 0 auto;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: width 0.2s, padding 0.2s;
+            overflow-x: auto;
+        }
+        main h2, main h1 {
+            color: var(--headline);
+            font-weight: 700;
+            margin-bottom: 18px;
+            letter-spacing: 1px;
+        }
+        main p, main label {
+            color: var(--paragraph);
+            font-size: 1.08rem;
+            margin-bottom: 12px;
+        }
+        .btn-main {
+            background: var(--button);
+            color: var(--main);
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 10px 28px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #09406720;
+            transition: background 0.18s, box-shadow 0.18s;
+            margin-top: 8px;
+        }
+        .btn-main:hover {
+            background: var(--headline);
+            color: var(--main);
+            box-shadow: 0 4px 16px #3da9fc2a;
+        }
+        input, select, textarea {
+            border: 1.5px solid var(--secondary);
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 16px;
+            font-size: 1rem;
+            background: #fff;
+            transition: border 0.15s;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--button);
+            outline: none;
+            background: #f0f8ff;
+        }
+        .errorlist {
+            color: var(--tertiary);
+            font-size: 0.97rem;
+            margin-bottom: 5px;
+        }
+        @media (max-width: 800px) {
+            main {
+                padding: 18px 7vw;
+                min-width: 0;
+                width: 99vw;
+                margin: 14px auto 0 auto;
+            }
+            .container-app {
+                margin-top: 106px;
+            }
+        }
+        @media (max-width: 700px) {
+            .topbar { padding: 0 7px 0 7px; }
+            .menubar { padding: 0 7px; font-size: 0.97rem; }
+            main { font-size: 1rem; min-width: 0; }
+        }
+        @media (max-width: 500px) {
+            main { padding: 7px 2vw; }
+            .topbar-title { font-size: 1.05rem; }
+            .menubar .home-link { font-size: 0.98rem; }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-logo">
+            <img src="{% static 'img/logo_tecknosfera.jpg' %}" alt="Logo Tecknosfera" class="logo">
+            <span class="topbar-title">TECKNOSFERA</span>
+        </div>
+        <div class="topbar-search">
+            <input type="text" placeholder="Buscar...">
+        </div>
+        <div class="topbar-links">
+            <a href="#"><i class="fa fa-question-circle"></i> Help</a>
+            <span class="topbar-user"><i class="fa fa-user"></i> NombreUsuario</span>
+            <a href="#" class="btn-login"><i class="fa fa-sign-in-alt"></i> Log In</a>
+            <a href="#" class="btn-logout"><i class="fa fa-sign-out-alt"></i> Log Out</a>
+        </div>
+    </div>
+    <div class="menubar">
+        <a class="home-link" href="{% url 'home' %}"><i class="fa fa-home"></i> Home</a>
+        <ul class="nav">
+            <li>
+        <a href="#"><i class="fas fa-cash-register"></i> Compras <i class="fa fa-caret-down"></i></a>
+    <div class="submenu">
+        <a href="{% url 'compras:agregar_compra' %}"><i class="fa fa-plus"></i> Hacer compra</a>
+        {# Antes apuntaba a 'compras:seleccionar_editar_compra' (no existe) #}
+        <a href="{% url 'compras:ver_compras' %}"><i class="fa fa-edit"></i> Editar compra</a>
+        {# Antes apuntaba a 'compras:seleccionar_eliminar_compra' (no existe) #}
+        <a href="{% url 'compras:ver_compras' %}"><i class="fa fa-trash"></i> Eliminar compra</a>
+        <a href="{% url 'compras:ver_compras' %}"><i class="fa fa-calendar-day"></i> Ver compras</a>
+                </div>
+            </li>
+            <li>
+                <a href="#"><i class="fas fa-cash-register"></i> Ventas <i class="fa fa-caret-down"></i></a>
+                <div class="submenu">
+                    <a href="#"><i class="fa fa-plus"></i> Hacer venta</a>
+                    <a href="#"><i class="fa fa-edit"></i> Editar venta</a>
+                    <a href="#"><i class="fa fa-trash"></i> Eliminar venta</a>
+                    <a href="#"><i class="fa fa-calendar-day"></i> Ver ventas</a>
+                </div>
+            </li>
+            <li>
+                <a href="#"><i class="fas fa-boxes"></i> Inventario</a>
+            </li>
+            <li>
+                <a href="#"><i class="fas fa-box"></i> Productos <i class="fa fa-caret-down"></i></a>
+                <div class="submenu">
+                    <a href="#"><i class="fa fa-plus"></i> Ingresar nuevo producto</a>
+                    <a href="#"><i class="fa fa-edit"></i> Editar producto</a>
+                    <a href="#"><i class="fa fa-trash"></i> Eliminar producto</a>
+                </div>
+            </li>
+            <li>
+                <a href="#"><i class="fas fa-truck"></i> Proveedores <i class="fa fa-caret-down"></i></a>
+                <div class="submenu">
+                    <a href="#"><i class="fa fa-plus"></i> Ingresar nuevo proveedor</a>
+                    <a href="#"><i class="fa fa-edit"></i> Editar proveedor</a>
+                    <a href="#"><i class="fa fa-trash"></i> Eliminar proveedor</a>
+                </div>
+            </li>
+            <li>
+                <a href="#"><i class="fas fa-chart-bar"></i> Dashboard</a>
+            </li>
+            <li>
+                <a href="/admin/"><i class="fas fa-user-shield"></i> Administración</a>
+            </li>
+        </ul>
+        <div class="menu-right"></div>
+    </div>
+    <div class="container-app">
+        <main>
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="alert {{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+    <footer>
+        <p style="color:var(--paragraph);">by NenriquezC.</p>
+    </footer>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

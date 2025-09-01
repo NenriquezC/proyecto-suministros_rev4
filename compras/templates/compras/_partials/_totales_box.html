@@ -1,0 +1,9 @@
+{# Caja de totales (vista previa en el formulario) #}
+<div class="totales-resumen" style="margin-top:12px; text-align:right;">
+<div>Subtotal: <strong id="subtotal_view">0.00</strong></div>
+<div>Descuento (monto): <strong id="descuento_view">{{ formulario_compra.descuento_total.value|default_if_none:"0.00" }}</strong></div>
+<div>Impuesto (monto): <strong id="impuesto_view">{{ formulario_compra.impuesto_total.value|default_if_none:"0.00" }}</strong></div>
+<div style="font-size:1.15em; margin-top:6px;">
+    Total: <strong id="total_view">0.00</strong>
+</div>
+</div>

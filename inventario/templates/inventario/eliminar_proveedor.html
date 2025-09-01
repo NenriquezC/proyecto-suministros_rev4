@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Eliminar Proveedor - Tecknosfera{% endblock %}
+
+{% block extra_head %}
+<style>
+    .form-container {
+        max-width: 430px;
+        margin: 28px auto 0 auto;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 18px rgba(44,62,80,0.08);
+        padding: 18px 22px 14px 22px;
+        font-size: 0.96rem;
+        border: 1px solid #dfe6e9;
+    }
+    .form-container h2 {
+        margin-top: 4px;
+        margin-bottom: 18px;
+        font-size: 1.17rem;
+        color: #d63031;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-align: center;
+    }
+    .warning {
+        color: #d63031;
+        font-size: 1.01rem;
+        margin-bottom: 18px;
+        text-align: center;
+    }
+    .form-container button[type="submit"] {
+        padding: 8px 0;
+        background: linear-gradient(90deg,#d63031 60%, #fab1a0 100%);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 1.07rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s, box-shadow 0.2s;
+        margin-top: 8px;
+        box-shadow: 0 1px 7px #b2bec3;
+        width: 100%;
+    }
+    .form-container button[type="submit"]:hover {
+        background: linear-gradient(90deg,#fab1a0 0%, #d63031 100%);
+        color: #222f3e;
+        box-shadow: 0 2px 10px #636e72;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Eliminar Proveedor</h2>
+    <div class="warning">
+        ¿Estás seguro que quieres eliminar al proveedor <strong>{{ proveedor.nombre }}</strong>?<br>
+        <span style="font-size: 0.95rem;">Esta acción no se puede deshacer.</span>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Eliminar</button>
+    </form>
+</div>
+{% endblock %}

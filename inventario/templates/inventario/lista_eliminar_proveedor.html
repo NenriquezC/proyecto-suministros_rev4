@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Eliminar Proveedor{% endblock %}
+{% block content %}
+<div class="inventario-outer">
+    <div class="inventario-box">
+        <h2>Selecciona el proveedor que deseas eliminar:</h2>
+        <table class="tabla-lista">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for proveedor in proveedores %}
+                <tr>
+                    <td>{{ proveedor.id }}</td>
+                    <td>{{ proveedor.nombre }}</td>
+                    <td>
+                        <a href="{% url 'eliminar_proveedor' proveedor.id %}" onclick="return confirm('¿Seguro que quieres eliminar este proveedor?');">Eliminar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

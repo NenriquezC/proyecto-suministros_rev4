@@ -1,0 +1,33 @@
+<!-- <form>: empieza un formulario.
+method="get": al enviar, los datos van en la URL como querystring (?q=...&desde=...). Ideal para filtros porque:
+Es idempotente (no cambia datos).
+Se puede compartir/guardar en favoritos.
+style="margin:16px 0;": margen vertical inline (rápido, aunque mejor sería una clase CSS).
+Sin action: por defecto apunta a la URL actual (la misma vista lista resultados y aplica filtros).
+Nota Django: al ser GET, no necesitas {% csrf_token %}.-->
+<form method="get" style="margin:16px 0;">
+<!--type="text": caja de texto libre.
+name="q": la vista recibirá request.GET['q'] (o request.GET.get('q')).
+value="{{ request.GET.q }}": pre-rellena con lo que el usuario ya buscó; así el campo mantiene su valor tras filtrar. Django escapa el HTML por seguridad.
+placeholder="...": sugerencia visual. Ojo: si value tiene algo, el placeholder no se ve (es normal). 
+q → es el nombre del parámetro (porque name="q").
+papel → es el valor escrito por el usuario.-->
+<input type="text" name="q" value="{{ request.GET.q }}" placeholder="Buscar (proveedor, notas, id)...">
+<!--<input type="date" name="desde" value="{{ request.GET.desde }}">
+type="date": input con selector de fecha del navegador.
+name="desde": la vista espera request.GET.get('desde').
+value="{{ request.GET.desde }}": mantiene la fecha elegida tras enviar.
+Formato: debe ser YYYY-MM-DD (ISO). Si pasas otro formato, el control puede verse vacío.-->
+<input type="date" name="desde" value="{{ request.GET.desde }}">
+<!--<input type="date" name="hasta" value="{{ request.GET.hasta }}">
+Igual que el anterior, pero para la fecha final del rango.-->
+<input type="date" name="hasta" value="{{ request.GET.hasta }}">
+
+<select name="proveedor">
+    <option value="">Todos los proveedores</option>
+    {% for p in proveedores %}
+    <option value="{{ p.id }}" {% if request.GET.proveedor == p.id|stringformat:"s" %}selected{% endif %}>{{ p }}</option>
+    {% endfor %}
+</select>
+<button class="btn-main" type="submit">Filtrar</button>
+</form>

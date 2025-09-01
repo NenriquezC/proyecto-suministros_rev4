@@ -1,0 +1,27 @@
+{# Fragmento para UNA fila del formset de líneas #}
+<tr>
+    <td>
+    <!--muestra los errores de validación asociados a ese campo en particular.-->
+    {{ f.producto.errors }}
+    <!--Esto renderiza el widget HTML del campo (input, select, etc.), según como esté definido en el forms.py-->
+    {{ f.producto }}
+    </td>
+    <td>
+    {{ f.cantidad.errors }}
+    {{ f.cantidad }}
+    </td>
+    <td>
+    {{ f.precio_unitario.errors }}
+    {{ f.precio_unitario }}
+    </td>
+
+    {# Total de la línea (solo lectura en UI; el backend lo calcula y guarda) #}
+    <td class="cell-total-linea">0.00</td>
+
+    <td>
+    {# Mostrar checkbox de eliminar solo si el formset tiene can_delete=True #}
+    {% if f.fields.DELETE %}
+    {{ f.DELETE }}
+    {% endif %}
+    </td>
+</tr>

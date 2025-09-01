@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Agregar Proveedor - Tecknosfera{% endblock %}
+
+{% block extra_head %}
+<style>
+    .main-window {
+        display: block;
+        margin: 36px auto 0 auto;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 18px rgba(44,62,80,0.09);
+        border: 1px solid #dfe6e9;
+        min-width: 400px;
+        max-width: 470px;
+        width: fit-content;
+        overflow-x: auto;
+    }
+    .main-window-header {
+        background: #3a5068;
+        color: #fff;
+        font-size: 1.24rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 13px 26px;
+        text-align: left;
+        border-bottom: 1px solid #dfe6e9;
+        border-radius: 10px 10px 0 0;
+        min-width: 400px;
+        display: flex;
+        align-items: center;
+    }
+    .main-window-body {
+        padding: 24px 22px 18px 22px;
+        font-size: 1rem;
+        min-width: 400px;
+    }
+    .form-horizontal {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .form-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 2px;
+    }
+    .form-group label {
+        min-width: 115px;
+        font-weight: 500;
+        color: #636e72;
+        font-size: 0.97rem;
+        margin-bottom: 0;
+        text-align: right;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group input[type="email"],
+    .form-group select,
+    .form-group textarea {
+        flex: 1;
+        padding: 5px 8px;
+        border-radius: 6px;
+        border: 1px solid #b2bec3;
+        font-size: 0.96rem;
+        background: #f7fafd;
+        transition: border 0.2s, box-shadow 0.2s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        border-color: #0984e3;
+        box-shadow: 0 0 0 2px #0984e325;
+        outline: none;
+        background: #fff;
+    }
+    .main-window-body button[type="submit"] {
+        padding: 8px 0;
+        background: linear-gradient(90deg,#3a5068 60%, #3da9fc 100%);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 1.07rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s, box-shadow 0.2s;
+        margin-top: 8px;
+        margin-bottom: 0;
+        box-shadow: 0 1px 7px #b2bec3;
+        width: 100%;
+        letter-spacing: 0.5px;
+    }
+    .main-window-body button[type="submit"]:hover {
+        background: linear-gradient(90deg,#3da9fc 0%, #3a5068 100%);
+        color: #fff;
+        box-shadow: 0 2px 10px #636e72;
+    }
+    .main-window-body .errorlist {
+        color: #ef4565;
+        font-size: 0.95rem;
+        margin-bottom: 2px;
+        margin-top: 0;
+        list-style: disc inside;
+    }
+    .main-window-body .errorlist + input,
+    .main-window-body .errorlist + select,
+    .main-window-body .errorlist + textarea {
+        border-color: #ef4565;
+        background: #fff6f6;
+    }
+    @media (max-width: 700px) {
+        .main-window-header, .main-window-body, .main-window { min-width: 99vw; max-width: 99vw; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-window">
+    <div class="main-window-header">
+        Agregar proveedor
+    </div>
+    <div class="main-window-body">
+        <form method="post" class="form-horizontal">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.errors %}
+                    <div class="errorlist">{{ field.errors }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit">Guardar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

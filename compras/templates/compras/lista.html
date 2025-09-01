@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Compras - Lista{% endblock %}
+
+{% block content %}
+    <h1>Compras</h1>
+    <a class="btn-main" href="{% url 'compras:agregar_compra' %}">➕ Nueva compra</a>
+
+    {# Filtros y buscador #}
+    {% include "compras/_partials/_filtros.html" %}
+
+    {# Tabla #}
+    {% include "compras/_partials/_tabla.html" with compras=compras %}
+
+    {# Paginación #}
+    {% include "compras/_partials/_paginacion.html" %}
+{% endblock %}

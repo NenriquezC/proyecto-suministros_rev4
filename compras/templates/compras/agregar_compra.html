@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar Compra - Tecknosfera{% endblock %}
+
+{% block extra_head %}
+<style>
+    .main-window {
+        display: block;
+        margin: 36px auto 0 auto;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 18px rgba(44,62,80,0.09);
+        border: 1px solid #dfe6e9;
+        min-width: 400px;
+        max-width: 470px;
+        width: fit-content;
+        overflow-x: auto;
+    }
+    .main-window-header {
+        background: #3a5068;
+        color: #fff;
+        font-size: 1.24rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 13px 26px;
+        text-align: left;
+        border-bottom: 1px solid #dfe6e9;
+        border-radius: 10px 10px 0 0;
+        min-width: 400px;
+        display: flex;
+        align-items: center;
+    }
+    .main-window-body {
+        padding: 24px 22px 18px 22px;
+        font-size: 1rem;
+        min-width: 400px;
+    }
+    .form-horizontal {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .form-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 2px;
+    }
+    .form-group label {
+        min-width: 115px;
+        font-weight: 500;
+        color: #636e72;
+        font-size: 0.97rem;
+        margin-bottom: 0;
+        text-align: right;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group input[type="email"],
+    .form-group select,
+    .form-group textarea {
+        flex: 1;
+        padding: 5px 8px;
+        border-radius: 6px;
+        border: 1px solid #b2bec3;
+        font-size: 0.96rem;
+        background: #f7fafd;
+        transition: border 0.2s, box-shadow 0.2s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        border-color: #0984e3;
+        box-shadow: 0 0 0 2px #0984e325;
+        outline: none;
+        background: #fff;
+    }
+    .main-window-body button[type="submit"] {
+        padding: 8px 0;
+        background: linear-gradient(90deg,#3a5068 60%, #3da9fc 100%);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 1.07rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s, box-shadow 0.2s;
+        margin-top: 8px;
+        margin-bottom: 0;
+        box-shadow: 0 1px 7px #b2bec3;
+        width: 100%;
+        letter-spacing: 0.5px;
+    }
+    .main-window-body button[type="submit"]:hover {
+        background: linear-gradient(90deg,#3da9fc 0%, #3a5068 100%);
+        color: #fff;
+        box-shadow: 0 2px 10px #636e72;
+    }
+    .main-window-body .errorlist {
+        color: #ef4565;
+        font-size: 0.95rem;
+        margin-bottom: 2px;
+        margin-top: 0;
+        list-style: disc inside;
+    }
+    .main-window-body .errorlist + input,
+    .main-window-body .errorlist + select,
+    .main-window-body .errorlist + textarea {
+        border-color: #ef4565;
+        background: #fff6f6;
+    }
+    @media (max-width: 700px) {
+        .main-window-header, .main-window-body, .main-window { min-width: 99vw; max-width: 99vw; }
+    }
+    /* Modal styles */
+    #exitoModal {
+        display: block;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.45);
+        z-index: 9999;
+    }
+    #exitoModal .modal-content {
+        background: #fff;
+        padding: 36px 24px;
+        border-radius: 10px;
+        box-shadow: 0 2px 16px #333;
+        max-width: 320px;
+        margin: 120px auto;
+        text-align: center;
+    }
+    #exitoModal h2 {
+        color: #3a5068;
+        margin-bottom: 8px;
+    }
+    #exitoModal button {
+        margin: 0 10px;
+        padding: 8px 18px;
+        border-radius: 6px;
+        border: none;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        background: linear-gradient(90deg,#3a5068 60%, #3da9fc 100%);
+        color: #fff;
+        transition: background 0.2s;
+    }
+    #exitoModal button:hover {
+        background: linear-gradient(90deg,#3da9fc 0%, #3a5068 100%);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-window">
+    <div class="main-window-header">
+        Registrar compra
+    </div>
+    <div class="main-window-body">
+        <form method="post" class="form-horizontal" id="compra-form">
+            {% csrf_token %}
+
+            <!-- Select personalizado para producto con opción de agregar producto nuevo -->
+            <div class="form-group">
+                <label for="id_producto">Producto</label>
+                <select name="producto" id="id_producto" required>
+                    {% for producto in productos %}
+                        <option value="{{ producto.id }}">{{ producto.nombre }}</option>
+                    {% endfor %}
+                    <option value="nuevo">-- Agregar producto nuevo --</option>
+                </select>
+                {% if form.producto.errors %}
+                    <div class="errorlist">{{ form.producto.errors }}</div>
+                {% endif %}
+            </div>
+
+
+            <!-- Renderiza los demás campos excepto "producto" y "ganancia" -->
+            {% for field in form %}
+                {% if field.name != "producto" and field.name != "ganancia" %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="errorlist">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% endfor %}
+
+            <!-- Campo ganancia (editable) -->
+            <div class="form-group">
+                <label for="id_ganancia">Ganancia (%)</label>
+                {{ form.ganancia }}
+                {% if form.ganancia.errors %}
+                    <div class="errorlist">{{ form.ganancia.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Precio de venta (solo lectura, calculado en JS) -->
+            <div class="form-group">
+                <label for="precio_venta_preview">Precio de venta</label>
+                <input type="text" id="precio_venta_preview" readonly style="background: #eef6fa; color: #222;">
+            </div>
+
+            <button type="submit">Guardar</button>
+        </form>
+    </div>
+</div>
+
+{# Modal de éxito y pregunta para agregar otra compra #}
+{% if request.GET.exito %}
+<div id="exitoModal" class="modal">
+    <div class="modal-content">
+        <h2>¡Compra registrada!</h2>
+        <p>¿Deseas agregar otra compra?</p>
+        <button onclick="window.location.href='/compras/agregar/'">Sí</button>
+        <button onclick="window.location.href='/'">No</button>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    // Diccionario de precios de productos desde Django, Permite acceder rápidamente al precio de cualquier producto en el frontend, sin hacer consultas adicionales al servidor.
+const productos = {
+    {% for producto in productos %}
+        "{{ producto.id }}": {{ producto.precio }},
+    {% endfor %}
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Selecciona los elementos del formulario Busca y almacena referencias a campos del formulario mediante sus IDs: selección de producto, precio unitario, cantidad, total, ganancia y una previsualización del precio de venta.
+    const productoSelect = document.getElementById('id_producto');
+    const precioUnitarioInput = document.getElementById('id_precio_unitario');
+    const cantidadInput = document.getElementById('id_cantidad');
+    const totalInput = document.getElementById('id_total');
+    const gananciaInput = document.getElementById('id_ganancia');
+    const precioVentaPreview = document.getElementById('precio_venta_preview');
+
+    // Redirección si eligen "nuevo"
+    if (productoSelect) {
+        productoSelect.addEventListener('change', function() {
+            if (productoSelect.value === 'nuevo') {
+                window.location.href = "{% url 'agregar_producto' %}?next={{ request.path }}";
+            }
+        });
+    }
+
+    function actualizarPrecio() {
+        const prodId = productoSelect.value;
+        if (productos[prodId] !== undefined) {
+            precioUnitarioInput.value = productos[prodId];
+            calcularTotal();
+            calcularPrecioVenta();
+        } else {
+            precioUnitarioInput.value = '';
+            totalInput.value = '';
+            precioVentaPreview.value = '';
+        }
+    }
+
+    function calcularTotal() {
+        const precio = parseFloat(precioUnitarioInput.value) || 0;
+        const cantidad = parseFloat(cantidadInput.value) || 0;
+        if (totalInput) {
+            totalInput.value = (cantidad * precio).toFixed(2);
+        }
+    }
+
+    function calcularPrecioVenta() {
+        const precioCompra = parseFloat(precioUnitarioInput.value) || 0;
+        const porcentaje = parseFloat(gananciaInput.value) || 0;
+        const precioVenta = precioCompra * (1 + porcentaje / 100);
+        if (!isNaN(precioVenta) && precioVenta > 0) {
+            if (precioVentaPreview) {
+                precioVentaPreview.value = precioVenta.toFixed(2);
+            }
+        } else {
+            if (precioVentaPreview) {
+                precioVentaPreview.value = '';
+            }
+        }
+    }
+
+
+    // Listeners para interactuar correctamente
+    if (productoSelect && precioUnitarioInput) {
+        productoSelect.addEventListener('change', actualizarPrecio);
+    }
+    if (cantidadInput && totalInput) {
+        cantidadInput.addEventListener('input', calcularTotal);
+    }
+    if (precioUnitarioInput && totalInput) {
+        precioUnitarioInput.addEventListener('input', calcularTotal);
+    }
+    if (gananciaInput && precioUnitarioInput) {
+        gananciaInput.addEventListener('input', calcularPrecioVenta);
+        precioUnitarioInput.addEventListener('input', calcularPrecioVenta);
+    }
+
+    // Inicializa el precio, total y precio de venta al cargar la página
+    actualizarPrecio();
+    calcularPrecioVenta();
+});
+</script>
+{% endblock %}

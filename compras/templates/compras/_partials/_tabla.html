@@ -1,0 +1,21 @@
+<table class="table">
+<thead>
+    <tr><th>ID</th><th>Fecha</th><th>Proveedor</th><th>Subtotal</th><th>Desc.</th><th>Imp.</th><th>Total</th><th></th></tr>
+</thead>
+<tbody>
+    {% for c in compras %}
+    <tr>
+        <td>{{ c.id }}</td>
+        <td>{{ c.fecha|date:"d/m/Y H:i" }}</td>
+        <td>{{ c.proveedor }}</td>
+        <td>{{ c.subtotal }}</td>
+        <td>{{ c.descuento_total }}</td>
+        <td>{{ c.impuesto_total }}</td>
+        <td>{{ c.total }}</td>
+        <td>{% include "compras/_includes/_acciones_fila.html" with compra=c %}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="8">No hay compras.</td></tr>
+    {% endfor %}
+</tbody>
+</table>

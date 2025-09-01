@@ -1,0 +1,111 @@
+main {
+    background: var(--main);
+    border-radius: 18px;
+    box-shadow: var(--box-shadow);
+    padding: 48px 52px 48px 52px;
+    min-height: 60vh;
+    min-width: 600px;
+    width: fit-content;
+    margin: 42px auto 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: width 0.2s, padding 0.2s;
+    overflow-x: auto;
+}
+
+
+/* ... tu CSS general ... */
+
+.inventario-box {
+    max-width: 1400px; /* Mucho más ancho */
+    width: 96vw;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 18px rgba(9,64,103,0.10);
+    padding: 48px 32px 38px 32px;
+    min-height: 400px;
+}
+
+.tabla-lista {
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 18px rgba(9,64,103,0.10);
+    font-size: 1.03rem;
+    margin: 22px 0;
+    width: 100%;
+    min-width: 1150px;   /* Más ancho */
+    max-width: 100%;
+    overflow-x: auto;
+    table-layout: auto;  /* Mostrar todo el contenido, no cortar */
+}
+
+/* Encabezado */
+.tabla-lista th {
+    background: #094067;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.10rem;
+    letter-spacing: 0.5px;
+    border-bottom: 3px solid #3da9fc;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 18px 18px; /* Más espacio */
+}
+
+/* Filas y celdas */
+.tabla-lista td {
+    color: #5f6c7b;
+    border: none;
+    font-weight: 400;
+    font-size: 1.02rem;
+    padding: 16px 18px; /* Más espacio */
+    white-space: normal;        /* Permite saltos de línea */
+    overflow: visible;          /* No se corta el texto */
+    text-overflow: unset;       /* No se muestra “…” */
+    max-width: none;            /* Sin límite de ancho */
+    vertical-align: middle;
+    word-break: break-word;     /* El texto largo hace salto de línea si es necesario */
+}
+
+.tabla-lista tbody tr:nth-child(odd) {
+    background: #f2f6fc;
+}
+
+.tabla-lista tbody tr:nth-child(even) {
+    background: #e9f2fa;
+}
+
+.tabla-lista tbody tr:hover {
+    background: #d1e8fa;
+    transition: 0.18s background;
+}
+
+/* Links en la tabla */
+.tabla-lista td a {
+    color: #3da9fc;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.15s;
+    word-break: break-word;
+}
+.tabla-lista td a:hover {
+    color: #ef4565;
+    text-decoration: underline;
+}
+
+/* Responsive: en pantallas chicas la tabla puede hacer scroll horizontal */
+@media (max-width: 1380px) {
+    .inventario-box {
+        max-width: 99vw;
+        padding: 8vw 1vw 8vw 1vw;
+    }
+    .tabla-lista {
+        min-width: 900px;
+        font-size: 0.97rem;
+    }
+}
