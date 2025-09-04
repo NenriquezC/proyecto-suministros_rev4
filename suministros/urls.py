@@ -8,7 +8,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # incluye las urls de la app compras
-    path('compras/', include('compras.urls', namespace='compras')),
+    #path('compras/', include('compras.urls', namespace='compras')),
+    path("compras/", include(("compras.urls", "compras"), namespace="compras")),
     path('ventas/', include('ventas.urls')),
     path('inventario/', include('inventario.urls')),
     # Home global (sin app)

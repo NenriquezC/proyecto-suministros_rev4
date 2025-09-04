@@ -1,0 +1,65 @@
+{{ formset.management_form }}
+
+{% if formset.non_form_errors %}
+<div class="alert alert-danger">{{ formset.non_form_errors }}</div>
+{% endif %}
+
+<div class="table-responsive">
+<table class="table table-striped align-middle" id="line-items-table">
+    <thead>
+    <tr>
+        {% if formset.forms %}
+        {% for bf in formset.forms.0.visible_fields %}
+            <th>{{ bf.label }}</th>
+        {% endfor %}
+        {% else %}
+        <th>Producto</th>
+        <th>Cantidad</th>
+        <th>Precio</th>
+        <th>Descuento</th>
+        <th>Subtotal</th>
+        {% endif %}
+        <th class="text-end">Acciones</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for f in formset.forms %}
+        <tr class="line-row">
+        {% for bf in f.visible_fields %}
+            <td>
+            {{ bf }}
+            {% for error in bf.errors %}
+                <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+            </td>
+        {% endfor %}
+        <td class="text-end">
+            {% if f.fields.DELETE %}
+            <label class="form-check">
+                {{ f.DELETE }} <span class="text-muted">Eliminar</span>
+            </label>
+            {% else %}
+            <button type="button" class="btn btn-link text-danger remove-row">Quitar</button>
+            {% endif %}
+        </td>
+        {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+
+{# Fila vacía para clonar #}
+<template id="empty-form-template">
+<tr class="line-row">
+    {% with ef=formset.empty_form %}
+    {% for bf in ef.visible_fields %}
+        <td>{{ bf.as_widget|safe }}</td>
+    {% endfor %}
+    <td class="text-end">
+        <button type="button" class="btn btn-link text-danger remove-row">Quitar</button>
+    </td>
+    {% for hidden in ef.hidden_fields %}{{ hidden }}{% endfor %}
+    {% endwith %}
+</tr>
+</template>

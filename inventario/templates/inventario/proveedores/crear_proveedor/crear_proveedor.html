@@ -1,0 +1,29 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Inventario · Crear proveedor{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/global.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container my-3">
+<div class="page-header">
+    <h1 class="page-title">NUEVO PROVEEDOR</h1>
+    <p class="page-subtitle">Registra un proveedor para usarlo en compras</p>
+</div>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    {% include "inventario/proveedores/crear_proveedor/partials/_crear_proveedor_cabecera.html" %}
+    {% include "inventario/proveedores/crear_proveedor/partials/_crear_proveedor_acciones.html" %}
+</form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{% include "inventario/proveedores/crear_proveedor/partials/_crear_proveedor_scripts.html" %}
+{% endblock %}

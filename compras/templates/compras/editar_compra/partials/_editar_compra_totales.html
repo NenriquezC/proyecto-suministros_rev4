@@ -1,0 +1,33 @@
+<div class="grid" style="margin-top:12px;">
+<div class="col-6"></div>
+<div class="col-6">
+    <table class="table">
+    <tbody>
+        <tr>
+        <th>Subtotal</th>
+        <td class="right"><span id="subtotal-general">0.00</span></td>
+        </tr>
+        <tr>
+        <th>Descuento</th>
+        <td class="right">
+            {% if form.descuento_total %}
+            {{ form.descuento_total.errors }}{{ form.descuento_total }}
+            {% elif form.descuento %}
+            {{ form.descuento.errors }}{{ form.descuento }}
+            {% else %}
+            <span class="muted">—</span>
+            {% endif %}
+        </td>
+        </tr>
+        <tr>
+        <th>Impuestos</th>
+        <td class="right"><span id="impuestos-general">0.00</span></td>
+        </tr>
+        <tr>
+        <th>Total</th>
+        <td class="right"><strong id="total-general">0.00</strong></td>
+        </tr>
+    </tbody>
+    </table>
+</div>
+</div>

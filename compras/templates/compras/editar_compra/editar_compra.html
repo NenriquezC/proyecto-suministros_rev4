@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Editar compra #{{ compra.pk }}{% endblock %}
+
+{% block content %}
+<h1>Editar compra #{{ compra.pk }}</h1>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    {# Cabecera con tus campos explícitos #}
+    {% include "compras/editar_compra/partials/_editar_compra__cabecera.html" with formulario_compra=formulario_compra only %}
+
+    {# Líneas del formset (tu parcial ya existente, movido a shared) #}
+    {% include "compras/editar_compra/partials/_editar_compra_lineas.html" with formset=formulario_detalle_compra only %}
+
+    {# Totales (tu parcial ya existente, movido a shared) #}
+    {% include "compras/editar_compra/partials/_editar_compra_totales.html" with form=formulario_compra formset=formulario_detalle_compra only %}
+
+    {# Acciones de esta pantalla #}
+    {% include "compras/editar_compra/partials/_editar_compra__acciones.html" with compra=compra only %}
+</form>
+{% endblock %}
+
+{% block extra_js %}
+{# Si usas JS para añadir/eliminar filas y recalcular, pégalo aquí (idéntico al de agregar) #}
+{% include "compras/editar_compra/partials/_editar_compra__scripts.html" with formset_prefix=formulario_detalle_compra.prefix only %}
+{% endblock %}

@@ -1,0 +1,107 @@
+<script>
+(function() {
+function toNumber(val) {
+    if (typeof val !== 'string') return Number(val) || 0;
+    return Number(val.replace(/\./g,'').replace(',', '.')) || 0;
+}
+
+function updateTotals() {
+    const rows = document.querySelectorAll('#line-items-table tbody tr.line-row');
+    let subtotal = 0;
+
+    rows.forEach(tr => {
+    const qty   = tr.querySelector('input[name*="-cantidad"], input[name*="-qty"], input[name*="-quantity"]');
+    const price = tr.querySelector('input[name*="-precio"], input[name*="-price"], input[name*="-unit"]');
+    const disc  = tr.querySelector('input[name*="-descuento"], input[name*="-discount"]');
+
+    const q = qty ? toNumber(qty.value)   : 0;
+    const p = price ? toNumber(price.value) : 0;
+    const d = disc ? toNumber(disc.value)  : 0;
+
+      let line = q * p;
+      if (d) line = line * (1 - d / 100);
+    subtotal += line;
+
+    const subCell = tr.querySelector('input[name*="-subtotal"], input[readonly][name*="sub"]');
+    if (subCell) subCell.value = line.toFixed(2).replace('.', ',');
+    const span = tr.querySelector('[data-subtotal]');
+    if (span) span.textContent = line.toFixed(2).replace('.', ',');
+    });
+
+    const descGlobal = document.querySelector('input[name*="descuento_porcentaje"], input[name*="descuento"]');
+    const dg = descGlobal ? toNumber(descGlobal.value) : 0;
+
+    const descuento = dg > 0 ? subtotal * (dg / 100) : 0;
+    const total = subtotal - descuento;
+
+    const $ = (id) => document.getElementById(id);
+    if ($('ui-subtotal')) $('ui-subtotal').textContent = subtotal.toFixed(2).replace('.', ',');
+    if ($('ui-descuento')) $('ui-descuento').textContent = descuento.toFixed(2).replace('.', ',');
+    if ($('ui-total')) $('ui-total').textContent = total.toFixed(2).replace('.', ',');
+}
+
+function reindexFormset() {
+    const tbody = document.querySelector('#line-items-table tbody');
+    const totalForms = document.querySelector('input[name$="-TOTAL_FORMS"]');
+    const rows = tbody.querySelectorAll('tr.line-row');
+
+    rows.forEach((tr, idx) => {
+    tr.querySelectorAll('input, select, textarea, label').forEach(el => {
+        if (el.name && el.name.includes('-')) {
+        el.name = el.name.replace(/-\d+-/, '-' + idx + '-');
+        }
+        if (el.id && el.id.includes('-')) {
+        el.id = el.id.replace(/-\d+-/, '-' + idx + '-');
+        }
+        if (el.getAttribute && el.getAttribute('for') && el.getAttribute('for').includes('-')) {
+        el.setAttribute('for', el.getAttribute('for').replace(/-\d+-/, '-' + idx + '-'));
+        }
+    });
+    });
+    if (totalForms) totalForms.value = String(rows.length);
+}
+
+function addRow() {
+    const tbody = document.querySelector('#line-items-table tbody');
+    const tmpl = document.querySelector('#empty-form-template');
+    if (!tmpl) return;
+    const clone = tmpl.content.cloneNode(true);
+    tbody.appendChild(clone);
+    reindexFormset();
+    updateTotals();
+}
+
+function removeRow(btn) {
+    const tr = btn.closest('tr');
+    const del = tr.querySelector('input[type="checkbox"][name$="-DELETE"]');
+    if (del) {
+    del.checked = true;
+    tr.style.display = 'none';
+    } else {
+    tr.remove();
+    reindexFormset();
+    }
+    updateTotals();
+}
+
+document.getElementById('add-row')?.addEventListener('click', addRow);
+
+const tbody = document.querySelector('#line-items-table tbody');
+if (tbody) {
+    tbody.addEventListener('click', function(e) {
+    if (e.target.closest('.remove-row')) {
+        removeRow(e.target.closest('.remove-row'));
+    }
+    });
+}
+
+document.addEventListener('input', function(e) {
+    const name = e.target.name || '';
+    if (/-cantidad|-qty|-quantity|-precio|-price|-unit|-descuento|-discount/i.test(name)) {
+    updateTotals();
+    }
+});
+
+updateTotals();
+})();
+</script>

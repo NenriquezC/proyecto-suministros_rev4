@@ -1,0 +1,33 @@
+{# inputs: formulario_compra #}
+<div class="grid" style="display:grid; grid-template-columns: repeat(12, 1fr); gap:12px;">
+<!-- Proveedor -->
+<div class="col-6" style="grid-column: span 6;">
+    <label for="{{ formulario_compra.proveedor.id_for_label }}">Proveedor</label>
+    {{ formulario_compra.proveedor.errors }}
+    {{ formulario_compra.proveedor }}
+</div>
+
+<!-- Fecha -->
+<div class="col-3" style="grid-column: span 3;">
+    <label for="{{ formulario_compra.fecha.id_for_label }}">Fecha</label>
+    {{ formulario_compra.fecha.errors }}
+    {{ formulario_compra.fecha }}
+</div>
+
+<!-- (Opcional) Número de documento / referencia -->
+{# Descomenta si lo tienes en tu form:
+<div class="col-3" style="grid-column: span 3;">
+    <label for="{{ formulario_compra.numero_documento.id_for_label }}">Nº Documento</label>
+    {{ formulario_compra.numero_documento.errors }}
+    {{ formulario_compra.numero_documento }}
+</div>
+#}
+
+<!-- Notas -->
+<div class="col-12" style="grid-column: span 12;">
+    <label for="{{ formulario_compra.notas.id_for_label }}">Notas</label>
+    {{ formulario_compra.notas.errors }}
+    {{ formulario_compra.notas }}
+</div>
+</div>
+Si alguno de esos nombres cambia en tu CompraForm, reemplázalo ahí mismo (pero mantuve exactamente los que venimos usando: proveedor, fecha, notas).

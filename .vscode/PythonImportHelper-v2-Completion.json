@@ -283,6 +283,14 @@
         "documentation": {}
     },
     {
+        "label": "messages",
+        "importPath": "django.contrib",
+        "description": "django.contrib",
+        "isExtraImport": true,
+        "detail": "django.contrib",
+        "documentation": {}
+    },
+    {
         "label": "admin",
         "importPath": "django.contrib",
         "description": "django.contrib",
@@ -315,14 +323,6 @@
         "documentation": {}
     },
     {
-        "label": "admin",
-        "importPath": "django.contrib",
-        "description": "django.contrib",
-        "isExtraImport": true,
-        "detail": "django.contrib",
-        "documentation": {}
-    },
-    {
         "label": "AppConfig",
         "importPath": "django.apps",
         "description": "django.apps",
@@ -344,6 +344,14 @@
         "description": "django.apps",
         "isExtraImport": true,
         "detail": "django.apps",
+        "documentation": {}
+    },
+    {
+        "label": "forms",
+        "importPath": "django",
+        "description": "django",
+        "isExtraImport": true,
+        "detail": "django",
         "documentation": {}
     },
     {
@@ -531,6 +539,14 @@
         "documentation": {}
     },
     {
+        "label": "reverse",
+        "importPath": "django.urls",
+        "description": "django.urls",
+        "isExtraImport": true,
+        "detail": "django.urls",
+        "documentation": {}
+    },
+    {
         "label": "path",
         "importPath": "django.urls",
         "description": "django.urls",
@@ -595,11 +611,35 @@
         "documentation": {}
     },
     {
+        "label": "redirect",
+        "importPath": "django.shortcuts",
+        "description": "django.shortcuts",
+        "isExtraImport": true,
+        "detail": "django.shortcuts",
+        "documentation": {}
+    },
+    {
         "label": "Paginator",
         "importPath": "django.core.paginator",
         "description": "django.core.paginator",
         "isExtraImport": true,
         "detail": "django.core.paginator",
+        "documentation": {}
+    },
+    {
+        "label": "login_required",
+        "importPath": "django.contrib.auth.decorators",
+        "description": "django.contrib.auth.decorators",
+        "isExtraImport": true,
+        "detail": "django.contrib.auth.decorators",
+        "documentation": {}
+    },
+    {
+        "label": "permission_required",
+        "importPath": "django.contrib.auth.decorators",
+        "description": "django.contrib.auth.decorators",
+        "isExtraImport": true,
+        "detail": "django.contrib.auth.decorators",
         "documentation": {}
     },
     {
@@ -843,7 +883,7 @@
         "kind": 5,
         "importPath": "compras.urls",
         "description": "compras.urls",
-        "peekOfCode": "app_name = 'compras'\nurlpatterns = [\n    path('admin/', admin.site.urls), \n    path('ver/', ver_compras, name='ver_compras'),\n    path('agregar/', crear_compra, name='agregar_compra'),\n    path('<int:pk>/', detalle_compra, name='detalle'),\n    path('<int:pk>/editar/', editar_compra, name='editar'),\n    path('<int:pk>/eliminar/', eliminar_compra, name='eliminar'),\n]",
+        "peekOfCode": "app_name = \"compras\"\nurlpatterns = [\n    # LISTA (tu view existente)\n    path(\"\", views.ver_compras, name=\"lista\"),\n    path(\"ver/\", views.ver_compras, name=\"ver_compras\"),  # si ya lo usas en algún lado\n    # CREAR\n    path(\"crear/\", views.crear_compra, name=\"crear\"),\n    # DETALLE\n    path(\"detalle/<int:pk>/\", views.detalle_compra, name=\"detalle\"),\n    # EDITAR (siempre con pk)",
         "detail": "compras.urls",
         "documentation": {}
     },
@@ -852,7 +892,7 @@
         "kind": 5,
         "importPath": "compras.urls",
         "description": "compras.urls",
-        "peekOfCode": "urlpatterns = [\n    path('admin/', admin.site.urls), \n    path('ver/', ver_compras, name='ver_compras'),\n    path('agregar/', crear_compra, name='agregar_compra'),\n    path('<int:pk>/', detalle_compra, name='detalle'),\n    path('<int:pk>/editar/', editar_compra, name='editar'),\n    path('<int:pk>/eliminar/', eliminar_compra, name='eliminar'),\n]",
+        "peekOfCode": "urlpatterns = [\n    # LISTA (tu view existente)\n    path(\"\", views.ver_compras, name=\"lista\"),\n    path(\"ver/\", views.ver_compras, name=\"ver_compras\"),  # si ya lo usas en algún lado\n    # CREAR\n    path(\"crear/\", views.crear_compra, name=\"crear\"),\n    # DETALLE\n    path(\"detalle/<int:pk>/\", views.detalle_compra, name=\"detalle\"),\n    # EDITAR (siempre con pk)\n    path(\"editar/<int:pk>/\", views.editar_compra, name=\"editar\"),",
         "detail": "compras.urls",
         "documentation": {}
     },
@@ -861,7 +901,16 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def crear_compra(request):\n    if request.method == \"POST\":\n        form = CompraForm(request.POST)\n        if form.is_valid():\n            compra = form.save(commit=False)\n            compra.usuario = request.user  # si corresponde\n            compra.save()\n            formset = CompraProductoFormSet(request.POST, instance=compra)\n            if formset.is_valid():\n                formset.save()",
+        "peekOfCode": "def crear_compra(request):\n    if request.method == \"POST\":\n        form = CompraForm(request.POST)\n        if form.is_valid():\n            compra = form.save(commit=False)\n            # si tu modelo tiene usuario:\n            if hasattr(compra, \"usuario\") and request.user.is_authenticated:\n                compra.usuario = request.user\n            compra.save()\n            formset = CompraProductoFormSet(request.POST, instance=compra)",
+        "detail": "compras.views",
+        "documentation": {}
+    },
+    {
+        "label": "editar_compra",
+        "kind": 2,
+        "importPath": "compras.views",
+        "description": "compras.views",
+        "peekOfCode": "def editar_compra(request, pk):\n    compra = get_object_or_404(Compra, pk=pk)\n    # estado previo para reconciliar stock\n    estado_previo_lineas = {l.pk: (l.producto_id, l.cantidad) for l in compra.lineas.all()}\n    if request.method == \"POST\":\n        form = CompraForm(request.POST, instance=compra)\n        formset = CompraProductoFormSet(request.POST, instance=compra)\n        if form.is_valid() and formset.is_valid():\n            form.save()\n            formset.save()",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -870,7 +919,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def ver_compras(request):\n    # Consulta base: todas las compras con su proveedor\n    compras_queryset = Compra.objects.select_related('proveedor').order_by('-fecha', '-id')\n    # --- Filtros de búsqueda ---\n    texto_busqueda = request.GET.get('q', '').strip()\n    fecha_desde = request.GET.get('desde')  # formato 'YYYY-MM-DD'\n    fecha_hasta = request.GET.get('hasta')  # formato 'YYYY-MM-DD'\n    proveedor_id_seleccionado = request.GET.get('proveedor')\n    # Aplicar búsqueda por ID de compra o nombre de proveedor\n    if texto_busqueda:",
+        "peekOfCode": "def ver_compras(request):\n    compras_queryset = Compra.objects.select_related(\"proveedor\").order_by(\"-fecha\", \"-id\")\n    # filtros\n    texto_busqueda = request.GET.get(\"q\", \"\").strip()\n    fecha_desde = request.GET.get(\"desde\")\n    fecha_hasta = request.GET.get(\"hasta\")\n    proveedor_id = request.GET.get(\"proveedor\")\n    if texto_busqueda:\n        compras_queryset = compras_queryset.filter(\n            Q(id__icontains=texto_busqueda) |",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -879,16 +928,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def detalle_compra(request, pk):\n    compra_encontrada = get_object_or_404(Compra.objects.select_related('proveedor'), pk=pk)\n    return render(request, 'compras/detalle.html', {'compra': compra_encontrada})\n@transaction.atomic\ndef editar_compra(request, pk):\n    compra_objetivo = get_object_or_404(Compra, pk=pk)\n    # Estado previo de líneas para reconciliar stock\n    estado_previo_lineas = {l.pk: (l.producto_id, l.cantidad) for l in compra_objetivo.lineas.all()}\n    if request.method == 'POST':\n        formulario_compra = CompraForm(request.POST, instance=compra_objetivo)",
-        "detail": "compras.views",
-        "documentation": {}
-    },
-    {
-        "label": "editar_compra",
-        "kind": 2,
-        "importPath": "compras.views",
-        "description": "compras.views",
-        "peekOfCode": "def editar_compra(request, pk):\n    compra_objetivo = get_object_or_404(Compra, pk=pk)\n    # Estado previo de líneas para reconciliar stock\n    estado_previo_lineas = {l.pk: (l.producto_id, l.cantidad) for l in compra_objetivo.lineas.all()}\n    if request.method == 'POST':\n        formulario_compra = CompraForm(request.POST, instance=compra_objetivo)\n        formulario_detalle_compra = CompraProductoFormSet(request.POST, instance=compra_objetivo)\n        if formulario_compra.is_valid() and formulario_detalle_compra.is_valid():\n            formulario_compra.save()\n            formulario_detalle_compra.save()",
+        "peekOfCode": "def detalle_compra(request, pk):\n    compra = get_object_or_404(Compra.objects.select_related(\"proveedor\"), pk=pk)\n    return render(request, \"compras/detalle.html\", {\"compra\": compra})\n# ─────────────────────────────────────────────────────────────────────────────\n# ELIMINAR (CONFIRMAR + POST)\n# ─────────────────────────────────────────────────────────────────────────────\n@transaction.atomic\ndef eliminar_compra(request, pk):\n    compra = get_object_or_404(Compra, pk=pk)\n    if request.method == \"POST\":",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -897,34 +937,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def eliminar_compra(request, pk):\n    compra_objetivo = get_object_or_404(Compra, pk=pk)\n    if request.method == 'POST':\n        # (Opcional) crear un service para revertir stock antes de borrar, si lo decides\n        compra_objetivo.delete()\n        messages.success(request, \"Compra eliminada.\")\n        return redirect('compras:ver_compras')\n    return render(request, 'compras/eliminar_confirm.html', {'compra': compra_objetivo})\ndef detalle_compra(request, pk):\n    compra_encontrada = get_object_or_404(Compra.objects.select_related('proveedor'), pk=pk)",
-        "detail": "compras.views",
-        "documentation": {}
-    },
-    {
-        "label": "detalle_compra",
-        "kind": 2,
-        "importPath": "compras.views",
-        "description": "compras.views",
-        "peekOfCode": "def detalle_compra(request, pk):\n    compra_encontrada = get_object_or_404(Compra.objects.select_related('proveedor'), pk=pk)\n    return render(request, 'compras/detalle.html', {'compra': compra_encontrada})\n@transaction.atomic\ndef editar_compra(request, pk):\n    compra_objetivo = get_object_or_404(Compra, pk=pk)\n    if request.method == 'POST':\n        formulario_compra = CompraForm(request.POST, instance=compra_objetivo)\n        formulario_detalle_compra = CompraProductoFormSet(request.POST, instance=compra_objetivo)\n        if formulario_compra.is_valid() and formulario_detalle_compra.is_valid():",
-        "detail": "compras.views",
-        "documentation": {}
-    },
-    {
-        "label": "editar_compra",
-        "kind": 2,
-        "importPath": "compras.views",
-        "description": "compras.views",
-        "peekOfCode": "def editar_compra(request, pk):\n    compra_objetivo = get_object_or_404(Compra, pk=pk)\n    if request.method == 'POST':\n        formulario_compra = CompraForm(request.POST, instance=compra_objetivo)\n        formulario_detalle_compra = CompraProductoFormSet(request.POST, instance=compra_objetivo)\n        if formulario_compra.is_valid() and formulario_detalle_compra.is_valid():\n            formulario_compra.save()\n            formulario_detalle_compra.save()\n            from . import services\n            estado_previo_lineas = {l.pk: (l.producto_id, l.cantidad) for l in compra_objetivo.lineas.all()}",
-        "detail": "compras.views",
-        "documentation": {}
-    },
-    {
-        "label": "eliminar_compra",
-        "kind": 2,
-        "importPath": "compras.views",
-        "description": "compras.views",
-        "peekOfCode": "def eliminar_compra(request, pk):\n    compra_objetivo = get_object_or_404(Compra, pk=pk)\n    if request.method == 'POST':\n        compra_objetivo.delete()\n        messages.success(request, \"Compra eliminada.\")\n        return redirect('compras:ver_compras')\n    return render(request, 'compras/eliminar_confirm.html', {'compra': compra_objetivo})\n# al final de compras/views.py\nagregar_compra = crear_compra",
+        "peekOfCode": "def eliminar_compra(request, pk):\n    compra = get_object_or_404(Compra, pk=pk)\n    if request.method == \"POST\":\n        # si necesitas revertir stock, llama a un service aquí antes del delete\n        compra.delete()\n        messages.success(request, \"Compra eliminada.\")\n        return redirect(\"compras:ver_compras\")\n    return render(request, \"compras/eliminar_confirm.html\", {\"compra\": compra})\n# Alias opcional por si en algún template quedó 'compras:agregar_compra'\nagregar_compra = crear_compra",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -983,6 +996,15 @@
         "documentation": {}
     },
     {
+        "label": "ProveedorForm",
+        "kind": 6,
+        "importPath": "inventario.forms",
+        "description": "inventario.forms",
+        "peekOfCode": "class ProveedorForm(forms.ModelForm):\n    class Meta:\n        model = Proveedor\n        fields = \"__all__\"  # así no nos casamos con un set fijo de campos",
+        "detail": "inventario.forms",
+        "documentation": {}
+    },
+    {
         "label": "Categoria",
         "kind": 6,
         "importPath": "inventario.models",
@@ -1028,38 +1050,20 @@
         "documentation": {}
     },
     {
+        "label": "proveedor_crear",
+        "kind": 2,
+        "importPath": "inventario.views",
+        "description": "inventario.views",
+        "peekOfCode": "def proveedor_crear(request):\n    next_url = request.GET.get(\"next\") or reverse(\"compras:agregar\")\n    if request.method == \"POST\":\n        form = ProveedorForm(request.POST)\n        if form.is_valid():\n            proveedor = form.save()\n            messages.success(request, f\"Proveedor “{proveedor}” creado y preseleccionado.\")\n            # Redirige de vuelta a compras/crear con proveedor_id para preseleccionar\n            separator = \"&\" if \"?\" in next_url else \"?\"\n            return redirect(f\"{next_url}{separator}proveedor_id={proveedor.pk}\")",
+        "detail": "inventario.views",
+        "documentation": {}
+    },
+    {
         "label": "inventario",
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def inventario(request):\n    return HttpResponse(\"Inventário — em construção\")\ndef agregar_producto(request):\n    return HttpResponse(\"Agregar producto — em construção\")\ndef editar_producto(request, pk):\n    return HttpResponse(f\"Editar producto {pk} — em construção\")\ndef eliminar_producto(request, pk):\n    return HttpResponse(f\"Eliminar producto {pk} — em construção\")\ndef listar_productos(request):\n    return HttpResponse(\"Listado de productos — em construção\")",
-        "detail": "inventario.views",
-        "documentation": {}
-    },
-    {
-        "label": "agregar_producto",
-        "kind": 2,
-        "importPath": "inventario.views",
-        "description": "inventario.views",
-        "peekOfCode": "def agregar_producto(request):\n    return HttpResponse(\"Agregar producto — em construção\")\ndef editar_producto(request, pk):\n    return HttpResponse(f\"Editar producto {pk} — em construção\")\ndef eliminar_producto(request, pk):\n    return HttpResponse(f\"Eliminar producto {pk} — em construção\")\ndef listar_productos(request):\n    return HttpResponse(\"Listado de productos — em construção\")",
-        "detail": "inventario.views",
-        "documentation": {}
-    },
-    {
-        "label": "editar_producto",
-        "kind": 2,
-        "importPath": "inventario.views",
-        "description": "inventario.views",
-        "peekOfCode": "def editar_producto(request, pk):\n    return HttpResponse(f\"Editar producto {pk} — em construção\")\ndef eliminar_producto(request, pk):\n    return HttpResponse(f\"Eliminar producto {pk} — em construção\")\ndef listar_productos(request):\n    return HttpResponse(\"Listado de productos — em construção\")",
-        "detail": "inventario.views",
-        "documentation": {}
-    },
-    {
-        "label": "eliminar_producto",
-        "kind": 2,
-        "importPath": "inventario.views",
-        "description": "inventario.views",
-        "peekOfCode": "def eliminar_producto(request, pk):\n    return HttpResponse(f\"Eliminar producto {pk} — em construção\")\ndef listar_productos(request):\n    return HttpResponse(\"Listado de productos — em construção\")",
+        "peekOfCode": "def inventario(request):\n    return HttpResponse(\"Inventario OK\")  # placeholder temporal\ndef listar_productos(request):\n    return HttpResponse(\"Listado de productos (placeholder)\")\n# Si también tienes estas rutas en urls.py, crea sus placeholders ya:\ndef listar_proveedores(request):\n    return HttpResponse(\"Listado de proveedores (placeholder)\")\ndef crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef crear_producto(request):",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1068,7 +1072,61 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def listar_productos(request):\n    return HttpResponse(\"Listado de productos — em construção\")",
+        "peekOfCode": "def listar_productos(request):\n    return HttpResponse(\"Listado de productos (placeholder)\")\n# Si también tienes estas rutas en urls.py, crea sus placeholders ya:\ndef listar_proveedores(request):\n    return HttpResponse(\"Listado de proveedores (placeholder)\")\ndef crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef agregar_producto(request):",
+        "detail": "inventario.views",
+        "documentation": {}
+    },
+    {
+        "label": "listar_proveedores",
+        "kind": 2,
+        "importPath": "inventario.views",
+        "description": "inventario.views",
+        "peekOfCode": "def listar_proveedores(request):\n    return HttpResponse(\"Listado de proveedores (placeholder)\")\ndef crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef agregar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef editar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")",
+        "detail": "inventario.views",
+        "documentation": {}
+    },
+    {
+        "label": "crear_producto",
+        "kind": 2,
+        "importPath": "inventario.views",
+        "description": "inventario.views",
+        "peekOfCode": "def crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef agregar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef editar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef eliminar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")",
+        "detail": "inventario.views",
+        "documentation": {}
+    },
+    {
+        "label": "crear_producto",
+        "kind": 2,
+        "importPath": "inventario.views",
+        "description": "inventario.views",
+        "peekOfCode": "def crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef agregar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef editar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef eliminar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")",
+        "detail": "inventario.views",
+        "documentation": {}
+    },
+    {
+        "label": "agregar_producto",
+        "kind": 2,
+        "importPath": "inventario.views",
+        "description": "inventario.views",
+        "peekOfCode": "def agregar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef editar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef eliminar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")",
+        "detail": "inventario.views",
+        "documentation": {}
+    },
+    {
+        "label": "editar_producto",
+        "kind": 2,
+        "importPath": "inventario.views",
+        "description": "inventario.views",
+        "peekOfCode": "def editar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef eliminar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")",
+        "detail": "inventario.views",
+        "documentation": {}
+    },
+    {
+        "label": "eliminar_producto",
+        "kind": 2,
+        "importPath": "inventario.views",
+        "description": "inventario.views",
+        "peekOfCode": "def eliminar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1185,7 +1243,7 @@
         "kind": 5,
         "importPath": "suministros.settings",
         "description": "suministros.settings",
-        "peekOfCode": "LANGUAGE_CODE = 'en-us'\nTIME_ZONE = 'UTC'\nUSE_I18N = True\nUSE_TZ = True\n# Static files (CSS, JavaScript, Images)\n# https://docs.djangoproject.com/en/5.2/howto/static-files/\nSTATIC_URL = 'static/'\n# Si tienes la carpeta static en el mismo nivel que manage.py:\nSTATICFILES_DIRS = [\n    BASE_DIR / \"static\",",
+        "peekOfCode": "LANGUAGE_CODE = 'es'\nTIME_ZONE = 'UTC'\nUSE_I18N = True\nUSE_TZ = True\n# Static files (CSS, JavaScript, Images)\n# https://docs.djangoproject.com/en/5.2/howto/static-files/\nSTATIC_URL = 'static/'\n# Si tienes la carpeta static en el mismo nivel que manage.py:\nSTATICFILES_DIRS = [\n    BASE_DIR / \"static\",",
         "detail": "suministros.settings",
         "documentation": {}
     },
@@ -1248,7 +1306,7 @@
         "kind": 5,
         "importPath": "suministros.urls",
         "description": "suministros.urls",
-        "peekOfCode": "urlpatterns = [\n    path('admin/', admin.site.urls),\n    # incluye las urls de la app compras\n    path('compras/', include('compras.urls', namespace='compras')),\n    path('ventas/', include('ventas.urls')),\n    path('inventario/', include('inventario.urls')),\n    # Home global (sin app)\n    path('', TemplateView.as_view(template_name='index.html'), name='home'),\n]",
+        "peekOfCode": "urlpatterns = [\n    path('admin/', admin.site.urls),\n    # incluye las urls de la app compras\n    #path('compras/', include('compras.urls', namespace='compras')),\n    path(\"compras/\", include((\"compras.urls\", \"compras\"), namespace=\"compras\")),\n    path('ventas/', include('ventas.urls')),\n    path('inventario/', include('inventario.urls')),\n    # Home global (sin app)\n    path('', TemplateView.as_view(template_name='index.html'), name='home'),\n]",
         "detail": "suministros.urls",
         "documentation": {}
     },

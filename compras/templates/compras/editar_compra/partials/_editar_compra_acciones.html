@@ -1,0 +1,6 @@
+{# inputs: compra #}
+<div class="acciones-form" style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+<button type="submit" class="btn btn-main">Guardar cambios</button>
+<a href="{% url 'compras:detalle' compra.pk %}" class="btn btn-sec">Volver al detalle</a>
+<a href="{% url 'compras:lista' %}" class="btn btn-sec">Volver a la lista</a>
+</div>

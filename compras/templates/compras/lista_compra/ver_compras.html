@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Compras - Tecknosfera{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/global.css' %}">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    .main-window {
+        display: block;
+        margin: 36px auto 0 auto;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 18px rgba(44,62,80,0.09);
+        border: 1px solid #dfe6e9;
+        overflow-x: auto;
+        min-width: 96vw;
+        max-width: 99vw;
+        width: fit-content;
+    }
+    .main-window-header {
+        background: #3a5068;
+        color: #fff;
+        font-size: 1.24rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 13px 26px;
+        text-align: left;
+        border-bottom: 1px solid #dfe6e9;
+        display: flex;
+        align-items: center;
+        min-width: 650px;
+        gap: 10px;
+    }
+    .main-window-body {
+        padding: 30px 22px 24px 22px;
+        font-size: 1rem;
+        min-width: 650px;
+        overflow-x: auto;
+    }
+    .table {
+        white-space: nowrap;
+    }
+    .table th, .table td {
+        white-space: nowrap !important;
+        vertical-align: middle;
+    }
+    .btn-main-table {
+        background: #3da9fc;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 18px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 15px;
+        box-shadow: 0 2px 8px #09406720;
+        transition: background 0.18s, box-shadow 0.18s;
+        text-decoration: none;
+        display: inline-block;
+        margin-right: 4px;
+    }
+    .btn-main-table:hover {
+        background: #094067;
+        color: #fff;
+        box-shadow: 0 4px 16px #3da9fc2a;
+        text-decoration: none;
+    }
+    .btn-delete-table {
+        background: #ef4565;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 18px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 15px;
+        box-shadow: 0 2px 8px #09406720;
+        transition: background 0.18s, box-shadow 0.18s;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .btn-delete-table:hover {
+        background: #b71c1c;
+        color: #fff;
+        box-shadow: 0 4px 16px #ef45652a;
+        text-decoration: none;
+    }
+    @media (max-width: 700px) {
+        .main-window-header { font-size: 1.07rem; padding: 11px 11px; }
+        .main-window-body { padding: 12px 5px 12px 5px; }
+        .main-window { min-width: 99vw; max-width: 99vw; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-window">
+    <div class="main-window-header">
+        <span>Compras</span>
+        <a href="{% url 'compras:agregar_compra' %}" class="btn-main-table" style="margin-left:auto;">
+            <i class="fa fa-plus"></i> Registrar nueva compra
+        </a>
+    </div>
+
+    <div class="main-window-body">
+        {# Mensajes flash del framework messages #}
+        {% if messages %}
+            <div class="mb-3">
+                {% for message in messages %}
+                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {# Mensajes manuales opcionales (por compatibilidad con tu HTML previo) #}
+        {% if mensaje %}
+            <div class="mensaje" style="background-color:#e0f7fa; color:#006064; padding:12px; border-radius:6px; margin-bottom:18px;">
+                {{ mensaje }}
+            </div>
+        {% endif %}
+        {% if error %}
+            <div class="error" style="background-color:#ffebee; color:#b71c1c; padding:12px; border-radius:6px; margin-bottom:18px;">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <h3 style="color:#094067; margin-bottom:14px;">Lista de Compras</h3>
+
+        <div style="width:100%;overflow-x:auto;">
+            <table class="table table-dark table-striped-columns">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Proveedor</th>
+                        <th>Cliente</th>
+                        <th>Producto</th>
+                        <th>Precio Unitario</th>
+                        <th>Cantidad</th>
+                        <th>Descuento</th>
+                        <th>Total</th>
+                        <th>Fecha</th>
+                        <th>Creación</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if compras %}
+                        {% for compra in compras %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'compras:detalle' compra.id %}" class="text-light text-decoration-underline">
+                                        {{ compra.id }}
+                                    </a>
+                                </td>
+
+                                {# Campos flexibles: si no existen en tu modelo, se renderizan vacío sin romper #}
+                                <td>{% if compra.proveedor %}{{ compra.proveedor }}{% endif %}</td>
+                                <td>{% if compra.cliente %}{{ compra.cliente }}{% endif %}</td>
+
+                                {# Si tu Compra tiene líneas (CompraProducto), aquí podrías mostrar un resumen; dejamos el nombre directo por compatibilidad con tu HTML viejo #}
+                                <td>{% if compra.producto %}{{ compra.producto.nombre|default:compra.producto }}{% endif %}</td>
+
+                                <td>{{ compra.precio_unitario|default_if_none:"" }}</td>
+                                <td>{{ compra.cantidad|default_if_none:"" }}</td>
+                                <td>
+                                    {% if compra.descuento %}
+                                        {{ compra.descuento }}%
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {# Muestra total si está en el modelo; si no, intenta mostrar total_calculado #}
+                                    {% if compra.total %}
+                                        {{ compra.total }}
+                                    {% elif compra.total_calculado %}
+                                        {{ compra.total_calculado }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ compra.fecha|date:"Y-m-d H:i" }}</td>
+                                <td>{{ compra.creado_en|date:"Y-m-d H:i" }}</td>
+
+                                <td>
+                                    <a href="{% url 'compras:editar' compra.id %}" class="btn-main-table">
+                                        <i class="fa fa-edit"></i> Editar
+                                    </a>
+                                    <form method="POST" action="{% url 'compras:eliminar' compra.id %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-delete-table" onclick="return confirm('¿Seguro que quieres eliminar esta compra?');">
+                                            <i class="fa fa-trash"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="11" class="text-center">
+                                No hay compras registradas aún.
+                                <a href="{% url 'compras:agregar_compra' %}" class="text-info fw-bold">Crear la primera compra</a>.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        {# Controles de paginación si envías page_obj desde la vista (compatibles con Paginator) #}
+        {% if is_paginated or page_obj %}
+            <nav aria-label="Paginación de compras">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+                    {% endif %}
+
+                    <li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

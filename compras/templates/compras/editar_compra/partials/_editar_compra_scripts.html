@@ -1,0 +1,92 @@
+<script>
+(function() {
+  // Utilidades
+function asFloat(x){ const v=parseFloat((x||'').toString().replace(',','.')); return isNaN(v)?0:v; }
+function prefix(){ return document.getElementById('tabla-lineas')?.dataset.formsetPrefix || ''; }
+function mgmt(name){ return document.querySelector(`input[name="${prefix()}-${name}"]`); }
+function getTotalForms(){ const el = mgmt('TOTAL_FORMS'); return el ? parseInt(el.value, 10) : 0; }
+function setTotalForms(n){ const el = mgmt('TOTAL_FORMS'); if (el) el.value = String(n); }
+
+const tbody = document.getElementById('tbody-lineas');
+const tpl   = document.getElementById('empty-form-template');
+const btnAdd= document.getElementById('btn-add-row');
+
+  // Añadir fila (clona empty_form)
+if (btnAdd && tpl && tbody) {
+    btnAdd.addEventListener('click', () => {
+    const idx = getTotalForms();
+    const html = tpl.innerHTML.replaceAll('__prefix__', idx);
+    const temp = document.createElement('tbody');
+    temp.innerHTML = html.trim();
+    const row = temp.firstElementChild;
+    tbody.appendChild(row);
+    setTotalForms(idx + 1);
+    recalc();
+    });
+}
+
+  // Eliminar fila (marcar DELETE o remover duro + reindex)
+tbody?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.js-remove-row, .js-remove-row--hard');
+    if (!btn) return;
+    const row = e.target.closest('.fila-linea');
+    if (!row) return;
+
+    const del = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+    if (btn.classList.contains('js-remove-row') && del) {
+    del.checked = true;
+    row.classList.add('hidden');
+    } else {
+    row.remove();
+    reindex();
+    }
+    recalc();
+});
+
+function reindex() {
+    const rows = [...document.querySelectorAll('#tbody-lineas .fila-linea:not(.hidden)')];
+    const p = prefix();
+    rows.forEach((tr, i) => {
+    tr.dataset.index = i;
+    tr.querySelectorAll('input, select, textarea, label').forEach(el => {
+        ['name','id','for'].forEach(attr => {
+        const val = el.getAttribute(attr); if (!val) return;
+        const rgx = new RegExp(`^${p}-\\d+-`);
+        if (rgx.test(val)) el.setAttribute(attr, val.replace(rgx, `${p}-${i}-`));
+        });
+    });
+    });
+    setTotalForms(rows.length);
+}
+
+  // Recalcular totales (feedback visual; el backend manda)
+function recalc() {
+    const rows = [...document.querySelectorAll('#tbody-lineas .fila-linea:not(.hidden)')];
+    let subtotal = 0;
+    rows.forEach(row => {
+    const q = asFloat(row.querySelector('input[name$="-cantidad"]')?.value);
+    const p = asFloat(row.querySelector('input[name$="-precio"]')?.value);
+    const d = asFloat(row.querySelector('input[name$="-descuento"]')?.value);
+      let s = q * p; if (d > 0) s *= (1 - d/100);
+    const cell = row.querySelector('.subtotal-linea'); if (cell) cell.textContent = s.toFixed(2);
+    subtotal += s;
+    });
+    const IVA = 0.19; // ajusta si corresponde
+    const impuestos = subtotal * IVA;
+    const total = subtotal + impuestos;
+    const set = (id, val) => document.getElementById(id)?.replaceChildren(document.createTextNode(val));
+    set('subtotal-general', subtotal.toFixed(2));
+    set('impuestos-general', impuestos.toFixed(2));
+    set('total-general', total.toFixed(2));
+}
+
+  // Recalcular cuando cambian cantidad/precio/descuento
+document.getElementById('tabla-lineas')?.addEventListener('input', (e) => {
+    const n = e.target?.getAttribute('name') || '';
+    if (/-cantidad$|-precio$|-descuento$/.test(n)) recalc();
+});
+
+  // Primera pasada
+recalc();
+})();
+</script>
