@@ -8,7 +8,21 @@
 
 <form method="post" novalidate>
     {% csrf_token %}
+    {# --------------------------------------------------------------------------------------------------------------------- #}
+    {# Cabecera con tus campos explícitos ojo #}
+    {% if readonly %}<fieldset disabled>{% endif %}
 
+    {# datos de la compra #}
+    {% include "compras/editar_compra/partials/_form_compra.html" with form=form compra=compra readonly=readonly %}
+
+    {# tabla de líneas #}
+    {% include "compras/editar_compra/partials/_lineas_tabla.html" with formset=formset compra=compra readonly=readonly %}
+
+    {% if readonly %}</fieldset>{% endif %}
+
+    {# acciones (botones) #}
+    {% include "compras/editar_compra/partials/_editar_compra_acciones.html" with compra=compra readonly=readonly %}
+{# --------------------------------------------------------------------------------------------------------------------- #}
     {# Cabecera con tus campos explícitos #}
     {% include "compras/editar_compra/partials/_editar_compra__cabecera.html" with formulario_compra=formulario_compra only %}
 

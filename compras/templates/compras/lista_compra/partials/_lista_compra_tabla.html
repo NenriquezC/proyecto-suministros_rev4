@@ -12,7 +12,7 @@
         <td>{{ c.descuento_total }}</td>
         <td>{{ c.impuesto_total }}</td>
         <td>{{ c.total }}</td>
-        <td>{% include "compras/_includes/_acciones_fila.html" with compra=c %}</td>
+        <td>{% include "compras/lista_compra/partials/_lista_compra_acciones_fila.html" with compra=c %}</td>
     </tr>
     {% empty %}
     <tr><td colspan="8">No hay compras.</td></tr>

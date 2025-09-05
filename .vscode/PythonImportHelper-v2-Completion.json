@@ -883,7 +883,7 @@
         "kind": 5,
         "importPath": "compras.urls",
         "description": "compras.urls",
-        "peekOfCode": "app_name = \"compras\"\nurlpatterns = [\n    # LISTA (tu view existente)\n    path(\"\", views.ver_compras, name=\"lista\"),\n    path(\"ver/\", views.ver_compras, name=\"ver_compras\"),  # si ya lo usas en algún lado\n    # CREAR\n    path(\"crear/\", views.crear_compra, name=\"crear\"),\n    # DETALLE\n    path(\"detalle/<int:pk>/\", views.detalle_compra, name=\"detalle\"),\n    # EDITAR (siempre con pk)",
+        "peekOfCode": "app_name = \"compras\"\nurlpatterns = [\n    path(\"\", views.ver_compras, name=\"lista\"),\n    path(\"ver/\", views.ver_compras, name=\"ver_compras\"),   # alias opcional para listado\n    path(\"<int:pk>/ver/\", views.ver_compra, name=\"ver\"),   # <── ESTE ES EL AJUSTE\n    path(\"crear/\", views.crear_compra, name=\"crear\"),\n    path(\"detalle/<int:pk>/\", views.detalle_compra, name=\"detalle\"),\n    path(\"editar/<int:pk>/\", views.editar_compra, name=\"editar\"),\n    path(\"eliminar/<int:pk>/\", views.eliminar_compra, name=\"eliminar\"),\n    path(\"agregar/\", views.crear_compra, name=\"agregar\"),",
         "detail": "compras.urls",
         "documentation": {}
     },
@@ -892,7 +892,7 @@
         "kind": 5,
         "importPath": "compras.urls",
         "description": "compras.urls",
-        "peekOfCode": "urlpatterns = [\n    # LISTA (tu view existente)\n    path(\"\", views.ver_compras, name=\"lista\"),\n    path(\"ver/\", views.ver_compras, name=\"ver_compras\"),  # si ya lo usas en algún lado\n    # CREAR\n    path(\"crear/\", views.crear_compra, name=\"crear\"),\n    # DETALLE\n    path(\"detalle/<int:pk>/\", views.detalle_compra, name=\"detalle\"),\n    # EDITAR (siempre con pk)\n    path(\"editar/<int:pk>/\", views.editar_compra, name=\"editar\"),",
+        "peekOfCode": "urlpatterns = [\n    path(\"\", views.ver_compras, name=\"lista\"),\n    path(\"ver/\", views.ver_compras, name=\"ver_compras\"),   # alias opcional para listado\n    path(\"<int:pk>/ver/\", views.ver_compra, name=\"ver\"),   # <── ESTE ES EL AJUSTE\n    path(\"crear/\", views.crear_compra, name=\"crear\"),\n    path(\"detalle/<int:pk>/\", views.detalle_compra, name=\"detalle\"),\n    path(\"editar/<int:pk>/\", views.editar_compra, name=\"editar\"),\n    path(\"eliminar/<int:pk>/\", views.eliminar_compra, name=\"eliminar\"),\n    path(\"agregar/\", views.crear_compra, name=\"agregar\"),\n]",
         "detail": "compras.urls",
         "documentation": {}
     },
@@ -924,11 +924,20 @@
         "documentation": {}
     },
     {
+        "label": "ver_compra",
+        "kind": 2,
+        "importPath": "compras.views",
+        "description": "compras.views",
+        "peekOfCode": "def ver_compra(request, pk):\n    # NADA de POST acá: esta vista es solo lectura\n    compra = get_object_or_404(Compra.objects.select_related(\"proveedor\"), pk=pk)\n    # Reusar los mismos forms que en \"editar\", pero deshabilitados\n    form = CompraForm(instance=compra)\n    for field in form.fields.values():\n        field.disabled = True\n    formset = CompraProductoFormSet(instance=compra)\n    for f in formset.forms:\n        for field in f.fields.values():",
+        "detail": "compras.views",
+        "documentation": {}
+    },
+    {
         "label": "detalle_compra",
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def detalle_compra(request, pk):\n    compra = get_object_or_404(Compra.objects.select_related(\"proveedor\"), pk=pk)\n    return render(request, \"compras/detalle.html\", {\"compra\": compra})\n# ─────────────────────────────────────────────────────────────────────────────\n# ELIMINAR (CONFIRMAR + POST)\n# ─────────────────────────────────────────────────────────────────────────────\n@transaction.atomic\ndef eliminar_compra(request, pk):\n    compra = get_object_or_404(Compra, pk=pk)\n    if request.method == \"POST\":",
+        "peekOfCode": "def detalle_compra(request, pk):\n    compra = get_object_or_404(Compra.objects.select_related(\"proveedor\"), pk=pk)\n    # Form de cabecera deshabilitado\n    form = CompraForm(instance=compra)\n    for f in form.fields.values():\n        f.disabled = True\n    # Formset de líneas deshabilitado\n    formset = CompraProductoFormSet(instance=compra)\n    for frm in formset.forms:\n        for f in frm.fields.values():",
         "detail": "compras.views",
         "documentation": {}
     },

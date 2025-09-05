@@ -130,18 +130,60 @@ def ver_compras(request):
     # Usa el template que ya tienes para esta pantalla:
     # - Si tu listado está en 'compras/lista.html', deja esta línea:
     #return render(request, "compras/lista.html", contexto)
-    return render(request, "compras/lista_compras/ver_compras.html", contexto)
+    return render(request,"compras/lista_compra/lista.html", contexto)
     # - Si prefieres 'compras/ver_compras.html', cambia SOLO la línea anterior
     #   por: return render(request, "compras/ver_compras.html", contexto)
 
+# ─────────────────────────────────────────────────────────────────────────────
+# LISTAR SOLO LECTURA ES EL CODIGO DEL OJO, PARA VER
+# ─────────────────────────────────────────────────────────────────────────────
 
+def ver_compra(request, pk):
+    # NADA de POST acá: esta vista es solo lectura
+    compra = get_object_or_404(Compra.objects.select_related("proveedor"), pk=pk)
+
+    # Reusar los mismos forms que en "editar", pero deshabilitados
+    form = CompraForm(instance=compra)
+    for field in form.fields.values():
+        field.disabled = True
+
+    formset = CompraProductoFormSet(instance=compra)
+    for f in formset.forms:
+        for field in f.fields.values():
+            field.disabled = True
+
+    contexto = {
+        "form": form,
+        "formset": formset,
+        "compra": compra,
+        "readonly": True,  # bandera para la plantilla
+    }
+    return render(request, "compras/editar_compra/editar_compra.html", contexto)
 # ─────────────────────────────────────────────────────────────────────────────
 # DETALLE
 # ─────────────────────────────────────────────────────────────────────────────
+#ESTE ES EL DETALLE COMPRA QUE ESTABA ANTES DEL READONLY PARA EL CODIGO DEL OJO(VER)
+#def detalle_compra(request, pk):
+#    compra = get_object_or_404(Compra.objects.select_related("proveedor"), pk=pk)
+#    return render(request, "compras/detalle.html", {"compra": compra})
 def detalle_compra(request, pk):
     compra = get_object_or_404(Compra.objects.select_related("proveedor"), pk=pk)
-    return render(request, "compras/detalle.html", {"compra": compra})
 
+    # Form de cabecera deshabilitado
+    form = CompraForm(instance=compra)
+    for f in form.fields.values():
+        f.disabled = True
+
+    # Formset de líneas deshabilitado
+    formset = CompraProductoFormSet(instance=compra)
+    for frm in formset.forms:
+        for f in frm.fields.values():
+            f.disabled = True
+    formset.can_delete = False  # por si tu template lo mira
+
+    # Bandera para ocultar botones/JS de edición en los parciales
+    ctx = {"compra": compra, "form": form, "formset": formset, "readonly": True}
+    return render(request, "compras/editar_compra/editar_compra.html", ctx)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # ELIMINAR (CONFIRMAR + POST)

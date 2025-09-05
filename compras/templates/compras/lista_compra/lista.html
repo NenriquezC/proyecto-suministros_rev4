@@ -6,11 +6,11 @@
     <a class="btn-main" href="{% url 'compras:crear' %}">➕ Nueva compra</a>
 
     {# Filtros y buscador #}
-    {% include "compras/_partials/_filtros.html" %}
+    {% include "compras/lista_compra/partials/_lista_compra_filtros.html" %}
 
     {# Tabla #}
-    {% include "compras/_partials/_tabla.html" with compras=compras %}
+    {% include "compras/lista_compra/partials/_lista_compra_tabla.html" with compras=compras %}
 
     {# Paginación #}
-    {% include "compras/_partials/_paginacion.html" %}
+    {% include "compras/lista_compra/partials/_lista_compra_paginacion.html" %}
 {% endblock %}
