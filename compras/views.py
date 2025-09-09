@@ -82,12 +82,20 @@ def editar_compra(request, pk):
         form = CompraForm(instance=compra)
         formset = CompraProductoFormSet(instance=compra)
 
-    # NUEVA plantilla en carpeta editar_compra/ (usa 'form' y 'formset')
+
+
     return render(
         request,
         "compras/editar_compra/editar_compra.html",
-        {"form": form, "formset": formset, "compra": compra},
+        {"compra": compra, "form": form, "formset": formset, "readonly": False},
     )
+
+    # NUEVA plantilla en carpeta editar_compra/ (usa 'form' y 'formset')
+    #return render(
+    #    request,
+    #    "compras/editar_compra/editar_compra.html",
+    #    {"form": form, "formset": formset, "compra": compra},
+    #)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -167,7 +175,10 @@ def ver_compra(request, pk):
 #    compra = get_object_or_404(Compra.objects.select_related("proveedor"), pk=pk)
 #    return render(request, "compras/detalle.html", {"compra": compra})
 def detalle_compra(request, pk):
-    compra = get_object_or_404(Compra.objects.select_related("proveedor"), pk=pk)
+    """Vista SOLO LECTURA (👁). Misma UI que agregar/editar, pero bloqueada."""
+    #compra = get_object_or_404(Compra.objects.select_related("proveedor"), pk=pk)
+    compra = get_object_or_404(Compra, pk=pk)
+
 
     # Form de cabecera deshabilitado
     form = CompraForm(instance=compra)
@@ -182,8 +193,11 @@ def detalle_compra(request, pk):
     formset.can_delete = False  # por si tu template lo mira
 
     # Bandera para ocultar botones/JS de edición en los parciales
-    ctx = {"compra": compra, "form": form, "formset": formset, "readonly": True}
-    return render(request, "compras/editar_compra/editar_compra.html", ctx)
+    return render(
+        request,
+        "compras/editar_compra/editar_compra.html",
+        {"compra": compra, "form": form, "formset": formset, "readonly": True},
+    )
 
 # ─────────────────────────────────────────────────────────────────────────────
 # ELIMINAR (CONFIRMAR + POST)

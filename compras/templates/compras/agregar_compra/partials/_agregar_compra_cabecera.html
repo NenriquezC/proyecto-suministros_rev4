@@ -18,7 +18,7 @@
         {{ form.proveedor }}
         <div class="mt-1">
     <a {# Boton para crear nuevo Proveedor * #}
-    href="{% url 'inventario:proveedor_crear' %}?next={% url 'compras:agregar' %}"
+    href="{% url 'inventario:proveedor_crear' %}?next={% url 'compras:agregar_compra' %}"
     class="btn btn-sm btn-outline-primary"
     target="_blank" rel="noopener"
     >+ Nuevo proveedor</a>

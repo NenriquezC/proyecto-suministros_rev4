@@ -883,7 +883,7 @@
         "kind": 5,
         "importPath": "compras.urls",
         "description": "compras.urls",
-        "peekOfCode": "app_name = \"compras\"\nurlpatterns = [\n    path(\"\", views.ver_compras, name=\"lista\"),\n    path(\"ver/\", views.ver_compras, name=\"ver_compras\"),   # alias opcional para listado\n    path(\"<int:pk>/ver/\", views.ver_compra, name=\"ver\"),   # <── ESTE ES EL AJUSTE\n    path(\"crear/\", views.crear_compra, name=\"crear\"),\n    path(\"detalle/<int:pk>/\", views.detalle_compra, name=\"detalle\"),\n    path(\"editar/<int:pk>/\", views.editar_compra, name=\"editar\"),\n    path(\"eliminar/<int:pk>/\", views.eliminar_compra, name=\"eliminar\"),\n    path(\"agregar/\", views.crear_compra, name=\"agregar\"),",
+        "peekOfCode": "app_name = \"compras\"\nurlpatterns = [\n    #path(\"\", views.ver_compras, name=\"lista\"),\n    path(\"ver/\", views.ver_compras, name=\"ver_compras\"),\n    path(\"detalle/<int:pk>/\", views.detalle_compra, name=\"detalle\"),\n    path(\"ver/<int:pk>/\", views.ver_compra, name=\"ver_compra\"),\n    path(\"editar/<int:pk>/\", views.editar_compra, name=\"editar_compra\"),\n    path(\"eliminar/<int:pk>/\", views.eliminar_compra, name=\"eliminar_compra\"),\n    path(\"agregar/\", views.crear_compra, name=\"agregar_compra\"),\n    # alias opcional para listado",
         "detail": "compras.urls",
         "documentation": {}
     },
@@ -892,7 +892,7 @@
         "kind": 5,
         "importPath": "compras.urls",
         "description": "compras.urls",
-        "peekOfCode": "urlpatterns = [\n    path(\"\", views.ver_compras, name=\"lista\"),\n    path(\"ver/\", views.ver_compras, name=\"ver_compras\"),   # alias opcional para listado\n    path(\"<int:pk>/ver/\", views.ver_compra, name=\"ver\"),   # <── ESTE ES EL AJUSTE\n    path(\"crear/\", views.crear_compra, name=\"crear\"),\n    path(\"detalle/<int:pk>/\", views.detalle_compra, name=\"detalle\"),\n    path(\"editar/<int:pk>/\", views.editar_compra, name=\"editar\"),\n    path(\"eliminar/<int:pk>/\", views.eliminar_compra, name=\"eliminar\"),\n    path(\"agregar/\", views.crear_compra, name=\"agregar\"),\n]",
+        "peekOfCode": "urlpatterns = [\n    #path(\"\", views.ver_compras, name=\"lista\"),\n    path(\"ver/\", views.ver_compras, name=\"ver_compras\"),\n    path(\"detalle/<int:pk>/\", views.detalle_compra, name=\"detalle\"),\n    path(\"ver/<int:pk>/\", views.ver_compra, name=\"ver_compra\"),\n    path(\"editar/<int:pk>/\", views.editar_compra, name=\"editar_compra\"),\n    path(\"eliminar/<int:pk>/\", views.eliminar_compra, name=\"eliminar_compra\"),\n    path(\"agregar/\", views.crear_compra, name=\"agregar_compra\"),\n    # alias opcional para listado\n    path(\"<int:pk>/ver/\", views.ver_compra, name=\"ver\"),   # <── ESTE ES EL AJUSTE",
         "detail": "compras.urls",
         "documentation": {}
     },
@@ -937,7 +937,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def detalle_compra(request, pk):\n    compra = get_object_or_404(Compra.objects.select_related(\"proveedor\"), pk=pk)\n    # Form de cabecera deshabilitado\n    form = CompraForm(instance=compra)\n    for f in form.fields.values():\n        f.disabled = True\n    # Formset de líneas deshabilitado\n    formset = CompraProductoFormSet(instance=compra)\n    for frm in formset.forms:\n        for f in frm.fields.values():",
+        "peekOfCode": "def detalle_compra(request, pk):\n    \"\"\"Vista SOLO LECTURA (👁). Misma UI que agregar/editar, pero bloqueada.\"\"\"\n    #compra = get_object_or_404(Compra.objects.select_related(\"proveedor\"), pk=pk)\n    compra = get_object_or_404(Compra, pk=pk)\n    # Form de cabecera deshabilitado\n    form = CompraForm(instance=compra)\n    for f in form.fields.values():\n        f.disabled = True\n    # Formset de líneas deshabilitado\n    formset = CompraProductoFormSet(instance=compra)",
         "detail": "compras.views",
         "documentation": {}
     },

@@ -2,12 +2,12 @@
 <div class="acciones-form" style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
     {% if readonly %}
     {# MODO SOLO LECTURA (venimos de compras:detalle) #}
-    <a href="{% url 'compras:editar' compra.pk %}" class="btn btn-main">Editar</a>
-    <a href="{% url 'compras:lista' %}" class="btn btn-sec">Volver a la lista</a>
+    <a href="{% url 'compras:editar_compra' compra.pk %}" class="btn btn-main">Editar</a>
+    <a href="{% url 'compras:ver_compras' %}" class="btn btn-sec">Volver a la lista</a>
     {% else %}
     {# MODO EDICIÓN #}
     <button type="submit" class="btn btn-main">Guardar cambios</button>
-    <a href="{% url 'compras:compras_ver' compra.pk %}" class="btn btn-sec">Ver (solo lectura)</a>
-    <a href="{% url 'compras:lista' %}" class="btn btn-sec">Volver a la lista</a>
+    <a href="{% url 'compras:detalle' compra.pk %}" class="btn btn-sec">Ver (solo lectura)</a>
+    <a href="{% url 'compras:ver_compras' %}" class="btn btn-sec">Volver a la lista</a>
     {% endif %}
 </div>
