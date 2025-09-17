@@ -793,7 +793,7 @@
         "kind": 6,
         "importPath": "compras.forms",
         "description": "compras.forms",
-        "peekOfCode": "class CompraForm(forms.ModelForm):\n    class Meta:\n        model = Compra\n        # Solo los campos acordados en cabecera\n        fields = ['proveedor', 'fecha', 'descuento_porcentaje', 'descuento_total', 'impuesto_total']\n        widgets = {'fecha': forms.DateTimeInput(attrs={'type': 'datetime-local'})}\n    def clean(self):\n        data = super().clean()\n        # Reglas generales: nada negativo\n        for f in ('descuento_porcentaje', 'descuento_total', 'impuesto_total'):",
+        "peekOfCode": "class CompraForm(forms.ModelForm):\n    \"\"\"\n    Form de cabecera para 'Compra'.\n    Expone únicamente campos de UI acordados y aplica validaciones\n    genéricas de no-negatividad a descuentos/impuestos.\n    NOTA: El cálculo real de totales debe residir en services/modelo; aquí\n    solo se valida entrada del usuario.\n    \"\"\"\n    class Meta:\n        model = Compra",
         "detail": "compras.forms",
         "documentation": {}
     },
@@ -802,7 +802,7 @@
         "kind": 6,
         "importPath": "compras.forms",
         "description": "compras.forms",
-        "peekOfCode": "class CompraProductoForm(forms.ModelForm):\n    class Meta:\n        model = CompraProducto\n        fields = ['producto', 'cantidad', 'precio_unitario']\n    # Validaciones por campo (claras y suficientes)\n    def clean_cantidad(self):\n        cantidad = self.cleaned_data.get('cantidad')\n        if cantidad is None or cantidad <= 0:\n            raise forms.ValidationError('La cantidad debe ser mayor que 0.')\n        return cantidad",
+        "peekOfCode": "class CompraProductoForm(forms.ModelForm):\n    \"\"\"\n    Form de línea para 'CompraProducto'.\n    Valida entradas mínimas:\n    - cantidad > 0\n    - precio_unitario >= 0\n    \"\"\"\n    class Meta:\n        model = CompraProducto\n        fields = ['producto', 'cantidad', 'precio_unitario']",
         "detail": "compras.forms",
         "documentation": {}
     },
@@ -811,7 +811,7 @@
         "kind": 5,
         "importPath": "compras.forms",
         "description": "compras.forms",
-        "peekOfCode": "CompraProductoFormSet = inlineformset_factory(\n    parent_model=Compra,\n    model=CompraProducto,\n    form=CompraProductoForm,\n    fields=['producto', 'cantidad', 'precio_unitario'],  # sin 'descuento'\n    extra=1,\n    can_delete=True,\n    validate_min=True,\n    min_num=1\n)",
+        "peekOfCode": "CompraProductoFormSet = inlineformset_factory(\n    parent_model=Compra,\n    model=CompraProducto,\n    form=CompraProductoForm,\n    fields=['producto', 'cantidad', 'precio_unitario'],   # sin 'descuento' (por decisión de UI/negocio)\n    extra=1,  # Mínimo 1 fila “en blanco” para añadir\n    can_delete=True,  # Permite marcar DELETE (modo “suave” en tu JS)\n    validate_min=True, # Enforce min_num a nivel de validación\n    min_num=1  # Al menos 1 línea por compra\n)",
         "detail": "compras.forms",
         "documentation": {}
     },
@@ -883,7 +883,7 @@
         "kind": 5,
         "importPath": "compras.urls",
         "description": "compras.urls",
-        "peekOfCode": "app_name = \"compras\"\nurlpatterns = [\n    #path(\"\", views.ver_compras, name=\"lista\"),\n    path(\"ver/\", views.ver_compras, name=\"ver_compras\"),\n    path(\"detalle/<int:pk>/\", views.detalle_compra, name=\"detalle\"),\n    path(\"ver/<int:pk>/\", views.ver_compra, name=\"ver_compra\"),\n    path(\"editar/<int:pk>/\", views.editar_compra, name=\"editar_compra\"),\n    path(\"eliminar/<int:pk>/\", views.eliminar_compra, name=\"eliminar_compra\"),\n    path(\"agregar/\", views.crear_compra, name=\"agregar_compra\"),\n    # alias opcional para listado",
+        "peekOfCode": "app_name = \"compras\"\nurlpatterns = [\n    # ────────────────────────────────\n    # LISTADO DE COMPRAS\n    # /compras/ver/\n    # Muestra todas las compras en tabla con filtros y paginación.\n    # Template: templates/compras/lista_compra/lista.html\n    # ────────────────────────────────\n    path(\"ver/\", views.ver_compras, name=\"ver_compras\"),\n    # ────────────────────────────────",
         "detail": "compras.urls",
         "documentation": {}
     },
@@ -892,7 +892,7 @@
         "kind": 5,
         "importPath": "compras.urls",
         "description": "compras.urls",
-        "peekOfCode": "urlpatterns = [\n    #path(\"\", views.ver_compras, name=\"lista\"),\n    path(\"ver/\", views.ver_compras, name=\"ver_compras\"),\n    path(\"detalle/<int:pk>/\", views.detalle_compra, name=\"detalle\"),\n    path(\"ver/<int:pk>/\", views.ver_compra, name=\"ver_compra\"),\n    path(\"editar/<int:pk>/\", views.editar_compra, name=\"editar_compra\"),\n    path(\"eliminar/<int:pk>/\", views.eliminar_compra, name=\"eliminar_compra\"),\n    path(\"agregar/\", views.crear_compra, name=\"agregar_compra\"),\n    # alias opcional para listado\n    path(\"<int:pk>/ver/\", views.ver_compra, name=\"ver\"),   # <── ESTE ES EL AJUSTE",
+        "peekOfCode": "urlpatterns = [\n    # ────────────────────────────────\n    # LISTADO DE COMPRAS\n    # /compras/ver/\n    # Muestra todas las compras en tabla con filtros y paginación.\n    # Template: templates/compras/lista_compra/lista.html\n    # ────────────────────────────────\n    path(\"ver/\", views.ver_compras, name=\"ver_compras\"),\n    # ────────────────────────────────\n    # DETALLE DE COMPRA (SOLO LECTURA)",
         "detail": "compras.urls",
         "documentation": {}
     },
@@ -901,7 +901,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def crear_compra(request):\n    if request.method == \"POST\":\n        form = CompraForm(request.POST)\n        if form.is_valid():\n            compra = form.save(commit=False)\n            # si tu modelo tiene usuario:\n            if hasattr(compra, \"usuario\") and request.user.is_authenticated:\n                compra.usuario = request.user\n            compra.save()\n            formset = CompraProductoFormSet(request.POST, instance=compra)",
+        "peekOfCode": "def crear_compra(request):\n    \"\"\"\n    Crea una nueva Compra y sus líneas via form + formset.\n    POST:\n    - Valida CompraForm y CompraProductoFormSet.\n    - Asigna usuario si aplica.\n    - Persiste compra y líneas en una transacción atómica.\n    - Calcula totales mediante services.\n    - Redirige al detalle al éxito.\n    GET:",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -910,7 +910,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def editar_compra(request, pk):\n    compra = get_object_or_404(Compra, pk=pk)\n    # estado previo para reconciliar stock\n    estado_previo_lineas = {l.pk: (l.producto_id, l.cantidad) for l in compra.lineas.all()}\n    if request.method == \"POST\":\n        form = CompraForm(request.POST, instance=compra)\n        formset = CompraProductoFormSet(request.POST, instance=compra)\n        if form.is_valid() and formset.is_valid():\n            form.save()\n            formset.save()",
+        "peekOfCode": "def editar_compra(request, pk):\n    \"\"\"\n    Edita una Compra existente y sus líneas de forma atómica.\n    Args:\n        pk (int): Identificador de la Compra.\n    Flujo:\n        - Carga estado previo de líneas (producto_id, cantidad) para reconciliar stock.\n        - En POST, valida y guarda form + formset.\n        - Llama services.reconciliar_stock_tras_editar_compra para ajustar inventario.\n        - Recalcula totales.",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -919,7 +919,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def ver_compras(request):\n    compras_queryset = Compra.objects.select_related(\"proveedor\").order_by(\"-fecha\", \"-id\")\n    # filtros\n    texto_busqueda = request.GET.get(\"q\", \"\").strip()\n    fecha_desde = request.GET.get(\"desde\")\n    fecha_hasta = request.GET.get(\"hasta\")\n    proveedor_id = request.GET.get(\"proveedor\")\n    if texto_busqueda:\n        compras_queryset = compras_queryset.filter(\n            Q(id__icontains=texto_busqueda) |",
+        "peekOfCode": "def ver_compras(request):\n    \"\"\"\n    Lista paginada de Compras con filtros básicos.\n    Filtros GET:\n        q        : búsqueda por id (icontains) o proveedor.nombre (icontains)\n        desde    : fecha mínima (YYYY-MM-DD)\n        hasta    : fecha máxima (YYYY-MM-DD)\n        proveedor: id de proveedor\n    Returns:\n        HttpResponse con la plantilla de listado y contexto:",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -928,7 +928,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def ver_compra(request, pk):\n    # NADA de POST acá: esta vista es solo lectura\n    compra = get_object_or_404(Compra.objects.select_related(\"proveedor\"), pk=pk)\n    # Reusar los mismos forms que en \"editar\", pero deshabilitados\n    form = CompraForm(instance=compra)\n    for field in form.fields.values():\n        field.disabled = True\n    formset = CompraProductoFormSet(instance=compra)\n    for f in formset.forms:\n        for field in f.fields.values():",
+        "peekOfCode": "def ver_compra(request, pk):\n    \"\"\"\n    Vista SOLO lectura (UI de editar, pero todo disabled).\n    Útil para “ojo”/detalle sin riesgo de modificación.\n    Args:\n        pk (int): Identificador de Compra.\n    Returns:\n        HttpResponse usando 'compras/editar_compra/editar_compra.html' con\n        {'form', 'formset', 'compra', 'readonly': True}.\n    \"\"\"",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -937,7 +937,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def detalle_compra(request, pk):\n    \"\"\"Vista SOLO LECTURA (👁). Misma UI que agregar/editar, pero bloqueada.\"\"\"\n    #compra = get_object_or_404(Compra.objects.select_related(\"proveedor\"), pk=pk)\n    compra = get_object_or_404(Compra, pk=pk)\n    # Form de cabecera deshabilitado\n    form = CompraForm(instance=compra)\n    for f in form.fields.values():\n        f.disabled = True\n    # Formset de líneas deshabilitado\n    formset = CompraProductoFormSet(instance=compra)",
+        "peekOfCode": "def detalle_compra(request, pk):\n    \"\"\"\n    Detalle de Compra en modo solo lectura, reusando la plantilla de edición.\n    (Equivalente a ver_compra; se mantiene por compatibilidad semántica/URLs)\n    Args:\n        pk (int): Identificador de Compra.\n    Returns:\n        HttpResponse con la plantilla 'compras/editar_compra/editar_compra.html'\n        y {'compra', 'form', 'formset', 'readonly': True}.\n    \"\"\"",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -946,7 +946,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def eliminar_compra(request, pk):\n    compra = get_object_or_404(Compra, pk=pk)\n    if request.method == \"POST\":\n        # si necesitas revertir stock, llama a un service aquí antes del delete\n        compra.delete()\n        messages.success(request, \"Compra eliminada.\")\n        return redirect(\"compras:ver_compras\")\n    return render(request, \"compras/eliminar_confirm.html\", {\"compra\": compra})\n# Alias opcional por si en algún template quedó 'compras:agregar_compra'\nagregar_compra = crear_compra",
+        "peekOfCode": "def eliminar_compra(request, pk):\n    \"\"\"\n    Elimina una Compra previa confirmación.\n    Args:\n        pk (int): Identificador de Compra.\n    POST:\n        - Elimina la compra (y cascada según on_delete configurado).\n        - Envía mensaje de éxito y redirige al listado.\n    GET:\n        - Muestra pantalla de confirmación.",
         "detail": "compras.views",
         "documentation": {}
     },

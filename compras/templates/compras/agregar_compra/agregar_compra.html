@@ -4,8 +4,9 @@
 {% block title %}Compras · Agregar{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/global.css' %}">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!--<link rel="stylesheet" href="{% static 'css/global.css' %}">-->
+<!--<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">-->
 
 <style>
 .container { max-width: 1200px; }
@@ -42,7 +43,7 @@
 <div class="container">
 <div class="page-header">
     <h1 class="page-title">NUEVA COMPRA</h1>
-    <p class="page-subtitle">Completa los datos de la compra</p>
+    <p class="page-subtitle">Ingrese los datos de la compra</p>
 </div>
 
 {# Mensajes flash #}
@@ -66,7 +67,7 @@
     <div class="card mb-3">
     <div class="card-header card-header--flex">
         <h2 class="card-title">Productos de la compra</h2>
-        <button type="button" class="btn btn-outline" id="add-row">+ Agregar línea</button>
+        <button type="button" class="btn btn-outline" id="btn-add-row">+ Agregar línea</button>
     </div>
     <div class="card-body">
         {% include "compras/agregar_compra/partials/_agregar_compra_lineas.html" with formset=formset %}

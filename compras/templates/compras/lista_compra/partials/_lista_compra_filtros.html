@@ -25,7 +25,7 @@ Igual que el anterior, pero para la fecha final del rango.-->
 
 <select name="proveedor">
     <option value="">Todos los proveedores</option>
-    {% for p in proveedores %}
+    {% for p in lista_proveedores %}
     <option value="{{ p.id }}" {% if request.GET.proveedor == p.id|stringformat:"s" %}selected{% endif %}>{{ p }}</option>
     {% endfor %}
 </select>

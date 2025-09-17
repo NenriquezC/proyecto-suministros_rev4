@@ -1,31 +1,79 @@
 <script>
 (function() {
-  // Utilidades
+/**
+   * ========================
+   * Utilidades y helpers
+   * ========================
+   */
+
+  /**
+   * asFloat(x)
+   * Convierte un valor (string/number) a número decimal seguro.
+   * - Reemplaza coma por punto para admitir "12,34".
+   * - Devuelve 0 si el valor no es numérico.
+   */
 function asFloat(x){ const v=parseFloat((x||'').toString().replace(',','.')); return isNaN(v)?0:v; }
+/**
+   * prefix()
+   * Lee el "prefix" del formset desde el dataset del contenedor principal.
+   * - Busca #tabla-lineas y toma data-formset-prefix (p.ej. "compraproducto").
+   * - Si no existe, devuelve cadena vacía (evita reventar).
+   */
 function prefix(){ return document.getElementById('tabla-lineas')?.dataset.formsetPrefix || ''; }
+/**
+   * mgmt(name)
+   * Devuelve el input de gestión del formset indicado por `name`
+   * (p.ej. TOTAL_FORMS, INITIAL_FORMS, MIN_NUM_FORMS, MAX_NUM_FORMS),
+   * ajustado al prefijo actual (prefix).
+   */
 function mgmt(name){ return document.querySelector(`input[name="${prefix()}-${name}"]`); }
+/**
+   * getTotalForms()
+   * Lee el valor actual de TOTAL_FORMS (cuántas filas "vivas" maneja el formset).
+   * - Si no lo encuentra, asume 0.
+   */
 function getTotalForms(){ const el = mgmt('TOTAL_FORMS'); return el ? parseInt(el.value, 10) : 0; }
+/**
+   * setTotalForms(n)
+   * Actualiza el input TOTAL_FORMS al valor `n`.
+   * - Fundamental para que Django acepte X formularios al hacer POST.
+   */
 function setTotalForms(n){ const el = mgmt('TOTAL_FORMS'); if (el) el.value = String(n); }
+// Elementos clave del DOM
+const tbody = document.getElementById('tbody-lineas');            // Cuerpo de la tabla donde viven las filas (cada "línea")
+const tpl   = document.getElementById('empty-form-template');     // Template con __prefix__ para clonar nuevas filas
+const btnAdd= document.getElementById('btn-add-row');             // Botón "Añadir línea"
 
-const tbody = document.getElementById('tbody-lineas');
-const tpl   = document.getElementById('empty-form-template');
-const btnAdd= document.getElementById('btn-add-row');
-
-  // Añadir fila (clona empty_form)
+/**
+   * ========================
+   * Añadir fila (clona empty_form)
+   * ========================
+   * - Cuando click en "Añadir", clona el HTML del template.
+   * - Reemplaza __prefix__ por el índice (idx) actual.
+   * - Inserta la nueva fila al final del tbody.
+   * - Incrementa TOTAL_FORMS y recalcula totales.
+   */
 if (btnAdd && tpl && tbody) {
     btnAdd.addEventListener('click', () => {
-    const idx = getTotalForms();
-    const html = tpl.innerHTML.replaceAll('__prefix__', idx);
-    const temp = document.createElement('tbody');
+    const idx = getTotalForms();                                   // Próximo índice disponible
+    const html = tpl.innerHTML.replaceAll('__prefix__', idx);      // Sustituye el placeholder del formset
+    const temp = document.createElement('tbody');                  // Contenedor temporal para parsear HTML
     temp.innerHTML = html.trim();
-    const row = temp.firstElementChild;
-    tbody.appendChild(row);
-    setTotalForms(idx + 1);
-    recalc();
+    const row = temp.firstElementChild;                            // La fila real clonada
+    tbody.appendChild(row);                                        // Se agrega a la tabla
+    setTotalForms(idx + 1);                                        // Django: ahora tenemos una fila más
+    recalc();                                                      // Feedback inmediato
     });
 }
 
-  // Eliminar fila (marcar DELETE o remover duro + reindex)
+/**
+   * ========================
+   * Eliminar fila
+   * ========================
+   * Dos modos:
+   * 1) "Suave": marcar checkbox DELETE y ocultar la fila (formset la eliminará en backend).
+   * 2) "Duro": remover el nodo del DOM y reindexar (útil para filas no guardadas aún).
+   */
 tbody?.addEventListener('click', (e) => {
     const btn = e.target.closest('.js-remove-row, .js-remove-row--hard');
     if (!btn) return;
@@ -33,16 +81,25 @@ tbody?.addEventListener('click', (e) => {
     if (!row) return;
 
     const del = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+    // Modo "suave": marca DELETE y oculta
     if (btn.classList.contains('js-remove-row') && del) {
     del.checked = true;
     row.classList.add('hidden');
     } else {
+      // Modo "duro": remueve y reindexa todos los name/id/for
     row.remove();
     reindex();
     }
-    recalc();
+    recalc(); // Actualiza totales después de cualquier eliminación
 });
-
+/**
+   * reindex()
+   * Reasigna los índices de todas las filas visibles (no .hidden) para mantener
+   * coherentes los atributos name/id/for según el patrón {prefix}-{i}-{campo}.
+   * - Recorre inputs/selects/textareas/labels.
+   * - Sustituye el índice antiguo por el nuevo (0..n-1).
+   * - Actualiza TOTAL_FORMS al número de filas visibles.
+   */
 function reindex() {
     const rows = [...document.querySelectorAll('#tbody-lineas .fila-linea:not(.hidden)')];
     const p = prefix();
@@ -51,15 +108,25 @@ function reindex() {
     tr.querySelectorAll('input, select, textarea, label').forEach(el => {
         ['name','id','for'].forEach(attr => {
         const val = el.getAttribute(attr); if (!val) return;
+        // Ejemplo a reemplazar: "compraproducto-3-cantidad" → "compraproducto-0-cantidad"
         const rgx = new RegExp(`^${p}-\\d+-`);
         if (rgx.test(val)) el.setAttribute(attr, val.replace(rgx, `${p}-${i}-`));
         });
     });
     });
-    setTotalForms(rows.length);
+    setTotalForms(rows.length); // Mantén sincronizado el TOTAL_FORMS
 }
 
-  // Recalcular totales (feedback visual; el backend manda)
+/**
+   * recalc()
+   * Calcula subtotal, impuestos y total en el frontend (feedback inmediato).
+   * - Backend sigue siendo fuente de verdad (esto es decorativo y guía al usuario).
+   * - Para cada fila visible:
+   *   - Lee cantidad, precio y descuento (%).
+   *   - Calcula subtotal de línea y lo muestra en .subtotal-linea.
+   * - Suma subtotales, aplica IVA (19% por defecto) y muestra en los elementos
+   *   con id: subtotal-general, impuestos-general, total-general.
+   */
 function recalc() {
     const rows = [...document.querySelectorAll('#tbody-lineas .fila-linea:not(.hidden)')];
     let subtotal = 0;
@@ -67,11 +134,13 @@ function recalc() {
     const q = asFloat(row.querySelector('input[name$="-cantidad"]')?.value);
     const p = asFloat(row.querySelector('input[name$="-precio"]')?.value);
     const d = asFloat(row.querySelector('input[name$="-descuento"]')?.value);
+    // Subtotal línea = qty * price * (1 - d/100)
       let s = q * p; if (d > 0) s *= (1 - d/100);
+      // Escribe subtotal de la línea en la celda correspondiente (si existe)
     const cell = row.querySelector('.subtotal-linea'); if (cell) cell.textContent = s.toFixed(2);
     subtotal += s;
     });
-    const IVA = 0.19; // ajusta si corresponde
+    const IVA = 0.19;  // Ajusta según configuración de tu país/empresa
     const impuestos = subtotal * IVA;
     const total = subtotal + impuestos;
     const set = (id, val) => document.getElementById(id)?.replaceChildren(document.createTextNode(val));
@@ -80,13 +149,20 @@ function recalc() {
     set('total-general', total.toFixed(2));
 }
 
-  // Recalcular cuando cambian cantidad/precio/descuento
+/**
+   * Recalcular en caliente
+   * - Escucha cambios en inputs de cantidad/precio/descuento dentro de #tabla-lineas.
+   * - Si cambia alguno de esos campos, dispara recalc().
+   */
 document.getElementById('tabla-lineas')?.addEventListener('input', (e) => {
     const n = e.target?.getAttribute('name') || '';
     if (/-cantidad$|-precio$|-descuento$/.test(n)) recalc();
 });
 
-  // Primera pasada
+/**
+   * Primera pasada:
+   * - Realiza un recálculo inicial por si ya hay filas pre-renderizadas por Django.
+   */
 recalc();
 })();
 </script>

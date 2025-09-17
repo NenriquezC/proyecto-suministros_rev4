@@ -1,15 +1,38 @@
 <script>
+/**
+ * IIFE (Immediately Invoked Function Expression)
+ * Encapsula todo el código para no contaminar el scope global
+ * y ejecuta la inicialización apenas carga la página.
+ */
 (function() {
+/**-----------------------------------------------------------------------------------------------------------------------
+   * Convierte cadenas numéricas con formato latino a número JS.
+   * - Soporta miles con punto y decimales con coma: "1.234,56" -> 1234.56
+   * - Si la conversión falla, retorna 0 para robustez.
+   * @function toNumber
+   * @param {string|number|null|undefined} val - Valor a convertir.
+   * @returns {number} Número convertido o 0 si no es válido.
+    ----------------------------------------------------------------------------------------------------------------------*/
 function toNumber(val) {
     if (typeof val !== 'string') return Number(val) || 0;
     return Number(val.replace(/\./g,'').replace(',', '.')) || 0;
 }
-
+/**---------------------------------------------------------------------------------------------------------------------
+   * Recorre todas las filas del formset de líneas de compra y:
+   * 1) Obtiene cantidad, precio y descuento por fila.
+   * 2) Calcula el subtotal de cada fila (considerando % descuento).
+   * 3) Actualiza los campos/elementos de subtotal visibles por fila.
+   * 4) Aplica un descuento global si existe y actualiza los totales finales.
+   * 5) Renderiza ui-subtotal, ui-descuento y ui-total (si existen).
+   * @function updateTotals
+   * @returns {void}
+    ---------------------------------------------------------------------------------------------------------------------*/
 function updateTotals() {
     const rows = document.querySelectorAll('#line-items-table tbody tr.line-row');
     let subtotal = 0;
 
     rows.forEach(tr => {
+    // Selectores tolerantes a distintos nombres en el formset (ES/EN)
     const qty   = tr.querySelector('input[name*="-cantidad"], input[name*="-qty"], input[name*="-quantity"]');
     const price = tr.querySelector('input[name*="-precio"], input[name*="-price"], input[name*="-unit"]');
     const disc  = tr.querySelector('input[name*="-descuento"], input[name*="-discount"]');
@@ -17,29 +40,37 @@ function updateTotals() {
     const q = qty ? toNumber(qty.value)   : 0;
     const p = price ? toNumber(price.value) : 0;
     const d = disc ? toNumber(disc.value)  : 0;
-
+        // Subtotal línea = cantidad * precio; aplica % descuento si existe
       let line = q * p;
       if (d) line = line * (1 - d / 100);
     subtotal += line;
-
+        // Escribe el subtotal por línea en input/readonly o en un <span data-subtotal>
     const subCell = tr.querySelector('input[name*="-subtotal"], input[readonly][name*="sub"]');
     if (subCell) subCell.value = line.toFixed(2).replace('.', ',');
     const span = tr.querySelector('[data-subtotal]');
     if (span) span.textContent = line.toFixed(2).replace('.', ',');
     });
-
+    // Descuento global (porcentaje) si el formulario lo define
     const descGlobal = document.querySelector('input[name*="descuento_porcentaje"], input[name*="descuento"]');
     const dg = descGlobal ? toNumber(descGlobal.value) : 0;
 
     const descuento = dg > 0 ? subtotal * (dg / 100) : 0;
     const total = subtotal - descuento;
-
+    // Helper corto para ids
     const $ = (id) => document.getElementById(id);
+    // Refleja los totales en la UI si existen
     if ($('ui-subtotal')) $('ui-subtotal').textContent = subtotal.toFixed(2).replace('.', ',');
     if ($('ui-descuento')) $('ui-descuento').textContent = descuento.toFixed(2).replace('.', ',');
     if ($('ui-total')) $('ui-total').textContent = total.toFixed(2).replace('.', ',');
 }
-
+/**------------------------------------------------------------------------------------------------------------------------
+   * Reindexa los nombres/ids/for de todos los campos del formset
+   * para que coincidan con el índice visual de cada fila.
+   * También actualiza el hidden TOTAL_FORMS con el número de filas.
+   * Esto es imprescindible para que Django procese bien el formset.
+   * @function reindexFormset
+   * @returns {void}
+    ------------------------------------------------------------------------------------------------------------------------*/
 function reindexFormset() {
     const tbody = document.querySelector('#line-items-table tbody');
     const totalForms = document.querySelector('input[name$="-TOTAL_FORMS"]');
@@ -47,20 +78,29 @@ function reindexFormset() {
 
     rows.forEach((tr, idx) => {
     tr.querySelectorAll('input, select, textarea, label').forEach(el => {
+        // Renombra name="form-<n>-campo" -> "form-idx-campo"
         if (el.name && el.name.includes('-')) {
         el.name = el.name.replace(/-\d+-/, '-' + idx + '-');
         }
+        // Reasigna id="id_form-<n>-campo" -> "id_form-idx-campo"
         if (el.id && el.id.includes('-')) {
         el.id = el.id.replace(/-\d+-/, '-' + idx + '-');
         }
+        // Reasigna for="id_form-<n>-campo" en labels
         if (el.getAttribute && el.getAttribute('for') && el.getAttribute('for').includes('-')) {
         el.setAttribute('for', el.getAttribute('for').replace(/-\d+-/, '-' + idx + '-'));
         }
     });
     });
+    // Ajusta el contador TOTAL_FORMS al número real de filas
     if (totalForms) totalForms.value = String(rows.length);
 }
-
+/**-------------------------------------------------------------------------------------------------------------------------
+   * Inserta una nueva fila de línea clonando el <template id="empty-form-template">,
+   * reindexa el formset y recalcula los totales.
+   * @function addRow
+   * @returns {void}
+    -------------------------------------------------------------------------------------------------------------------------*/
 function addRow() {
     const tbody = document.querySelector('#line-items-table tbody');
     const tmpl = document.querySelector('#empty-form-template');
@@ -70,22 +110,39 @@ function addRow() {
     reindexFormset();
     updateTotals();
 }
-
+/**-------------------------------------------------------------------------------------------------------------------------
+   * Elimina (o marca para eliminar) la fila asociada al botón pulsado.
+   * - Si existe el checkbox "-DELETE", lo marca y oculta la fila (patrón Django).
+   * - Si no existe, remueve la fila del DOM y reindexa.
+   * Siempre recalcula totales al finalizar.
+   * @function removeRow
+   * @param {HTMLElement} btn - Botón (o elemento hijo) dentro de la fila a eliminar.
+   * @returns {void}
+    -----------------------------------------------------------------------------------------------------------------------*/
 function removeRow(btn) {
     const tr = btn.closest('tr');
     const del = tr.querySelector('input[type="checkbox"][name$="-DELETE"]');
     if (del) {
-    del.checked = true;
-    tr.style.display = 'none';
+    del.checked = true;         // marca la eliminación para Django
+    tr.style.display = 'none';  // la oculta visualmente
     } else {
-    tr.remove();
-    reindexFormset();
+    tr.remove();                 // remueve del DOM si no hay -DELETE
+    reindexFormset();            // reindexa índices del formset
     }
-    updateTotals();
+    }
+    updateTotals();              // totales consistentes tras eliminar
 }
-
+/**-------------------------------------------------------------------------------------------------------------------------
+   * Listener del botón "Agregar fila".
+   * Usa encadenamiento opcional (?.) por si el botón no existe en la plantilla actual.
+    ------------------------------------------------------------------------------------------------------------------------*/
 document.getElementById('add-row')?.addEventListener('click', addRow);
-
+/**------------------------------------------------------------------------------------------------------------------------
+   * Delegación de eventos para eliminar filas:
+   * - Se escucha un único 'click' en el <tbody> y se detecta si el objetivo
+   *   pertenece a un elemento con clase ".remove-row".
+   * - Esto funciona incluso para filas agregadas dinámicamente.
+    -----------------------------------------------------------------------------------------------------------------------*/
 const tbody = document.querySelector('#line-items-table tbody');
 if (tbody) {
     tbody.addEventListener('click', function(e) {
@@ -94,7 +151,11 @@ if (tbody) {
     }
     });
 }
-
+/**--------------------------------------------------------------------------------------------------------------------------
+   * Recalcula totales en vivo con cada edición de cantidad/precio/descuento,
+   * detectando los campos por su nombre con expresión regular.
+   * @event input
+    --------------------------------------------------------------------------------------------------------------------------*/
 document.addEventListener('input', function(e) {
     const name = e.target.name || '';
     if (/-cantidad|-qty|-quantity|-precio|-price|-unit|-descuento|-discount/i.test(name)) {
@@ -103,5 +164,5 @@ document.addEventListener('input', function(e) {
 });
 
 updateTotals();
-})();
+})();// <- fin IIFE
 </script>

@@ -3,7 +3,7 @@
 
 {% block content %}
     <h1>Compras</h1>
-    <a class="btn-main" href="{% url 'compras:crear' %}">➕ Nueva compra</a>
+    <a class="btn-main" href="{% url 'compras:agregar_compra' %}">➕ Nueva compra</a>
 
     {# Filtros y buscador #}
     {% include "compras/lista_compra/partials/_lista_compra_filtros.html" %}

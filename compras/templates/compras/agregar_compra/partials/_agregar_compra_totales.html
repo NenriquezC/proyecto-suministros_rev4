@@ -14,19 +14,11 @@
 
         <th>Descuento</th>
         <td class="text-end">
-            {# pinta solo UNO de estos si existe en tu form #}
-            {% if form.descuento_total %} {#    #}
-            {{ form.descuento_total }}
-            {% for e in form.descuento_total.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
-            {% elif form.descuento %}
-            {{ form.descuento }}
-            {% for e in form.descuento.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
-            {% elif form.descuento_porcentaje %}
-            {{ form.descuento_porcentaje }}
-            {% for e in form.descuento_porcentaje.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
-            {% else %}
-            <span class="text-muted">0,00</span>
-            {% endif %}
+        {# Muestra SIEMPRE el valor de descuento_total, no otro #}
+        <span id="descuento-general">
+            {{ form.descuento_total.value|default_if_none:"0,00" }}
+        </span>
+        {# No repetimos el input aquí para no enviar el campo dos veces #}
         </td>
         </tr>
 
