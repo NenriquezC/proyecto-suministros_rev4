@@ -1,9 +1,6 @@
 from django.urls import path
 from . import views
 
-from django.urls import path
-from . import views
-
 app_name = "inventario"
 
 
@@ -36,6 +33,8 @@ urlpatterns = [
     path("producto/editar/<int:pk>/", views.editar_producto, name="editar_producto"),
     path("producto/eliminar/<int:pk>/", views.eliminar_producto, name="eliminar_producto"),
     path("proveedores/nuevo/", views.proveedor_crear, name="proveedor_crear"),  # NUEVO
+    #para hacer la peticion que hara el front aqui para obtener el valor del precio unitarioo
+    path("api/producto/<int:pk>/precio/", views.producto_precio_api, name="producto_precio"),
 
 
 

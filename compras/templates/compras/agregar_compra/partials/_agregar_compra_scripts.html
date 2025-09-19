@@ -12,10 +12,25 @@
    * @function toNumber
    * @param {string|number|null|undefined} val - Valor a convertir.
    * @returns {number} Número convertido o 0 si no es válido.
+  Con coma: tratamos . como miles y , como decimales → “1.234,56” = 1234.56.
+  Sin coma: respetamos el punto decimal tal cual (no lo borramos) → “12.90” = 12.9.
     ----------------------------------------------------------------------------------------------------------------------*/
-function toNumber(val) {
-    if (typeof val !== 'string') return Number(val) || 0;
-    return Number(val.replace(/\./g,'').replace(',', '.')) || 0;
+
+  
+
+
+    function toNumber(val) {
+  if (val == null) return 0;
+  if (typeof val === 'number') return val || 0;
+  const s = String(val).trim();
+  if (!s) return 0;
+
+  // Si hay coma, interpretamos formato latino: 1.234,56 -> 1234.56
+  if (s.includes(',')) {
+    return Number(s.replace(/\./g, '').replace(',', '.')) || 0;
+  }
+  // Si NO hay coma, interpretamos punto como decimal estándar: 12.90 -> 12.90
+  return Number(s) || 0;
 }
 /**---------------------------------------------------------------------------------------------------------------------
    * Recorre todas las filas del formset de líneas de compra y:
@@ -50,19 +65,31 @@ function updateTotals() {
     const span = tr.querySelector('[data-subtotal]');
     if (span) span.textContent = line.toFixed(2).replace('.', ',');
     });
-    // Descuento global (porcentaje) si el formulario lo define
-    const descGlobal = document.querySelector('input[name*="descuento_porcentaje"], input[name*="descuento"]');
-    const dg = descGlobal ? toNumber(descGlobal.value) : 0;
+     // Descuento global (%)
+    const descGlobalInput = document.querySelector('input[name*="descuento_porcentaje"], input[name*="descuento"]');
+    const descPct = descGlobalInput ? toNumber(descGlobalInput.value) : 0;
+    const descuento = descPct > 0 ? subtotal * (descPct / 100) : 0;
 
-    const descuento = dg > 0 ? subtotal * (dg / 100) : 0;
-    const total = subtotal - descuento;
-    // Helper corto para ids
+    // Base imponible = subtotal - descuento (no negativa)
+    const baseImponible = Math.max(subtotal - descuento, 0);
+
+  // IVA como porcentaje (ej. 23 => 23%)
+    const ivaInput = document.querySelector('input[name*="impuesto_total"]');
+    const ivaPct = ivaInput ? toNumber(ivaInput.value) : 0;
+    const impuestos = ivaPct > 0 ? baseImponible * (ivaPct / 100) : 0;
+
+    const total = baseImponible + impuestos;
+
+    // Helper por id
     const $ = (id) => document.getElementById(id);
-    // Refleja los totales en la UI si existen
-    if ($('ui-subtotal')) $('ui-subtotal').textContent = subtotal.toFixed(2).replace('.', ',');
-    if ($('ui-descuento')) $('ui-descuento').textContent = descuento.toFixed(2).replace('.', ',');
-    if ($('ui-total')) $('ui-total').textContent = total.toFixed(2).replace('.', ',');
+
+    // Escribe en TUS IDs reales del HTML
+    if ($('subtotal-general'))  $('subtotal-general').textContent  = subtotal.toFixed(2).replace('.', ',');
+    if ($('descuento-general')) $('descuento-general').textContent = descuento.toFixed(2).replace('.', ',');
+    if ($('impuestos-general')) $('impuestos-general').textContent = impuestos.toFixed(2).replace('.', ',');
+    if ($('total-general'))     $('total-general').textContent     = total.toFixed(2).replace('.', ',');
 }
+
 /**------------------------------------------------------------------------------------------------------------------------
    * Reindexa los nombres/ids/for de todos los campos del formset
    * para que coincidan con el índice visual de cada fila.
@@ -129,14 +156,14 @@ function removeRow(btn) {
     tr.remove();                 // remueve del DOM si no hay -DELETE
     reindexFormset();            // reindexa índices del formset
     }
-    }
+    
     updateTotals();              // totales consistentes tras eliminar
 }
 /**-------------------------------------------------------------------------------------------------------------------------
    * Listener del botón "Agregar fila".
    * Usa encadenamiento opcional (?.) por si el botón no existe en la plantilla actual.
     ------------------------------------------------------------------------------------------------------------------------*/
-document.getElementById('add-row')?.addEventListener('click', addRow);
+document.getElementById('btn-add-row')?.addEventListener('click', addRow);
 /**------------------------------------------------------------------------------------------------------------------------
    * Delegación de eventos para eliminar filas:
    * - Se escucha un único 'click' en el <tbody> y se detecta si el objetivo
@@ -157,10 +184,56 @@ if (tbody) {
    * @event input
     --------------------------------------------------------------------------------------------------------------------------*/
 document.addEventListener('input', function(e) {
-    const name = e.target.name || '';
-    if (/-cantidad|-qty|-quantity|-precio|-price|-unit|-descuento|-discount/i.test(name)) {
+    const name = (e.target && e.target.name) ? e.target.name : '';
+    const cambiaLinea = /-(cantidad|qty|quantity|precio|price|unit|descuento|discount)/i.test(name);
+    const cambiaIva   = /impuesto_total/i.test(name); // <-- clave para IVA como %
+    if (cambiaLinea || cambiaIva) {
     updateTotals();
-    }
+}
+});
+
+
+// AUTORELLENO DE PRECIO UNITARIO AL ELEGIR PRODUCTO (usa data-endpoint-precio)
+document.addEventListener('change', function(e) {
+  const tr = e.target.closest('tr.line-row');
+  if (!tr) return;
+
+  console.log('[precio-auto] change en:', e.target.name || e.target.id); // ← AÑADE ESTO
+
+  let prodSel = e.target.tagName === 'SELECT' ? e.target : null;
+  if (!prodSel) return; // si el target no es SELECT, no hacemos nada
+
+  const priceInput = tr.querySelector('input[name*="-precio"], input[name*="-price"], input[name*="-unit"]');
+  if (!priceInput) return;
+
+  const prodId = prodSel.value;
+  if (!prodId) { priceInput.value = ''; updateTotals(); return; }
+
+  const table = document.getElementById('line-items-table');
+  const endpointTpl = table?.dataset?.endpointPrecio;
+  if (!endpointTpl) return;
+
+  const url = endpointTpl.replace(/\/0(\/|$)/, `/${prodId}$1`);
+  console.log('[precio-auto] GET →', url); // ← AÑADE ESTO
+
+  fetch(url, { method: 'GET' })
+    .then(r => r.ok ? r.json() : Promise.reject(r))
+    .then(data => {
+      const precio = Number(data.precio_unitario || 0);
+      
+    if (priceInput.type === 'number') {
+    priceInput.value = precio.toFixed(2);        // usa punto
+    if (!priceInput.step) priceInput.step = '0.01'; // por si el step era 1
+}   else {
+      priceInput.value = precio.toFixed(2).replace('.', ','); // si fuera text
+}
+
+
+
+
+      updateTotals();
+    })
+    .catch(() => {});
 });
 
 updateTotals();

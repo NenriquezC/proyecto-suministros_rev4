@@ -81,6 +81,22 @@
 </div>
 {% endblock %}
 
+
+<!--
 {% block extra_js %}
 {% include "compras/agregar_compra/partials/_agregar_compra_scripts.html" %}
+{% endblock %}
+-->
+
+
+<!--
+Ese console.log echa humo si el bloque scripts de la página se está renderizando.
+La variable window.__compras_scripts_block nos permite verificar desde consola.
+-->
+{# SOLO UN BLOQUE SCRIPTS #}
+{% block scripts %}
+    {% include "compras/agregar_compra/partials/_agregar_compra_scripts.html" %}
+    <script>
+    console.log('[compras] bloque scripts de agregar_compra.html cargado');
+    </script>
 {% endblock %}

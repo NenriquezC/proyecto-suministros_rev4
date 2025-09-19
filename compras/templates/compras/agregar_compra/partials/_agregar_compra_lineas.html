@@ -5,44 +5,51 @@
 {% endif %}
 
 <div class="table-responsive">
-<table class="table table-striped align-middle" id="line-items-table">
+<!--
+Qué hace: añade data-endpoint-precio en la <table id="line-items-table"> con el valor de {% url 'inventario:producto_precio' pk=0 %}.
+Para qué: así el JS puede construir la URL final sustituyendo el 0 por el id del producto seleccionado.
+Ventaja: cero dependencias de window.location.origin, cero problemas con subrutas, HTTPS, proxies o namespaces; Django siempre te da la ruta buena.    
+-->
+<table 
+    class="table table-striped align-middle" 
+    id="line-items-table"
+    data-endpoint-precio="{% url 'inventario:producto_precio' pk=0 %}">
     <thead>
     <tr>
         {% if formset.forms %}
-        {% for bf in formset.forms.0.visible_fields %}
-            <th>{{ bf.label }}</th>
-        {% endfor %}
+            {% for bf in formset.forms.0.visible_fields %}
+                {% if bf.name != 'DELETE' %}
+                    <th>{{ bf.label }}</th>
+                {% endif %}
+            {% endfor %}
         {% else %}
-        <th>Producto</th>
-        <th>Cantidad</th>
-        <th>Precio</th>
-        <th>Descuento</th>
-        <th>Subtotal</th>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
+            <th>Descuento</th>
+            <th>Subtotal</th>
         {% endif %}
         <th class="text-end">Acciones</th>
     </tr>
     </thead>
+
     <tbody>
     {% for f in formset.forms %}
         <tr class="line-row">
-        {% for bf in f.visible_fields %}
-            <td>
-            {{ bf }}
-            {% for error in bf.errors %}
-                <div class="invalid-feedback d-block">{{ error }}</div>
+            {% for bf in f.visible_fields %}
+                {% if bf.name != 'DELETE' %}
+                    <td>
+                        {{ bf }}
+                        {% for error in bf.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </td>
+                {% endif %}
             {% endfor %}
+            <td class="text-end">
+                <button type="button" class="btn btn-link text-danger remove-row">Quitar</button>
             </td>
-        {% endfor %}
-        <td class="text-end">
-            {% if f.fields.DELETE %}
-            <label class="form-check">
-                {{ f.DELETE }} <span class="text-muted">Eliminar</span>
-            </label>
-            {% else %}
-            <button type="button" class="btn btn-link text-danger remove-row">Quitar</button>
-            {% endif %}
-        </td>
-        {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+            {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
         </tr>
     {% endfor %}
     </tbody>
@@ -53,13 +60,15 @@
 <template id="empty-form-template">
 <tr class="line-row">
     {% with ef=formset.empty_form %}
-    {% for bf in ef.visible_fields %}
-        <td>{{ bf.as_widget|safe }}</td>
-    {% endfor %}
-    <td class="text-end">
-        <button type="button" class="btn btn-link text-danger remove-row">Quitar</button>
-    </td>
-    {% for hidden in ef.hidden_fields %}{{ hidden }}{% endfor %}
+        {% for bf in ef.visible_fields %}
+            {% if bf.name != 'DELETE' %}
+                <td>{{ bf.as_widget|safe }}</td>
+            {% endif %}
+        {% endfor %}
+        <td class="text-end">
+            <button type="button" class="btn btn-link text-danger remove-row">Quitar</button>
+        </td>
+        {% for hidden in ef.hidden_fields %}{{ hidden }}{% endfor %}
     {% endwith %}
 </tr>
 </template>
