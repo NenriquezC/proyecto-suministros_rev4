@@ -99,28 +99,12 @@ function updateTotals() {
    * @returns {void}
     ------------------------------------------------------------------------------------------------------------------------*/
 function reindexFormset() {
-    const tbody = document.querySelector('#line-items-table tbody');
-    const totalForms = document.querySelector('input[name$="-TOTAL_FORMS"]');
-    const rows = tbody.querySelectorAll('tr.line-row');
-
-    rows.forEach((tr, idx) => {
-    tr.querySelectorAll('input, select, textarea, label').forEach(el => {
-        // Renombra name="form-<n>-campo" -> "form-idx-campo"
-        if (el.name && el.name.includes('-')) {
-        el.name = el.name.replace(/-\d+-/, '-' + idx + '-');
-        }
-        // Reasigna id="id_form-<n>-campo" -> "id_form-idx-campo"
-        if (el.id && el.id.includes('-')) {
-        el.id = el.id.replace(/-\d+-/, '-' + idx + '-');
-        }
-        // Reasigna for="id_form-<n>-campo" en labels
-        if (el.getAttribute && el.getAttribute('for') && el.getAttribute('for').includes('-')) {
-        el.setAttribute('for', el.getAttribute('for').replace(/-\d+-/, '-' + idx + '-'));
-        }
-    });
-    });
-    // Ajusta el contador TOTAL_FORMS al número real de filas
-    if (totalForms) totalForms.value = String(rows.length);
+  const tbody = document.querySelector('#line-items-table tbody');
+  const totalForms = document.querySelector('input[name$="-TOTAL_FORMS"]');
+  if (tbody && totalForms) {
+    const count = tbody.querySelectorAll('tr.line-row').length; // incluye ocultas
+    totalForms.value = String(count);
+  }
 }
 /**-------------------------------------------------------------------------------------------------------------------------
    * Inserta una nueva fila de línea clonando el <template id="empty-form-template">,
@@ -130,12 +114,22 @@ function reindexFormset() {
     -------------------------------------------------------------------------------------------------------------------------*/
 function addRow() {
     const tbody = document.querySelector('#line-items-table tbody');
-    const tmpl = document.querySelector('#empty-form-template');
-    if (!tmpl) return;
-    const clone = tmpl.content.cloneNode(true);
-    tbody.appendChild(clone);
-    reindexFormset();
-    updateTotals();
+  const tmpl = document.querySelector('#empty-form-template');
+  if (!tmpl || !tbody) return;
+
+  // índice siguiente = cuántas filas reales hay ahora
+  const idx = tbody.querySelectorAll('tr.line-row').length;
+
+  // ⚠️ Sustituimos __prefix__ por el índice ANTES de insertar
+  const temp = document.createElement('tbody');
+  temp.innerHTML = tmpl.innerHTML.replace(/__prefix__/g, String(idx)).trim();
+
+  const newRow = temp.firstElementChild;
+  tbody.appendChild(newRow);
+
+  // Mantén tu pipeline habitual
+  reindexAllRows();
+  updateTotals();
 }
 /**-------------------------------------------------------------------------------------------------------------------------
    * Elimina (o marca para eliminar) la fila asociada al botón pulsado.
@@ -147,17 +141,25 @@ function addRow() {
    * @returns {void}
     -----------------------------------------------------------------------------------------------------------------------*/
 function removeRow(btn) {
-    const tr = btn.closest('tr');
-    const del = tr.querySelector('input[type="checkbox"][name$="-DELETE"]');
-    if (del) {
-    del.checked = true;         // marca la eliminación para Django
-    tr.style.display = 'none';  // la oculta visualmente
-    } else {
-    tr.remove();                 // remueve del DOM si no hay -DELETE
-    reindexFormset();            // reindexa índices del formset
-    }
-    
-    updateTotals();              // totales consistentes tras eliminar
+  const tr = btn.closest('tr.line-row');
+  if (!tr) return;
+
+  const idInput  = tr.querySelector('input[type="hidden"][name$="-id"]');
+  const delInput = tr.querySelector('input[type="checkbox"][name$="-DELETE"]');
+  const isInitial = !!(idInput && idInput.value);
+
+  if (isInitial) {
+    // Fila guardada en BD → marcar DELETE y ocultar (no reindexar)
+    if (delInput) delInput.checked = true;
+    tr.style.display = 'none';
+    tr.classList.add('hidden');
+    // NO tocamos índices ni TOTAL_FORMS
+  } else {
+    // Fila nueva → remover del DOM y reindexar todo
+    tr.remove();
+    reindexAllRows();
+  }
+  updateTotals();
 }
 /**-------------------------------------------------------------------------------------------------------------------------
    * Listener del botón "Agregar fila".
@@ -178,6 +180,28 @@ if (tbody) {
     }
     });
 }
+/**--------------------------------------------------------------------------------------------------------------------------
+   *  renombra name/id/for para que los índices queden 0..n-1 contiguos
+    --------------------------------------------------------------------------------------------------------------------------*/
+function reindexAllRows() {
+  const tbody = document.querySelector('#line-items-table tbody');
+  const rows = [...tbody.querySelectorAll('tr.line-row')]; // incluye ocultas (las iniciales marcadas DELETE deben seguir contando)
+  rows.forEach((tr, idx) => {
+    tr.querySelectorAll('input, select, textarea, label').forEach(el => {
+      ['name','id','for'].forEach(attr => {
+        const val = el.getAttribute && el.getAttribute(attr);
+        if (!val) return;
+        // reemplaza -<num>- por -idx-
+        el.setAttribute(attr, val.replace(/-(\d+)-/, `-${idx}-`));
+      });
+    });
+  });
+  // TOTAL_FORMS = número de filas (incluye las ocultas marcadas DELETE)
+  const totalForms = document.querySelector('input[name$="-TOTAL_FORMS"]');
+  if (totalForms) totalForms.value = String(rows.length);
+}
+
+
 /**--------------------------------------------------------------------------------------------------------------------------
    * Recalcula totales en vivo con cada edición de cantidad/precio/descuento,
    * detectando los campos por su nombre con expresión regular.

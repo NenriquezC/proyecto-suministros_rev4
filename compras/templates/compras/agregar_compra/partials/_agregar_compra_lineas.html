@@ -46,9 +46,21 @@ Ventaja: cero dependencias de window.location.origin, cero problemas con subruta
                     </td>
                 {% endif %}
             {% endfor %}
+
+            {# 👇 Si el formset tiene campo DELETE, lo renderizamos oculto para que el JS pueda marcarlo #}
+            {% if f.fields.DELETE %}
+                <td style="display:none">{{ f.DELETE }}</td>
+            {% endif %}
+
+
+
+
             <td class="text-end">
                 <button type="button" class="btn btn-link text-danger remove-row">Quitar</button>
             </td>
+
+
+            {# Hidden fields normales (id, compra, etc.) #}
             {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
         </tr>
     {% endfor %}
@@ -65,9 +77,18 @@ Ventaja: cero dependencias de window.location.origin, cero problemas con subruta
                 <td>{{ bf.as_widget|safe }}</td>
             {% endif %}
         {% endfor %}
+
+        {% if ef.fields.DELETE %}
+            <td style="display:none">{{ ef.DELETE }}</td>
+        {% endif %}
+
+
         <td class="text-end">
             <button type="button" class="btn btn-link text-danger remove-row">Quitar</button>
         </td>
+
+
+
         {% for hidden in ef.hidden_fields %}{{ hidden }}{% endfor %}
     {% endwith %}
 </tr>

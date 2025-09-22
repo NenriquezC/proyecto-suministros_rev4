@@ -1,0 +1,22 @@
+<div class="table-responsive">
+<table class="table table-striped align-middle">
+    <thead>
+    <tr>
+        <th>Producto</th>
+        <th class="text-end">Cantidad</th>
+        <th class="text-end">Precio</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for l in compra.lineas.all %}
+        <tr>
+        <td class="text-break">{{ l.producto }}</td>
+        <td class="text-end">{{ l.cantidad }}</td>
+        <td class="text-end">{{ l.precio_unitario }}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="3" class="text-center">Sin líneas.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>

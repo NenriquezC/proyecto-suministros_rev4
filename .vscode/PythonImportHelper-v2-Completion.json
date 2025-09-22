@@ -563,6 +563,30 @@
         "documentation": {}
     },
     {
+        "label": "login_required",
+        "importPath": "django.contrib.auth.decorators",
+        "description": "django.contrib.auth.decorators",
+        "isExtraImport": true,
+        "detail": "django.contrib.auth.decorators",
+        "documentation": {}
+    },
+    {
+        "label": "login_required",
+        "importPath": "django.contrib.auth.decorators",
+        "description": "django.contrib.auth.decorators",
+        "isExtraImport": true,
+        "detail": "django.contrib.auth.decorators",
+        "documentation": {}
+    },
+    {
+        "label": "permission_required",
+        "importPath": "django.contrib.auth.decorators",
+        "description": "django.contrib.auth.decorators",
+        "isExtraImport": true,
+        "detail": "django.contrib.auth.decorators",
+        "documentation": {}
+    },
+    {
         "label": "render",
         "importPath": "django.shortcuts",
         "description": "django.shortcuts",
@@ -616,22 +640,6 @@
         "description": "django.core.paginator",
         "isExtraImport": true,
         "detail": "django.core.paginator",
-        "documentation": {}
-    },
-    {
-        "label": "login_required",
-        "importPath": "django.contrib.auth.decorators",
-        "description": "django.contrib.auth.decorators",
-        "isExtraImport": true,
-        "detail": "django.contrib.auth.decorators",
-        "documentation": {}
-    },
-    {
-        "label": "permission_required",
-        "importPath": "django.contrib.auth.decorators",
-        "description": "django.contrib.auth.decorators",
-        "isExtraImport": true,
-        "detail": "django.contrib.auth.decorators",
         "documentation": {}
     },
     {
@@ -809,7 +817,7 @@
         "kind": 6,
         "importPath": "compras.forms",
         "description": "compras.forms",
-        "peekOfCode": "class CompraForm(forms.ModelForm):\n    \"\"\"\n    Form de cabecera para 'Compra'.\n    Expone únicamente campos de UI acordados y aplica validaciones\n    genéricas de no-negatividad a descuentos/impuestos.\n    NOTA: El cálculo real de totales debe residir en services/modelo; aquí\n    solo se valida entrada del usuario.\n    \"\"\"\n    class Meta:\n        model = Compra",
+        "peekOfCode": "class CompraForm(forms.ModelForm):\n    \"\"\"\n    Form de cabecera para 'Compra'.\n    Expone únicamente campos de UI acordados y aplica validaciones\n    genéricas de no-negatividad a descuentos/impuestos.\n    NOTA: El cálculo real de totales debe residir en services/modelo; aquí\n    solo se valida entrada del usuario.\n    \"\"\"\n    # 👇 Override explícito: deja de ser obligatorio\n    #eso sí o sí deja de exigir el campo (el required=False del override manda). ",
         "detail": "compras.forms",
         "documentation": {}
     },
@@ -917,7 +925,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def crear_compra(request):\n    \"\"\"\n    Crea una nueva Compra y sus líneas via form + formset.\n    POST:\n    - Valida CompraForm y CompraProductoFormSet.\n    - Asigna usuario si aplica.\n    - Persiste compra y líneas en una transacción atómica.\n    - Calcula totales mediante services.\n    - Redirige al detalle al éxito.\n    GET:",
+        "peekOfCode": "def crear_compra(request):\n    FORMS_PREFIX = \"lineas\"\n    if request.method == \"POST\":\n        data = request.POST.copy()\n        if data.get(\"descuento_total\") in (None, \"\"):\n            data[\"descuento_total\"] = \"0\"\n        form = CompraForm(data)\n        if form.is_valid():\n            compra = form.save(commit=False)\n            # usuario es NOT NULL → set explícito antes del save",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -926,7 +934,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def editar_compra(request, pk):\n    \"\"\"\n    Edita una Compra existente y sus líneas de forma atómica.\n    Args:\n        pk (int): Identificador de la Compra.\n    Flujo:\n        - Carga estado previo de líneas (producto_id, cantidad) para reconciliar stock.\n        - En POST, valida y guarda form + formset.\n        - Llama services.reconciliar_stock_tras_editar_compra para ajustar inventario.\n        - Recalcula totales.",
+        "peekOfCode": "def editar_compra(request, pk):\n    compra = get_object_or_404(Compra, pk=pk)\n    estado_previo_lineas = {l.pk: (l.producto_id, l.cantidad) for l in compra.lineas.all()}\n    if request.method == \"POST\":\n        data = request.POST.copy()\n        if data.get(\"descuento_total\") in (None, \"\"):\n            data[\"descuento_total\"] = \"0\"\n        form = CompraForm(data, instance=compra)\n        formset = CompraProductoFormSet(data, instance=compra, prefix=\"lineas\")\n        if form.is_valid() and formset.is_valid():",
         "detail": "compras.views",
         "documentation": {}
     },

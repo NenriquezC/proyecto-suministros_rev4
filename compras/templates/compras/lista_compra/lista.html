@@ -1,6 +1,18 @@
 {% extends "base.html" %}
 {% block title %}Compras - Lista{% endblock %}
 
+<style>
+  /* Ensancha la tabla, no el contenedor */
+.tabla-compras {
+min-width: 1600px; /* prueba 1200–1600px hasta que te guste */
+}
+
+  /* (Opcional) Ajustar algunas columnas por porcentaje o anchura fija */
+  /* .tabla-compras th:nth-child(1), .tabla-compras td:nth-child(1) { min-width: 220px; } */
+  /* .tabla-compras th:nth-child(5), .tabla-compras td:nth-child(5) { width: 120px; text-align: right; } */
+</style>
+
+
 {% block content %}
     <h1>Compras</h1>
     <a class="btn-main" href="{% url 'compras:agregar_compra' %}">➕ Nueva compra</a>

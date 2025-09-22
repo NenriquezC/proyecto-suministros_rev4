@@ -380,17 +380,10 @@
         <div class="menu-right"></div>
     </div>
     <div class="container-app">
-        <main>
-            {% if messages %}
-                <div class="messages">
-                    {% for message in messages %}
-                        <div class="alert {{ message.tags }}">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            {% block content %}
-            {% endblock %}
-        </main>
+    <main>
+    {% block content %}
+    {% endblock %}
+</main>
     </div>
     <footer>
         <p style="color:var(--paragraph);">by NenriquezC.</p>

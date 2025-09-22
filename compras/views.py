@@ -12,7 +12,7 @@ Dependencias:
 - services: utilidades de negocio (reconciliar stock, calcular totales)
 - inventario.models.Proveedor: para filtros y listados
 """
-
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import transaction
 from django.contrib import messages
@@ -28,93 +28,70 @@ from inventario.models import Proveedor
 # ─────────────────────────────────────────────────────────────────────────────
 # CREAR
 # ─────────────────────────────────────────────────────────────────────────────
+@login_required
 @transaction.atomic
 def crear_compra(request):
-    """
-    Crea una nueva Compra y sus líneas via form + formset.
+    FORMS_PREFIX = "lineas"
 
-    POST:
-    - Valida CompraForm y CompraProductoFormSet.
-    - Asigna usuario si aplica.
-    - Persiste compra y líneas en una transacción atómica.
-    - Calcula totales mediante services.
-    - Redirige al detalle al éxito.
-
-    GET:
-    - Entrega formularios vacíos.
-
-    Returns:
-        HttpResponse con la plantilla 'compras/agregar_compra/agregar_compra.html'
-        y el contexto {'form', 'formset'} en GET/errores; Redirect en éxito.
-
-    Side effects:
-        - Mensajes flash (messages.success).
-        - Escritura en DB (Compra + líneas).
-        - Cálculo de totales (services).
-    """
     if request.method == "POST":
-        form = CompraForm(request.POST)
+        data = request.POST.copy()
+        if data.get("descuento_total") in (None, ""):
+            data["descuento_total"] = "0"
+
+        form = CompraForm(data)
         if form.is_valid():
             compra = form.save(commit=False)
-            # si tu modelo tiene usuario:
-            if hasattr(compra, "usuario") and request.user.is_authenticated:
-                compra.usuario = request.user
+
+            # usuario es NOT NULL → set explícito antes del save
+            compra.usuario_id = request.user.pk
             compra.save()
 
-            formset = CompraProductoFormSet(request.POST, instance=compra)
+            formset = CompraProductoFormSet(data, instance=compra, prefix=FORMS_PREFIX)
             if formset.is_valid():
                 formset.save()
+
+                # DEBUG: cuántas líneas quedaron realmente
+                print("DEBUG >>> líneas guardadas:", compra.lineas.count())
+                print("DEBUG >>> detalle:", list(compra.lineas.values_list("producto_id","cantidad","precio_unitario")))
+
                 try:
                     services.calcular_y_guardar_totales_compra(compra)
                 except Exception:
                     pass
+
                 messages.success(request, "Compra creada correctamente.")
                 return redirect("compras:detalle", pk=compra.pk)
+            else:
+                print("DEBUG >>> formset.errors:", [f.errors for f in formset.forms], formset.non_form_errors())
+                compra.delete()
         else:
-            # si el form es inválido, usa una instancia temporal para mantener el formset
-            compra = Compra()
-            formset = CompraProductoFormSet(request.POST, instance=compra)
+            formset = CompraProductoFormSet(data, instance=Compra(), prefix=FORMS_PREFIX)
     else:
         form = CompraForm()
-        formset = CompraProductoFormSet()
+        formset = CompraProductoFormSet(instance=Compra(), prefix=FORMS_PREFIX)
 
-    # NUEVA plantilla en carpeta agregar_compra/
     return render(
         request,
         "compras/agregar_compra/agregar_compra.html",
         {"form": form, "formset": formset},
     )
 
-
 # ─────────────────────────────────────────────────────────────────────────────
 # EDITAR
 # ─────────────────────────────────────────────────────────────────────────────
 @transaction.atomic
 def editar_compra(request, pk):
-    """
-    Edita una Compra existente y sus líneas de forma atómica.
-
-    Args:
-        pk (int): Identificador de la Compra.
-
-    Flujo:
-        - Carga estado previo de líneas (producto_id, cantidad) para reconciliar stock.
-        - En POST, valida y guarda form + formset.
-        - Llama services.reconciliar_stock_tras_editar_compra para ajustar inventario.
-        - Recalcula totales.
-
-    Returns:
-        HttpResponse de 'compras/editar_compra/editar_compra.html' con
-        {'compra', 'form', 'formset', 'readonly': False} o Redirect en éxito.
-    """
     compra = get_object_or_404(Compra, pk=pk)
-
-    # estado previo para reconciliar stock
     estado_previo_lineas = {l.pk: (l.producto_id, l.cantidad) for l in compra.lineas.all()}
 
     if request.method == "POST":
-        form = CompraForm(request.POST, instance=compra)
-        formset = CompraProductoFormSet(request.POST, instance=compra)
+        data = request.POST.copy()
+        if data.get("descuento_total") in (None, ""):
+            data["descuento_total"] = "0"
+
+        form = CompraForm(data, instance=compra)
+        formset = CompraProductoFormSet(data, instance=compra, prefix="lineas")
+
         if form.is_valid() and formset.is_valid():
             form.save()
             formset.save()
@@ -130,18 +107,21 @@ def editar_compra(request, pk):
 
             messages.success(request, "Compra actualizada correctamente.")
             return redirect("compras:detalle", pk=compra.pk)
+
+        # DEBUG por si algo persiste
+        print("EDIT DEBUG form.errors:", form.errors)
+        print("EDIT DEBUG formset non-form:", formset.non_form_errors())
+        print("EDIT DEBUG formset per-form:", [f.errors for f in formset.forms])
+
     else:
         form = CompraForm(instance=compra)
-        formset = CompraProductoFormSet(instance=compra)
-
-
+        formset = CompraProductoFormSet(instance=compra, prefix="lineas")
 
     return render(
         request,
         "compras/editar_compra/editar_compra.html",
         {"compra": compra, "form": form, "formset": formset, "readonly": False},
     )
-
     # NUEVA plantilla en carpeta editar_compra/ (usa 'form' y 'formset')
     #return render(
     #    request,

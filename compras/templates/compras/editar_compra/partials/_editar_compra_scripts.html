@@ -6,7 +6,7 @@
    * ========================
    */
 
-  /**
+/**
    * asFloat(x)
    * Convierte un valor (string/number) a número decimal seguro.
    * - Reemplaza coma por punto para admitir "12,34".
@@ -54,16 +54,16 @@ const btnAdd= document.getElementById('btn-add-row');             // Botón "Añ
    * - Incrementa TOTAL_FORMS y recalcula totales.
    */
 if (btnAdd && tpl && tbody) {
-    btnAdd.addEventListener('click', () => {
+   btnAdd.addEventListener('click', () => {
     const idx = getTotalForms();                                   // Próximo índice disponible
     const html = tpl.innerHTML.replaceAll('__prefix__', idx);      // Sustituye el placeholder del formset
     const temp = document.createElement('tbody');                  // Contenedor temporal para parsear HTML
-    temp.innerHTML = html.trim();
+   temp.innerHTML = html.trim();
     const row = temp.firstElementChild;                            // La fila real clonada
     tbody.appendChild(row);                                        // Se agrega a la tabla
     setTotalForms(idx + 1);                                        // Django: ahora tenemos una fila más
     recalc();                                                      // Feedback inmediato
-    });
+   });
 }
 
 /**

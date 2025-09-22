@@ -29,7 +29,14 @@ class CompraForm(forms.ModelForm):
 
     NOTA: El cálculo real de totales debe residir en services/modelo; aquí
     solo se valida entrada del usuario.
+    
     """
+
+    # 👇 Override explícito: deja de ser obligatorio
+    #eso sí o sí deja de exigir el campo (el required=False del override manda). 
+    # No hay que reiniciar el server más allá del autoreload habitual, pero si tienes dudas, reinícialo.
+    #descuento_total = forms.DecimalField(required=False)  # opcional; sin validators extra aquí
+
     class Meta:
         model = Compra
         # Solo los campos acordados en cabecera
