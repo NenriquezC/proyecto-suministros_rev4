@@ -1,0 +1,93 @@
+<script>
+(function(){
+  // Utilidades
+  function toNumber(v) {
+    if (v == null) return 0;
+    const s = String(v).trim().replace(/\./g, '').replace(',', '.');
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+  }
+
+  function updateResumenProducto() {
+    const pc = document.querySelector('[name$="precio_compra"]');
+    const pv = document.querySelector('[name$="precio_venta"]');
+    const st = document.querySelector('[name$="stock_inicial"]');
+    const ac = document.querySelector('[name$="activo"]');
+
+    const precioCompra = pc ? toNumber(pc.value) : 0;
+    const precioVenta  = pv ? toNumber(pv.value) : 0;
+    const margen = precioVenta - precioCompra;
+
+    const elPC = document.getElementById('resumen-precio-compra');
+    const elPV = document.getElementById('resumen-precio-venta');
+    const elMG = document.getElementById('resumen-margen');
+    const elST = document.getElementById('resumen-stock');
+    const elES = document.getElementById('resumen-estado');
+
+    if (elPC) elPC.textContent = precioCompra.toFixed(2);
+    if (elPV) elPV.textContent = precioVenta.toFixed(2);
+    if (elMG) elMG.textContent = margen.toFixed(2);
+    if (elST) elST.textContent = st ? (toNumber(st.value)).toString() : '0';
+    if (elES) elES.textContent = (ac && ac.checked) ? 'Activo' : 'Inactivo';
+  }
+
+  // ===== Formset (opcional) =====
+  const table = document.getElementById('line-items-table');
+  const btnAdd = document.getElementById('btn-add-row');
+
+  function reindexFormset() {
+    if (!table) return;
+    const prefix = table.dataset.formsetPrefix || '';
+    const rows = table.querySelectorAll('tbody tr.line-row');
+    rows.forEach((tr, idx) => {
+      tr.querySelectorAll('input, select, textarea, label').forEach(el => {
+        ['name','id','for'].forEach(attr => {
+          const val = el.getAttribute(attr);
+          if (!val) return;
+          el.setAttribute(attr, val.replace(new RegExp(prefix + '-\\d+-'), `${prefix}-${idx}-`));
+        });
+      });
+    });
+    const totalForms = document.querySelector(`input[name="${table.dataset.formsetPrefix}-TOTAL_FORMS"]`);
+    if (totalForms) totalForms.value = rows.length;
+  }
+
+  function addRow() {
+    if (!table) return;
+    const tpl = document.getElementById('empty-form-template');
+    if (!tpl) return;
+    const clone = tpl.content.firstElementChild.cloneNode(true);
+    table.querySelector('tbody').appendChild(clone);
+    reindexFormset();
+    updateResumenProducto();
+  }
+
+  function removeRow(ev) {
+    const btn = ev.target.closest('.remove-row');
+    if (!btn) return;
+    const tr = btn.closest('tr.line-row');
+    if (!tr) return;
+    tr.remove();
+    reindexFormset();
+    updateResumenProducto();
+  }
+
+  // Listeners
+  if (btnAdd) btnAdd.addEventListener('click', addRow);
+  if (table) table.addEventListener('click', removeRow);
+
+  // Recalcular al escribir en campos clave
+  document.addEventListener('input', (ev) => {
+    const name = ev.target.name || '';
+    if (name.endsWith('precio_compra') || name.endsWith('precio_venta') || name.endsWith('stock_inicial')) {
+      updateResumenProducto();
+    }
+  });
+
+  // Primera pasada
+    updateResumenProducto();
+
+  // Exponer para debug (temporal)
+    window.__producto_updateResumen = updateResumenProducto;
+})();
+</script>

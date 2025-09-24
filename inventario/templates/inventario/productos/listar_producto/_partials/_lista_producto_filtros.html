@@ -1,0 +1,30 @@
+<form method="get" class="row g-2 my-3">
+    <div class="col-md-4">
+        <input type="text" name="q" value="{{ texto_busqueda }}" class="form-control"
+            placeholder="Buscar por nombre o proveedor">
+    </div>
+
+    <div class="col-md-3">
+        <select name="categoria" class="form-select">
+        <option value="">Todas las categorías</option>
+        {% for c in lista_categorias %}
+            <option value="{{ c.id }}" {% if c.id|stringformat:"s" == categoria_id_seleccionada|stringformat:"s" %}selected{% endif %}>
+            {{ c.nombre }}
+            </option>
+        {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <select name="estado" class="form-select">
+        <option value="">Todos</option>
+        <option value="activos"   {% if estado_seleccionado == "activos" %}selected{% endif %}>Activos</option>
+        <option value="inactivos" {% if estado_seleccionado == "inactivos" %}selected{% endif %}>Inactivos</option>
+        <option value="reposicion" {% if estado_seleccionado == "reposicion" %}selected{% endif %}>Con reposición</option>
+        </select>
+    </div>
+
+    <div class="col-md-2 d-grid">
+        <button class="btn-main" type="submit">Filtrar</button>
+    </div>
+</form>

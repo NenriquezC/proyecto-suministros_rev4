@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Productos - Lista{% endblock %}
+
+<style>
+/* Ensancha SOLO la tabla (igual idea que compras) */
+.tabla-productos { min-width: 1600px; }
+/* Ajustes opcionales por columna
+.tabla-productos th:nth-child(1), .tabla-productos td:nth-child(1) { min-width: 220px; }
+.tabla-productos th:nth-child(5), .tabla-productos td:nth-child(5) { width: 120px; text-align: right; }
+*/
+</style>
+
+{% block content %}
+    <h1>Productos</h1>
+    <a class="btn-main" href="{% url 'inventario:agregar_producto' %}">➕ Nuevo Producto</a>
+
+    {# Filtros y buscador #}
+{% include "inventario/productos/listar_producto/_partials/_lista_producto_filtros.html" %}
+
+{# Tabla #}
+{% include "inventario/productos/listar_producto/_partials/_lista_producto_tabla.html" with productos=productos %}
+
+{# Paginación #}
+{% include "inventario/productos/listar_producto/_partials/_lista_producto_paginacion.html" %}
+{% endblock %}

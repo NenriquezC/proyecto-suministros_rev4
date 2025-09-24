@@ -1,0 +1,31 @@
+{% if hay_paginacion %}
+<nav aria-label="Paginación">
+    <ul class="pagination justify-content-end">
+    {% if pagina_actual.has_previous %}
+        <li class="page-item">
+            <a class="page-link"
+            href="?page={{ pagina_actual.previous_page_number }}&q={{ texto_busqueda }}&categoria={{ categoria_id_seleccionada }}&estado={{ estado_seleccionado }}">
+            Anterior
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+        {% endif %}
+
+        <li class="page-item disabled">
+        <span class="page-link">Página {{ pagina_actual.number }} de {{ pagina_actual.paginator.num_pages }}</span>
+        </li>
+
+        {% if pagina_actual.has_next %}
+        <li class="page-item">
+            <a class="page-link"
+            href="?page={{ pagina_actual.next_page_number }}&q={{ texto_busqueda }}&categoria={{ categoria_id_seleccionada }}&estado={{ estado_seleccionado }}">
+            Siguiente
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}

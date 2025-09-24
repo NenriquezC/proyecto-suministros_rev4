@@ -336,19 +336,19 @@
             <li>
         <a href="#"><i class="fas fa-cash-register"></i> Compras <i class="fa fa-caret-down"></i></a>
     <div class="submenu">
-        <a href="{% url 'compras:agregar_compra' %}"><i class="fa fa-plus"></i>Ingresar compra</a>
+        <a href="{% url 'compras:agregar_compra' %}"><i class="fa fa-plus"></i>Ingresar Compra</a>
         
-        <a href="{% url 'compras:ver_compras' %}"><i class="fa fa-edit"></i> Administrar compra</a>
+        <a href="{% url 'compras:ver_compras' %}"><i class="fa fa-edit"></i> Administrar Compra</a>
         
                 </div>
             </li>
             <li>
                 <a href="#"><i class="fas fa-cash-register"></i> Ventas <i class="fa fa-caret-down"></i></a>
                 <div class="submenu">
-                    <a href="#"><i class="fa fa-plus"></i> Hacer venta</a>
-                    <a href="#"><i class="fa fa-edit"></i> Editar venta</a>
-                    <a href="#"><i class="fa fa-trash"></i> Eliminar venta</a>
-                    <a href="#"><i class="fa fa-calendar-day"></i> Ver ventas</a>
+                    <a href="#"><i class="fa fa-plus"></i>Ingresar Venta</a>
+
+                    <a href="#"><i class="fa fa-edit"></i>Administrar Venta</a>
+                    
                 </div>
             </li>
             <li>
@@ -357,17 +357,18 @@
             <li>
                 <a href="#"><i class="fas fa-box"></i> Productos <i class="fa fa-caret-down"></i></a>
                 <div class="submenu">
-                    <a href="#"><i class="fa fa-plus"></i> Ingresar nuevo producto</a>
-                    <a href="#"><i class="fa fa-edit"></i> Editar producto</a>
-                    <a href="#"><i class="fa fa-trash"></i> Eliminar producto</a>
+                    <a href="{% url 'inventario:agregar_producto' %}"><i class="fa fa-plus"></i> Ingresar Producto</a>
+
+                    <a href="{% url 'inventario:listar_productos' %}"><i class="fa fa-edit"></i> Administrar Producto</a>
+                    
                 </div>
             </li>
             <li>
                 <a href="#"><i class="fas fa-truck"></i> Proveedores <i class="fa fa-caret-down"></i></a>
                 <div class="submenu">
-                    <a href="#"><i class="fa fa-plus"></i> Ingresar nuevo proveedor</a>
-                    <a href="#"><i class="fa fa-edit"></i> Editar proveedor</a>
-                    <a href="#"><i class="fa fa-trash"></i> Eliminar proveedor</a>
+                    <a href="#"><i class="fa fa-plus"></i> Ingresar Proveedor</a>
+                    
+                    <a href="#"><i class="fa fa-trash"></i>Administrar Proveedor</a>
                 </div>
             </li>
             <li>

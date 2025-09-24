@@ -64,6 +64,20 @@ def calcular_y_guardar_totales_compra(compra: Compra,tasa_impuesto_pct: Decimal 
 
     compra.save(update_fields=["subtotal", "impuesto_total", "total"])
     return compra
+#================================================================================================
+
+def fijar_minimo_por_reposicion(producto) -> None:
+    """
+    Sube el stock_minimo si la reposición lo amerita.
+    Nunca lo baja.
+    """
+    stock_total = int(producto.stock or 0)
+    minimo_candidato = int(stock_total * 0.90)
+    minimo_actual = int(producto.stock_minimo or 0)
+    if minimo_candidato > minimo_actual:
+        producto.stock_minimo = minimo_candidato
+
+
 
 
 # ======================================== Stock (creación y edición) ============================
@@ -85,17 +99,22 @@ def aplicar_stock_despues_de_crear_compra(compra: Compra) -> None:
     producto: se bloquea con select_for_update() para evitar carreras.
     Cuándo llamarla: al final del flujo de creación (no en edición).
     """
-    for linea in compra.lineas.select_related("producto"):
-        if not linea._stock_aplicado:
-            producto = Producto.objects.select_for_update().get(pk=linea.producto_id)
-            producto.stock = (producto.stock or 0) + linea.cantidad
-            producto.precio = linea.precio_unitario
-            producto.save()
+    for linea in compra.lineas.select_related("producto").order_by("id"):
+        producto = Producto.objects.select_for_update().get(pk=linea.producto_id)
 
-            linea._stock_aplicado = True
-            linea.save(update_fields=["_stock_aplicado"])
+        producto.stock = (producto.stock or 0) + int(linea.cantidad)
+        producto.precio_compra = linea.precio_unitario  # último costo
 
-#  
+        # Recalcular mínimo de reposición (nunca baja)
+        fijar_minimo_por_reposicion(producto)
+
+        producto.save(update_fields=["stock", "precio_compra", "stock_minimo"])
+
+
+#  =========================================================================================================================================
+
+
+
 @transaction.atomic
 def reconciliar_stock_tras_editar_compra(compra: Compra,lineas_previas: Dict[int, Tuple[int, Decimal]],) -> None:
     """

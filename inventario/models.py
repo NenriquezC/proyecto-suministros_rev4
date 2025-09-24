@@ -2,7 +2,7 @@ from decimal import Decimal
 from django.db import models
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
-
+#============================================================================================================================================
 class Categoria(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
 
@@ -12,7 +12,7 @@ class Categoria(models.Model):
     def __str__(self):
         return self.nombre
 
-
+#============================================================================================================================================
 class Proveedor(models.Model):
     nombre = models.CharField(max_length=150)
     direccion = models.CharField(max_length=255)
@@ -24,7 +24,7 @@ class Proveedor(models.Model):
     )
     #rubro = models.CharField(max_length=100, blank=True)
     creado_en = models.DateTimeField(auto_now_add=True)
-
+    #---------------------------------------------------------------------------------------------------------------------------------------------
     class Meta:
         ordering = ['nombre']
         # Si quieres evitar duplicados exactos:
@@ -35,12 +35,11 @@ class Proveedor(models.Model):
     def __str__(self):
         return self.nombre
 
-
+#============================================================================================================================================
 class Producto(models.Model):
     nombre = models.CharField(max_length=150)
     descripcion = models.TextField(blank=True)
-    precio_compra = models.DecimalField(max_digits=12, decimal_places=2,
-                                        validators=[MinValueValidator(Decimal('0'))])
+    precio_compra = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0'))])
     stock = models.PositiveIntegerField()
     stock_minimo = models.PositiveIntegerField(blank=True, null=True)
     proveedor = models.ForeignKey('Proveedor', on_delete=models.PROTECT, related_name='productos')
@@ -53,7 +52,7 @@ class Producto(models.Model):
         help_text="Porcentaje de ganancia sobre el precio de compra (ej: 20.00 para 20%)"
     )
     creado_en = models.DateTimeField(auto_now_add=True)
-
+    #---------------------------------------------------------------------------------------------------------------------------------------------
     class Meta:
         ordering = ['nombre']
         indexes = [
@@ -63,13 +62,13 @@ class Producto(models.Model):
         constraints = [
             models.CheckConstraint(check=models.Q(precio_compra__gte=0), name='precio_compra_gte_0'),
         ]
-
+    #---------------------------------------------------------------------------------------------------------------------------------------------
     def save(self, *args, **kwargs):
         # al crearlo, define stock mínimo como 90% del stock inicial si no está seteado
         if not self.pk and self.stock is not None and self.stock_minimo is None:
             self.stock_minimo = int(self.stock * 0.9)
-        super().save(*args, **kwargs)
-
+        super().save(*args, **kwargs) #Llama a super().save(*args, **kwargs) para ejecutar el método save original de Django y guardar el objeto en la base de datos.
+    #---------------------------------------------------------------------------------------------------------------------------------------------
     @property
     def precio_venta(self):
         # precio_compra * (1 + ganancia/100)
@@ -77,3 +76,4 @@ class Producto(models.Model):
 
     def __str__(self):
         return self.nombre
+#============================================================================================================================================

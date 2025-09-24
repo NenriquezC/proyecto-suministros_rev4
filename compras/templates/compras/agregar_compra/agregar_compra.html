@@ -65,14 +65,31 @@
 
     {# ======= PRODUCTOS + TOTALES (dentro de la misma card como en tu versión) ======= #}
     <div class="card mb-3">
-    <div class="card-header card-header--flex">
-        <h2 class="card-title">Productos de la compra</h2>
-        <button type="button" class="btn btn-outline" id="btn-add-row">+ Agregar línea</button>
-    </div>
-    <div class="card-body">
-        {% include "compras/agregar_compra/partials/_agregar_compra_lineas.html" with formset=formset %}
-        {% include "compras/agregar_compra/partials/_agregar_compra_totales.html" %}
-    </div>
+    <!--Seccion del titulo de productos de la compra mas el boton de agregar linea-->
+        <div class="card-header card-header--flex"> 
+            <h2 class="card-title">Productos de la compra</h2>
+
+            <div class="d-flex align-items-center" style="gap: 8px;">
+            <!-- Botón: Nuevo producto (abre crear_producto) -->
+            <a
+            href="{% url 'inventario:agregar_producto' %}?next={% url 'compras:agregar_compra' %}"
+            class="btn btn-outline"
+            target="_blank" rel="noopener"
+            id="btn-crear-nuevo-producto"
+            >
+            + Nuevo producto
+            </a>
+        <!-- Botón: Agregar línea -->
+            <button type="button" class="btn btn-outline" id="btn-add-row">+ Agregar línea</button>
+        
+            
+            </div>
+        </div>
+        
+        <div class="card-body">
+            {% include "compras/agregar_compra/partials/_agregar_compra_lineas.html" with formset=formset %}
+            {% include "compras/agregar_compra/partials/_agregar_compra_totales.html" %}
+        </div>
     </div>
 
     {# ======= ACCIONES ======= #}

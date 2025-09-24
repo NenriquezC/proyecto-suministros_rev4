@@ -1,0 +1,119 @@
+{# Datos principales del producto #}
+<div class="card mb-3">
+<div class="card-header">
+    <h2 class="card-title">Datos del producto</h2>
+</div>
+<div class="card-body">
+    <div class="form-rows-2col">
+
+    {# Nombre #}
+    <label class="form-label-left" for="{{ form.nombre.id_for_label }}">
+        Nombre <span class="req">*</span>
+    </label>
+    <div class="form-field">
+        {{ form.nombre }}
+    </div>
+    {% if form.nombre.errors %}
+        <div></div>
+        <div class="invalid-feedback d-block">{{ form.nombre.errors|striptags }}</div>
+    {% endif %}
+
+    {# Descripción #}
+    {% if form.descripcion %}
+        <label class="form-label-left" for="{{ form.descripcion.id_for_label }}">Descripción</label>
+        <div class="form-field">
+        {{ form.descripcion }}
+        </div>
+        {% if form.descripcion.errors %}
+        <div></div>
+        <div class="invalid-feedback d-block">{{ form.descripcion.errors|striptags }}</div>
+        {% endif %}
+    {% endif %}
+
+
+
+    {# Categoría #}
+    {% if form.categoria %}
+        <label class="form-label-left" for="{{ form.categoria.id_for_label }}">Categoría</label>
+        <div class="form-field">
+        {{ form.categoria }}
+        </div>
+        {% if form.categoria.errors %}
+        <div></div>
+        <div class="invalid-feedback d-block">{{ form.categoria.errors|striptags }}</div>
+        {% endif %}
+    {% endif %}
+
+    {# Precio base de compra (opcional) #}
+    {% if form.precio_compra %}
+        <label class="form-label-left" for="{{ form.precio_compra.id_for_label }}">Precio compra (p.unitario)</label>
+        <div class="form-field">
+        {{ form.precio_compra }}
+        </div>
+        {% if form.precio_compra.errors %}
+        <div></div>
+        <div class="invalid-feedback d-block">{{ form.precio_compra.errors|striptags }}</div>
+        {% endif %}
+    {% endif %}
+
+    {# Precio de venta (opcional) #}
+    {% if form.precio_venta %}
+        <label class="form-label-left" for="{{ form.precio_venta.id_for_label }}">Precio venta</label>
+        <div class="form-field">
+        {{ form.precio_venta }}
+        </div>
+        {% if form.precio_venta.errors %}
+        <div></div>
+        <div class="invalid-feedback d-block">{{ form.precio_venta.errors|striptags }}</div>
+        {% endif %}
+    {% endif %}
+
+    {# Stock inicial (opcional) #}
+    {% if form.stock %}
+        <label class="form-label-left" for="{{ form.stock.id_for_label }}">Cantidad (Stock)</label>
+        <div class="form-field">
+        {{ form.stock }}
+        </div>
+        {% if form.stock.errors %}
+        <div></div>
+        <div class="invalid-feedback d-block">{{ form.stock.errors|striptags }}</div>
+        {% endif %}
+    {% endif %}
+
+    {# Stock minimo #}
+    {% if form.stock_minimo %}
+        <label class="form-label-left" for="{{ form.stock_minimo.id_for_label }}">Stock mínimo</label>
+        <div class="form-field">
+        {{ form.stock_minimo }}
+        </div>
+        {% if form.stock_minimo.errors %}
+        <div></div>
+        <div class="invalid-feedback d-block">{{ form.stock_minimo.errors|striptags }}</div>
+        {% endif %}
+    {% endif %}
+
+
+    {# ganancia #}
+    {% if form.ganancia %}
+        <label class="form-label-left" for="{{ form.ganancia.id_for_label }}">Ganancia (%)</label>
+        <div class="form-field">
+        {{ form.ganancia }}
+        </div>
+        {% if form.ganancia.errors %}
+        <div></div>
+        <div class="invalid-feedback d-block">{{ form.ganancia.errors|striptags }}</div>
+        {% endif %}
+    {% endif %}
+
+    
+
+    </div>
+
+    {# Errores no de campo #}
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger mt-3">
+        {{ form.non_field_errors|striptags }}
+    </div>
+    {% endif %}
+</div>
+</div>

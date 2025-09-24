@@ -1,0 +1,58 @@
+{# Tabla de líneas/variantes (formset opcional) #}
+{% if formset %}
+  {{ formset.management_form }}
+  {% if formset.non_form_errors %}
+    <div class="alert alert-danger">{{ formset.non_form_errors|striptags }}</div>
+  {% endif %}
+
+  <div class="table-responsive">
+    <table class="table table-sm" id="line-items-table" data-formset-prefix="{{ formset.prefix }}">
+      <thead>
+        <tr>
+          {# Encabezados dinámicos con fallback si no hay forms #}
+          {% if formset.forms %}
+            {% for bf in formset.forms.0.visible_fields %}
+              <th>{{ bf.label }}</th>
+            {% endfor %}
+            <th class="text-center">Acciones</th>
+          {% else %}
+            <th>Atributo</th>
+            <th>Valor</th>
+            <th>Acciones</th>
+        {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for formlinea in formset.forms %}
+        <tr class="line-row">
+            {% for bf in formlinea.visible_fields %}
+            <td>{{ bf }}</td>
+            {% endfor %}
+            <td class="text-center">
+            <button type="button" class="btn btn-sm btn-outline remove-row">Quitar</button>
+            </td>
+            {# Hidden fields del formset #}
+            {% for hf in formlinea.hidden_fields %}{{ hf }}{% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+</div>
+
+{# Template de fila vacía para clonado #}
+<template id="empty-form-template">
+    <tr class="line-row">
+    {% with ef=formset.empty_form %}
+        {% for bf in ef.visible_fields %}
+        <td>{{ bf }}</td>
+        {% endfor %}
+        <td class="text-center">
+        <button type="button" class="btn btn-sm btn-outline remove-row">Quitar</button>
+        </td>
+        {% for hf in ef.hidden_fields %}{{ hf }}{% endfor %}
+    {% endwith %}
+    </tr>
+</template>
+{% else %}
+<p class="text-muted mb-0">No hay líneas configuradas para este producto.</p>
+{% endif %}

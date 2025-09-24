@@ -475,6 +475,22 @@
         "documentation": {}
     },
     {
+        "label": "Q",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "F",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
         "label": "Producto",
         "importPath": "inventario.models",
         "description": "inventario.models",
@@ -632,6 +648,14 @@
         "description": "django.shortcuts",
         "isExtraImport": true,
         "detail": "django.shortcuts",
+        "documentation": {}
+    },
+    {
+        "label": "Paginator",
+        "importPath": "django.core.paginator",
+        "description": "django.core.paginator",
+        "isExtraImport": true,
+        "detail": "django.core.paginator",
         "documentation": {}
     },
     {
@@ -885,6 +909,15 @@
         "documentation": {}
     },
     {
+        "label": "fijar_minimo_por_reposicion",
+        "kind": 2,
+        "importPath": "compras.services",
+        "description": "compras.services",
+        "peekOfCode": "def fijar_minimo_por_reposicion(producto) -> None:\n    \"\"\"\n    Sube el stock_minimo si la reposición lo amerita.\n    Nunca lo baja.\n    \"\"\"\n    stock_total = int(producto.stock or 0)\n    minimo_candidato = int(stock_total * 0.90)\n    minimo_actual = int(producto.stock_minimo or 0)\n    if minimo_candidato > minimo_actual:\n        producto.stock_minimo = minimo_candidato",
+        "detail": "compras.services",
+        "documentation": {}
+    },
+    {
         "label": "aplicar_stock_despues_de_crear_compra",
         "kind": 2,
         "importPath": "compras.services",
@@ -1033,7 +1066,16 @@
         "kind": 6,
         "importPath": "inventario.forms",
         "description": "inventario.forms",
-        "peekOfCode": "class ProveedorForm(forms.ModelForm):\n    class Meta:\n        model = Proveedor\n        fields = \"__all__\"  # así no nos casamos con un set fijo de campos",
+        "peekOfCode": "class ProveedorForm(forms.ModelForm):\n    class Meta:\n        model = Proveedor\n        fields = \"__all__\"\nclass ProductoForm(forms.ModelForm):\n    class Meta:\n        model = Producto\n        # Temporalmente incluimos todo para que no falle por un campo mal referenciado.\n        fields = \"__all__\"\n        # IMPORTANTE: no pongas aquí labels/help_texts/widgets con claves inexistentes.",
+        "detail": "inventario.forms",
+        "documentation": {}
+    },
+    {
+        "label": "ProductoForm",
+        "kind": 6,
+        "importPath": "inventario.forms",
+        "description": "inventario.forms",
+        "peekOfCode": "class ProductoForm(forms.ModelForm):\n    class Meta:\n        model = Producto\n        # Temporalmente incluimos todo para que no falle por un campo mal referenciado.\n        fields = \"__all__\"\n        # IMPORTANTE: no pongas aquí labels/help_texts/widgets con claves inexistentes.\n        widgets = {\n            \"nombre\": forms.TextInput(attrs={\"placeholder\": \"Ej: Papel A4 80g\"}),\n            \"descripcion\": forms.Textarea(attrs={\"rows\": 3, \"placeholder\": \"Detalle opcional\"}),\n        }",
         "detail": "inventario.forms",
         "documentation": {}
     },
@@ -1042,7 +1084,7 @@
         "kind": 6,
         "importPath": "inventario.models",
         "description": "inventario.models",
-        "peekOfCode": "class Categoria(models.Model):\n    nombre = models.CharField(max_length=100, unique=True)\n    class Meta:\n        ordering = ['nombre']\n    def __str__(self):\n        return self.nombre\nclass Proveedor(models.Model):\n    nombre = models.CharField(max_length=150)\n    direccion = models.CharField(max_length=255)\n    telefono = models.CharField(max_length=20)",
+        "peekOfCode": "class Categoria(models.Model):\n    nombre = models.CharField(max_length=100, unique=True)\n    class Meta:\n        ordering = ['nombre']\n    def __str__(self):\n        return self.nombre\n#============================================================================================================================================\nclass Proveedor(models.Model):\n    nombre = models.CharField(max_length=150)\n    direccion = models.CharField(max_length=255)",
         "detail": "inventario.models",
         "documentation": {}
     },
@@ -1060,7 +1102,7 @@
         "kind": 6,
         "importPath": "inventario.models",
         "description": "inventario.models",
-        "peekOfCode": "class Producto(models.Model):\n    nombre = models.CharField(max_length=150)\n    descripcion = models.TextField(blank=True)\n    precio_compra = models.DecimalField(max_digits=12, decimal_places=2,\n                                        validators=[MinValueValidator(Decimal('0'))])\n    stock = models.PositiveIntegerField()\n    stock_minimo = models.PositiveIntegerField(blank=True, null=True)\n    proveedor = models.ForeignKey('Proveedor', on_delete=models.PROTECT, related_name='productos')\n    categoria = models.ForeignKey('Categoria', on_delete=models.PROTECT, related_name='productos')\n    ganancia = models.DecimalField(",
+        "peekOfCode": "class Producto(models.Model):\n    nombre = models.CharField(max_length=150)\n    descripcion = models.TextField(blank=True)\n    precio_compra = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0'))])\n    stock = models.PositiveIntegerField()\n    stock_minimo = models.PositiveIntegerField(blank=True, null=True)\n    proveedor = models.ForeignKey('Proveedor', on_delete=models.PROTECT, related_name='productos')\n    categoria = models.ForeignKey('Categoria', on_delete=models.PROTECT, related_name='productos')\n    ganancia = models.DecimalField(\n        max_digits=5,",
         "detail": "inventario.models",
         "documentation": {}
     },
@@ -1069,7 +1111,7 @@
         "kind": 5,
         "importPath": "inventario.urls",
         "description": "inventario.urls",
-        "peekOfCode": "app_name = \"inventario\"\nurlpatterns = [\n    #path('', views.index, name='index'),\n    #path('', views.inicio, name='inicio'),\n    #path('inventario/', views.inventario, name='inventario'),\n    # PRODUCTOS\n    #path('agregar_producto/', views.agregar_producto, name='agregar_producto'), #para poder agreasr producto desde compra\n    #path('producto/agregar/', views.agregar_producto, name='agregar_producto'),\n    #path('producto/seleccionar_editar/', views.seleccionar_editar_producto, name='seleccionar_editar_producto'),\n    #path('producto/editar/<int:pk>/', views.editar_producto, name='editar_producto'),",
+        "peekOfCode": "app_name = \"inventario\"\nurlpatterns = [\n    path(\"\", views.inventario, name=\"inventario\"),\n    path(\"producto/\", views.listar_productos, name=\"listar_productos\"),\n    path(\"producto/agregar/\", views.agregar_producto, name=\"agregar_producto\"),\n    path(\"producto/editar/<int:pk>/\", views.editar_producto, name=\"editar_producto\"),\n    path(\"producto/eliminar/<int:pk>/\", views.eliminar_producto, name=\"eliminar_producto\"),\n    #path(\"producto/nuevo/\", views.producto_crear, name=\"producto_crear\"),  # ← NUEVO (creación rápida con ?next)\n    path(\"proveedores/nuevo/\", views.proveedor_crear, name=\"proveedor_crear\"),\n    path(\"api/producto/<int:pk>/precio/\", views.producto_precio_api, name=\"producto_precio\"),",
         "detail": "inventario.urls",
         "documentation": {}
     },
@@ -1078,7 +1120,7 @@
         "kind": 5,
         "importPath": "inventario.urls",
         "description": "inventario.urls",
-        "peekOfCode": "urlpatterns = [\n    #path('', views.index, name='index'),\n    #path('', views.inicio, name='inicio'),\n    #path('inventario/', views.inventario, name='inventario'),\n    # PRODUCTOS\n    #path('agregar_producto/', views.agregar_producto, name='agregar_producto'), #para poder agreasr producto desde compra\n    #path('producto/agregar/', views.agregar_producto, name='agregar_producto'),\n    #path('producto/seleccionar_editar/', views.seleccionar_editar_producto, name='seleccionar_editar_producto'),\n    #path('producto/editar/<int:pk>/', views.editar_producto, name='editar_producto'),\n    #path('productos/seleccionar_eliminar/', views.seleccionar_eliminar_producto, name='seleccionar_eliminar_producto'),",
+        "peekOfCode": "urlpatterns = [\n    path(\"\", views.inventario, name=\"inventario\"),\n    path(\"producto/\", views.listar_productos, name=\"listar_productos\"),\n    path(\"producto/agregar/\", views.agregar_producto, name=\"agregar_producto\"),\n    path(\"producto/editar/<int:pk>/\", views.editar_producto, name=\"editar_producto\"),\n    path(\"producto/eliminar/<int:pk>/\", views.eliminar_producto, name=\"eliminar_producto\"),\n    #path(\"producto/nuevo/\", views.producto_crear, name=\"producto_crear\"),  # ← NUEVO (creación rápida con ?next)\n    path(\"proveedores/nuevo/\", views.proveedor_crear, name=\"proveedor_crear\"),\n    path(\"api/producto/<int:pk>/precio/\", views.producto_precio_api, name=\"producto_precio\"),\n]",
         "detail": "inventario.urls",
         "documentation": {}
     },
@@ -1096,7 +1138,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def inventario(request):\n    return HttpResponse(\"Inventario OK\")  # placeholder temporal\ndef listar_productos(request):\n    return HttpResponse(\"Listado de productos (placeholder)\")\n# Si también tienes estas rutas en urls.py, crea sus placeholders ya:\ndef listar_proveedores(request):\n    return HttpResponse(\"Listado de proveedores (placeholder)\")\ndef crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef agregar_producto(request):",
+        "peekOfCode": "def inventario(request):\n    return HttpResponse(\"Inventario OK\")  # placeholder temporal\n@login_required\n@permission_required(\"inventario.view_producto\", raise_exception=True)\ndef listar_productos(request):\n    qs = Producto.objects.select_related(\"proveedor\", \"categoria\").order_by(\"nombre\")\n    paginator = Paginator(qs, 20)\n    page_number = request.GET.get(\"page\")\n    page_obj = paginator.get_page(page_number)\n    # Paso variables amplias para no romper tus templates:",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1105,7 +1147,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def listar_productos(request):\n    return HttpResponse(\"Listado de productos (placeholder)\")\n# Si también tienes estas rutas en urls.py, crea sus placeholders ya:\ndef listar_proveedores(request):\n    return HttpResponse(\"Listado de proveedores (placeholder)\")\ndef crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef agregar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef editar_producto(request, pk):",
+        "peekOfCode": "def listar_productos(request):\n    qs = Producto.objects.select_related(\"proveedor\", \"categoria\").order_by(\"nombre\")\n    paginator = Paginator(qs, 20)\n    page_number = request.GET.get(\"page\")\n    page_obj = paginator.get_page(page_number)\n    # Paso variables amplias para no romper tus templates:\n    context = {\n        \"page_obj\": page_obj,\n        \"object_list\": page_obj.object_list,\n        \"productos\": page_obj.object_list,  # por si el template usa este nombre",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1114,7 +1156,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def listar_proveedores(request):\n    return HttpResponse(\"Listado de proveedores (placeholder)\")\ndef crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef agregar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef editar_producto(request, pk):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef eliminar_producto(request, pk):\n    return HttpResponse(\"Crear producto (placeholder)\")",
+        "peekOfCode": "def listar_proveedores(request):\n    return HttpResponse(\"Listado de proveedores (placeholder)\")\ndef crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef agregar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\n#---------------------------------------------------------------------------------------------------------------------------\n@login_required\n@permission_required(\"inventario.add_producto\", raise_exception=True)\ndef agregar_producto(request):",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1123,7 +1165,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef agregar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef editar_producto(request, pk):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef eliminar_producto(request, pk):\n    return HttpResponse(\"Crear producto (placeholder)\")\n#inventario/views.py----------------------------------------------------------------------------\n#Qué: crear una vista GET que responda {\"id\":…, \"nombre\":…, \"precio_unitario\": …}.",
+        "peekOfCode": "def crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef agregar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\n#---------------------------------------------------------------------------------------------------------------------------\n@login_required\n@permission_required(\"inventario.add_producto\", raise_exception=True)\ndef agregar_producto(request):\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST)",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1132,7 +1174,16 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def agregar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef editar_producto(request, pk):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef eliminar_producto(request, pk):\n    return HttpResponse(\"Crear producto (placeholder)\")\n#inventario/views.py----------------------------------------------------------------------------\n#Qué: crear una vista GET que responda {\"id\":…, \"nombre\":…, \"precio_unitario\": …}.\n#Por qué: el front pedirá “¿cuál es el precio del producto X?” y rellenará el input.\n@require_GET",
+        "peekOfCode": "def agregar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\n#---------------------------------------------------------------------------------------------------------------------------\n@login_required\n@permission_required(\"inventario.add_producto\", raise_exception=True)\ndef agregar_producto(request):\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST)\n        if form.is_valid():\n            prod = form.save()",
+        "detail": "inventario.views",
+        "documentation": {}
+    },
+    {
+        "label": "agregar_producto",
+        "kind": 2,
+        "importPath": "inventario.views",
+        "description": "inventario.views",
+        "peekOfCode": "def agregar_producto(request):\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST)\n        if form.is_valid():\n            prod = form.save()\n            messages.success(request, f'Producto \"{prod}\" creado correctamente.')\n            # Redirige a la lista (si prefieres otra, me dices)\n            return redirect(reverse(\"inventario:listar_productos\"))\n    else:\n        form = ProductoForm()",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1141,7 +1192,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def editar_producto(request, pk):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef eliminar_producto(request, pk):\n    return HttpResponse(\"Crear producto (placeholder)\")\n#inventario/views.py----------------------------------------------------------------------------\n#Qué: crear una vista GET que responda {\"id\":…, \"nombre\":…, \"precio_unitario\": …}.\n#Por qué: el front pedirá “¿cuál es el precio del producto X?” y rellenará el input.\n@require_GET\ndef producto_precio_api(request, pk):\n    \"\"\"",
+        "peekOfCode": "def editar_producto(request, pk):\n    prod = get_object_or_404(Producto, pk=pk)\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST, instance=prod)\n        if form.is_valid():\n            prod = form.save()\n            messages.success(request, f'Producto \"{prod}\" actualizado.')\n            return redirect(reverse(\"inventario:listar_productos\"))\n    else:\n        form = ProductoForm(instance=prod)",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1150,7 +1201,16 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def eliminar_producto(request, pk):\n    return HttpResponse(\"Crear producto (placeholder)\")\n#inventario/views.py----------------------------------------------------------------------------\n#Qué: crear una vista GET que responda {\"id\":…, \"nombre\":…, \"precio_unitario\": …}.\n#Por qué: el front pedirá “¿cuál es el precio del producto X?” y rellenará el input.\n@require_GET\ndef producto_precio_api(request, pk):\n    \"\"\"\n    Devuelve info mínima del producto en JSON.\n    Respuesta: {id, nombre, precio_unitario}",
+        "peekOfCode": "def eliminar_producto(request, pk):\n    prod = get_object_or_404(Producto, pk=pk)\n    if request.method == \"POST\":\n        nombre = str(prod)\n        prod.delete()\n        messages.success(request, f'Producto \"{nombre}\" eliminado.')\n        return redirect(reverse(\"inventario:listar_productos\"))\n    # Confirmación (según tu árbol: eliminar_confirm_lista.html)\n    return render(\n        request,",
+        "detail": "inventario.views",
+        "documentation": {}
+    },
+    {
+        "label": "listar_productos",
+        "kind": 2,
+        "importPath": "inventario.views",
+        "description": "inventario.views",
+        "peekOfCode": "def listar_productos(request):\n    # Base query\n    productos_qs = (\n        Producto.objects\n        .select_related(\"proveedor\", \"categoria\")\n        .order_by(\"nombre\")\n    )\n    # --- Filtros ---\n    texto_busqueda = request.GET.get(\"q\", \"\").strip()\n    categoria_id = request.GET.get(\"categoria\") or \"\"",
         "detail": "inventario.views",
         "documentation": {}
     },
