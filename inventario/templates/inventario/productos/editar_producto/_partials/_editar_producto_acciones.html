@@ -1,12 +1,11 @@
-<div class="card mb-3">
-<div class="card-body card-actions">
-    {# Cancelar: si hay ?next=..., volver ahí; si no, al listado de compras #}
-    {% url 'compras:ver_compras' as compras_list_url %}
-    <a href="{% firstof request.GET.next compras_list_url %}" class="btn btn-outline">
-    Cancelar
-    </a>
-    <button type="submit" class="btn-main">
-    <i class="fa fa-save"></i> Guardar proveedor
-    </button>
-</div>
+{# Botonera de acciones en editar/ver producto. Respeta el modo readonly #}
+<div class="acciones-form" style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+  {% if readonly %}
+    <a href="{% url 'inventario:editar_producto' producto.pk %}" class="btn btn-main">Editar</a>
+    <a href="{% url 'inventario:listar_productos' %}" class="btn btn-sec">Volver a la lista</a>
+  {% else %}
+    <button type="submit" class="btn btn-main">Guardar cambios</button>
+    <a href="{% url 'inventario:ver_producto' producto.pk %}" class="btn btn-sec">Ver (solo lectura)</a>
+    <a href="{% url 'inventario:listar_productos' %}" class="btn btn-sec">Volver a la lista</a>
+  {% endif %}
 </div>

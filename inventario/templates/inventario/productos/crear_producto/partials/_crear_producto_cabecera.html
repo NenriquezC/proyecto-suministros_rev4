@@ -44,6 +44,20 @@
         {% endif %}
     {% endif %}
 
+    {# Proveedor (obligatorio) #}
+    {% if form.proveedor %}
+    <label class="form-label-left" for="{{ form.proveedor.id_for_label }}">Proveedor <span class="req">*</span></label>
+    <div class="form-field">
+        {{ form.proveedor }}
+    </div>
+    {% if form.proveedor.errors %}
+    <div></div>
+    <div class="invalid-feedback d-block">{{ form.proveedor.errors|striptags }}</div>
+    {% endif %}
+{% endif %}
+
+
+
     {# Precio base de compra (opcional) #}
     {% if form.precio_compra %}
         <label class="form-label-left" for="{{ form.precio_compra.id_for_label }}">Precio compra (p.unitario)</label>

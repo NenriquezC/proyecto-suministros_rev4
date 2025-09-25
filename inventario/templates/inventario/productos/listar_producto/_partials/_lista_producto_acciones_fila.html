@@ -1,5 +1,22 @@
-<!--Botones/acciones de filas-->
-<a title="Ver" href="#"><i class="fa fa-eye"></i></a>
-<a title="Editar" href="#"><i class="fa fa-edit"></i></a>
-<a title="Eliminar" href="#" style="color:#ef4565;"><i class="fa fa-trash"></i></a>
-{#<a href="{% url 'compras:detalle' compra.id %}" class="btn-icon" title="Ver">👁️</a>#}
+{# Botones/acciones de fila (clon de compras) #}
+
+
+
+<a title="Ver" href="{% url 'inventario:ver_producto' producto.id %}"><i class="fa fa-eye"></i></a>
+<a title="Editar" href="{% url 'inventario:editar_producto' producto.id %}"><i class="fa fa-edit"></i></a>
+<a title="Eliminar" href="{% url 'inventario:eliminar_producto' producto.id %}" style="color:#ef4565;"><i class="fa fa-trash"></i></a>
+
+<!--
+{# Acciones por fila de producto #}
+<div class="tabla-acciones d-flex gap-2 justify-content-end">
+  <a title="Ver" href="{% url 'inventario:ver_producto' producto.pk %}" class="btn btn-sm btn-outline-secondary">
+    <i class="fa fa-eye"></i>
+  </a>
+  <a title="Editar" href="{% url 'inventario:editar_producto' producto.pk %}" class="btn btn-sm btn-outline-primary">
+    <i class="fa fa-edit"></i>
+  </a>
+  <a title="Eliminar" href="{% url 'inventario:eliminar_producto' producto.pk %}" class="btn btn-sm btn-danger">
+    <i class="fa fa-trash"></i>
+  </a>
+</div>
+-->

@@ -237,8 +237,10 @@ def ver_compra(request, pk):
 #def detalle_compra(request, pk):
 #    compra = get_object_or_404(Compra.objects.select_related("proveedor"), pk=pk)
 #    return render(request, "compras/detalle.html", {"compra": compra})
-def detalle_compra(request, pk):
+def detalle_compra(request, pk): #recibe request y la clave primario PK de la compra que quiero mostrar
     """
+    Docstring explicativa: deja claro que esto es un detalle en solo lectura reutilizando la vista/plantilla de edición. 
+    También documenta parámetros y qué devuelve. (Gracias, “yo del futuro” lo aprecia.)
     Detalle de Compra en modo solo lectura, reusando la plantilla de edición.
     (Equivalente a ver_compra; se mantiene por compatibilidad semántica/URLs)
 
@@ -249,23 +251,34 @@ def detalle_compra(request, pk):
         HttpResponse con la plantilla 'compras/editar_compra/editar_compra.html'
         y {'compra', 'form', 'formset', 'readonly': True}.
     """
-    
+    #Busca la instancia de Compra con esa pk.
+    #Si no existe, lanza 404 automáticamente (no hay que escribir try/except).
     compra = get_object_or_404(Compra, pk=pk)
 
 
     # Form de cabecera deshabilitado
+    # Construye el formulario de cabecera (CompraForm) enlazado a la compra (instance=compra).
+    #Ojo: como no es un POST, el form está no ligado (“unbound”) pero con valores iniciales de la instancia.
     form = CompraForm(instance=compra)
     for f in form.fields.values():
         f.disabled = True
 
     # Formset de líneas deshabilitado
     formset = CompraProductoFormSet(instance=compra)
-    for frm in formset.forms:
-        for f in frm.fields.values():
-            f.disabled = True
-    formset.can_delete = False  # por si tu template lo mira
+    for frm in formset.forms: #Recorre todos los campos del form y los marca disabled. el navegador los muestra no editables y no se envían en un submit (importante: disabled ≠ readonly; disabled ni siquiera viaja en POST).
+        for f in frm.fields.values(): #Construye el formset de líneas
+            f.disabled = True #Para cada form de línea, deshabilita todos sus campos. Resultado: todas las filas quedan de solo lectura en el navegador.
+    formset.can_delete = False # Apaga el flag can_delete para que, si tu template muestra un checkbox/botón de “eliminar línea”, no aparezca.
 
     # Bandera para ocultar botones/JS de edición en los parciales
+    #Renderiza la plantilla compras/editar_compra/editar_compra.html.
+    #Pasa el contexto:
+    #compra: la instancia (para mostrar metadatos, ids, etc.).
+    #form: el form de cabecera (ya disabled).
+    #formset: las líneas (ya disabled).
+    #readonly=True: bandera que tus partials pueden usar para ocultar botones de Guardar/Agregar/Quitar y no cargar JS de edición.
+    #Devuelve el HttpResponse con todo eso.
+
     return render(
         request,
         "compras/editar_compra/editar_compra.html",

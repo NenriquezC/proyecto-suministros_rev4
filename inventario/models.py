@@ -59,14 +59,48 @@ class Producto(models.Model):
             models.Index(fields=['categoria']),
             models.Index(fields=['proveedor']),
         ]
+        """
+        Buenísimo. Eso es un paquete de reglas a nivel de base de datos (DB) que Django traducirá a CHECK CONSTRAINTS en la tabla de Producto.
+        Se evalúan en cada INSERT/UPDATE. Si alguna no se cumple, la BD rechaza la operación (Django levanta IntegrityError). Una por una:
+        precio_compra_gte_0
+            Qué exige: precio_compra ≥ 0.
+            Evita: precios negativos por error (p. ej., -10.00).
+            Cuándo falla: crear/editar un producto con precio_compra < 0.
+        producto_stock_gte_0
+            Qué exige: stock ≥ 0.
+            Evita: stock negativo.
+            Cuándo falla: guardar stock = -1.
+        producto_stock_minimo_gte_0_or_null
+            Qué exige: stock_minimo ≥ 0 o stock_minimo IS NULL.
+            Evita: valores negativos en stock_minimo.
+            Permite: NULL cuando aún no has definido el mínimo (útil si lo calculas en save() al crear).
+        Cuándo falla: stock_minimo = -5.
+            producto_stock_minimo_lte_stock_or_null
+            Qué exige: stock_minimo ≤ stock o stock_minimo IS NULL.
+            Evita: mínimos imposibles (que el mínimo supere el stock actual).
+            Cuándo falla: stock = 20 y stock_minimo = 25.
+        """
         constraints = [
             models.CheckConstraint(check=models.Q(precio_compra__gte=0), name='precio_compra_gte_0'),
+            models.CheckConstraint(check=models.Q(stock__gte=0), name='producto_stock_gte_0'),
+            models.CheckConstraint(
+                check=models.Q(stock_minimo__gte=0) | models.Q(stock_minimo__isnull=True),
+                name='producto_stock_minimo_gte_0_or_null'
+                ),
+            models.CheckConstraint(
+                check=models.Q(stock_minimo__lte=models.F('stock')) | models.Q(stock_minimo__isnull=True),
+                name='producto_stock_minimo_lte_stock_or_null'
+                ),
         ]
     #---------------------------------------------------------------------------------------------------------------------------------------------
     def save(self, *args, **kwargs):
-        # al crearlo, define stock mínimo como 90% del stock inicial si no está seteado
+        """
+    Al crear el producto, si no se especifica stock_minimo,
+    fijarlo como floor(0.9 * stock).
+    """
         if not self.pk and self.stock is not None and self.stock_minimo is None:
-            self.stock_minimo = int(self.stock * 0.9)
+            # floor(0.9 * stock) con aritmética entera
+            self.stock_minimo = int(self.stock * 9) // 10 # = floor(0.9 * stock)
         super().save(*args, **kwargs) #Llama a super().save(*args, **kwargs) para ejecutar el método save original de Django y guardar el objeto en la base de datos.
     #---------------------------------------------------------------------------------------------------------------------------------------------
     @property

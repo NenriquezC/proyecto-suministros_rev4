@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Inventario · Eliminar #{{ producto.pk }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <h1 class="mb-3" style="color:#094067;">
+        Eliminar producto N°:{{ producto.pk }}
+    </h1>
+
+    <div class="alert alert-warning">
+        <strong>¿Estás seguro?</strong> Esta acción eliminará el producto.
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header" style="background:#3a5068;color:#fff;">Resumen</div>
+        <div class="card-body">
+        <p><b>Nombre:</b> {{ producto.nombre }}</p>
+        {% if producto.descripcion %}<p><b>Descripción:</b> {{ producto.descripcion }}</p>{% endif %}
+        <p><b>Categoría:</b> {{ producto.categoria }}</p>
+        <p><b>Proveedor:</b> {{ producto.proveedor }}</p>
+        <p><b>Precio compra:</b> {{ producto.precio_compra }}</p>
+        <p class="mb-0"><b>Precio venta:</b> {{ producto.precio_venta }}</p>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <a href="{% url 'inventario:listar_productos' %}" class="btn btn-outline-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-danger">Eliminar definitivamente</button>
+    </form>
+    </div>
+{% endblock %}

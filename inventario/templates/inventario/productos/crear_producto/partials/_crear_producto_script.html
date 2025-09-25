@@ -9,27 +9,29 @@
   }
 
   function updateResumenProducto() {
-    const pc = document.querySelector('[name$="precio_compra"]');
-    const pv = document.querySelector('[name$="precio_venta"]');
-    const st = document.querySelector('[name$="stock_inicial"]');
-    const ac = document.querySelector('[name$="activo"]');
+  const pc = document.querySelector('[name$="precio_compra"]'); // número
+  const gn = document.querySelector('[name$="ganancia"]');      // porcentaje
+  const st = document.querySelector('[name$="stock"]');
+  const ac = document.querySelector('[name$="activo"]');
 
-    const precioCompra = pc ? toNumber(pc.value) : 0;
-    const precioVenta  = pv ? toNumber(pv.value) : 0;
-    const margen = precioVenta - precioCompra;
+  const precioCompra = pc ? toNumber(pc.value) : 0;
+  const gananciaPct  = gn ? toNumber(gn.value) : 0;
 
-    const elPC = document.getElementById('resumen-precio-compra');
-    const elPV = document.getElementById('resumen-precio-venta');
-    const elMG = document.getElementById('resumen-margen');
-    const elST = document.getElementById('resumen-stock');
-    const elES = document.getElementById('resumen-estado');
+  // Cálculo en vivo (preview, no persiste):
+  const precioVentaCalc = precioCompra * (1 + (gananciaPct / 100));
+  const margenCalc      = precioVentaCalc - precioCompra;
 
-    if (elPC) elPC.textContent = precioCompra.toFixed(2);
-    if (elPV) elPV.textContent = precioVenta.toFixed(2);
-    if (elMG) elMG.textContent = margen.toFixed(2);
-    if (elST) elST.textContent = st ? (toNumber(st.value)).toString() : '0';
-    if (elES) elES.textContent = (ac && ac.checked) ? 'Activo' : 'Inactivo';
-  }
+  // Targets del resumen (ya existen en tu template)
+  const elPV = document.getElementById('resumen-precio-venta');
+  const elMG = document.getElementById('resumen-margen');
+  const elST = document.getElementById('resumen-stock');
+  const elES = document.getElementById('resumen-estado');
+
+  if (elPV) elPV.textContent = precioVentaCalc.toFixed(2);
+  if (elMG) elMG.textContent = margenCalc.toFixed(2);
+  if (elST) elST.textContent = st ? (toNumber(st.value)).toString() : '0';
+  if (elES) elES.textContent = (ac && ac.checked) ? 'Activo' : 'Inactivo';
+}
 
   // ===== Formset (opcional) =====
   const table = document.getElementById('line-items-table');
@@ -71,23 +73,66 @@
     reindexFormset();
     updateResumenProducto();
   }
+  
+  // FUNCIONES INGRESADAS DESPUES DE LA MIGRACION ++++++++++++++++++++++++++++++++++++
+  function computeStockMin(val){
+    const n = Math.max(0, Number(String(val).replace(/\./g,'').replace(',','.')) || 0);
+    return Math.floor(n * 0.90);
+  }
 
+  function maybeAutofillStockMinimo() {
+    const stockInput = document.querySelector('[name$="stock"]');
+    const minInput   = document.querySelector('[name$="stock_minimo"]');
+    if (!stockInput || !minInput) return;
+
+    const userEdited = minInput.dataset.userEdited === '1';
+    if (!userEdited && (minInput.value === '' || minInput.dataset.auto === '1')) {
+      minInput.value = String(computeStockMin(stockInput.value));
+      minInput.dataset.auto = '1';
+      }
+  }
+  
+  
   // Listeners
-  if (btnAdd) btnAdd.addEventListener('click', addRow);
-  if (table) table.addEventListener('click', removeRow);
-
   // Recalcular al escribir en campos clave
   document.addEventListener('input', (ev) => {
-    const name = ev.target.name || '';
-    if (name.endsWith('precio_compra') || name.endsWith('precio_venta') || name.endsWith('stock_inicial')) {
-      updateResumenProducto();
-    }
-  });
+  const name = ev.target.name || '';
 
-  // Primera pasada
+
+
+  // Actualiza el resumen cuando cambien estos campos
+  if (
+    name.endsWith('precio_compra') ||
+    name.endsWith('ganancia') ||          // ← AÑADIDO
+    name.endsWith('precio_venta') ||      // (puede quedar, no estorba)
+    name.endsWith('stock')
+  ) {
     updateResumenProducto();
+  }
+  // Recalcula 90% al cambiar stock (solo si sigue en modo auto)
+  if (name.endsWith('stock')) {
+    maybeAutofillStockMinimo();
+  }
+  // Si el usuario edita manualmente el stock_minimo, desactiva el modo auto
+  if (name.endsWith('stock_minimo')) {
+    ev.target.dataset.userEdited = '1';
+    ev.target.dataset.auto = '0';
+  }
+});
 
-  // Exponer para debug (temporal)
-    window.__producto_updateResumen = updateResumenProducto;
-})();
+  updateResumenProducto();
+
+(function initAutofill() {
+  const minInput = document.querySelector('[name$="stock_minimo"]');
+  if (minInput && (minInput.value === '' || minInput.value == null)) {
+    minInput.dataset.userEdited = '0';
+    minInput.dataset.auto = '1';
+    maybeAutofillStockMinimo();
+  }
+ })(); // <-- cierre de la IIFE
+
+// Exponer para debug (temporal)
+window.__producto_updateResumen = updateResumenProducto;
+
+})(); // <-- cierre de la IIFE principal
 </script>

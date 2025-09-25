@@ -155,6 +155,14 @@
         "documentation": {}
     },
     {
+        "label": "Decimal",
+        "importPath": "decimal",
+        "description": "decimal",
+        "isExtraImport": true,
+        "detail": "decimal",
+        "documentation": {}
+    },
+    {
         "label": "settings",
         "importPath": "django.conf",
         "description": "django.conf",
@@ -220,6 +228,22 @@
     },
     {
         "label": "transaction",
+        "importPath": "django.db",
+        "description": "django.db",
+        "isExtraImport": true,
+        "detail": "django.db",
+        "documentation": {}
+    },
+    {
+        "label": "migrations",
+        "importPath": "django.db",
+        "description": "django.db",
+        "isExtraImport": true,
+        "detail": "django.db",
+        "documentation": {}
+    },
+    {
+        "label": "models",
         "importPath": "django.db",
         "description": "django.db",
         "isExtraImport": true,
@@ -507,6 +531,22 @@
         "documentation": {}
     },
     {
+        "label": "Producto",
+        "importPath": "inventario.models",
+        "description": "inventario.models",
+        "isExtraImport": true,
+        "detail": "inventario.models",
+        "documentation": {}
+    },
+    {
+        "label": "Proveedor",
+        "importPath": "inventario.models",
+        "description": "inventario.models",
+        "isExtraImport": true,
+        "detail": "inventario.models",
+        "documentation": {}
+    },
+    {
         "label": "TestCase",
         "importPath": "django.test",
         "description": "django.test",
@@ -643,7 +683,15 @@
         "documentation": {}
     },
     {
-        "label": "redirect",
+        "label": "get_object_or_404",
+        "importPath": "django.shortcuts",
+        "description": "django.shortcuts",
+        "isExtraImport": true,
+        "detail": "django.shortcuts",
+        "documentation": {}
+    },
+    {
+        "label": "render",
         "importPath": "django.shortcuts",
         "description": "django.shortcuts",
         "isExtraImport": true,
@@ -740,11 +788,11 @@
         "documentation": {}
     },
     {
-        "label": "TemplateView",
-        "importPath": "django.views.generic",
-        "description": "django.views.generic",
+        "label": "Compra",
+        "importPath": "compras.models",
+        "description": "compras.models",
         "isExtraImport": true,
-        "detail": "django.views.generic",
+        "detail": "compras.models",
         "documentation": {}
     },
     {
@@ -994,7 +1042,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def detalle_compra(request, pk):\n    \"\"\"\n    Detalle de Compra en modo solo lectura, reusando la plantilla de edición.\n    (Equivalente a ver_compra; se mantiene por compatibilidad semántica/URLs)\n    Args:\n        pk (int): Identificador de Compra.\n    Returns:\n        HttpResponse con la plantilla 'compras/editar_compra/editar_compra.html'\n        y {'compra', 'form', 'formset', 'readonly': True}.\n    \"\"\"",
+        "peekOfCode": "def detalle_compra(request, pk): #recibe request y la clave primario PK de la compra que quiero mostrar\n    \"\"\"\n    Docstring explicativa: deja claro que esto es un detalle en solo lectura reutilizando la vista/plantilla de edición. \n    También documenta parámetros y qué devuelve. (Gracias, “yo del futuro” lo aprecia.)\n    Detalle de Compra en modo solo lectura, reusando la plantilla de edición.\n    (Equivalente a ver_compra; se mantiene por compatibilidad semántica/URLs)\n    Args:\n        pk (int): Identificador de Compra.\n    Returns:\n        HttpResponse con la plantilla 'compras/editar_compra/editar_compra.html'",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -1023,6 +1071,15 @@
         "description": "inventario.migrations.0001_initial",
         "peekOfCode": "class Migration(migrations.Migration):\n    initial = True\n    dependencies = [\n    ]\n    operations = [\n        migrations.CreateModel(\n            name='Categoria',\n            fields=[\n                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),\n                ('nombre', models.CharField(max_length=100, unique=True)),",
         "detail": "inventario.migrations.0001_initial",
+        "documentation": {}
+    },
+    {
+        "label": "Migration",
+        "kind": 6,
+        "importPath": "inventario.migrations.0002_producto_producto_stock_gte_0_and_more",
+        "description": "inventario.migrations.0002_producto_producto_stock_gte_0_and_more",
+        "peekOfCode": "class Migration(migrations.Migration):\n    dependencies = [\n        ('inventario', '0001_initial'),\n    ]\n    operations = [\n        migrations.AddConstraint(\n            model_name='producto',\n            constraint=models.CheckConstraint(condition=models.Q(('stock__gte', 0)), name='producto_stock_gte_0'),\n        ),\n        migrations.AddConstraint(",
+        "detail": "inventario.migrations.0002_producto_producto_stock_gte_0_and_more",
         "documentation": {}
     },
     {
@@ -1120,7 +1177,7 @@
         "kind": 5,
         "importPath": "inventario.urls",
         "description": "inventario.urls",
-        "peekOfCode": "urlpatterns = [\n    path(\"\", views.inventario, name=\"inventario\"),\n    path(\"producto/\", views.listar_productos, name=\"listar_productos\"),\n    path(\"producto/agregar/\", views.agregar_producto, name=\"agregar_producto\"),\n    path(\"producto/editar/<int:pk>/\", views.editar_producto, name=\"editar_producto\"),\n    path(\"producto/eliminar/<int:pk>/\", views.eliminar_producto, name=\"eliminar_producto\"),\n    #path(\"producto/nuevo/\", views.producto_crear, name=\"producto_crear\"),  # ← NUEVO (creación rápida con ?next)\n    path(\"proveedores/nuevo/\", views.proveedor_crear, name=\"proveedor_crear\"),\n    path(\"api/producto/<int:pk>/precio/\", views.producto_precio_api, name=\"producto_precio\"),\n]",
+        "peekOfCode": "urlpatterns = [\n    path(\"\", views.inventario, name=\"inventario\"),\n    path(\"producto/\", views.listar_productos, name=\"listar_productos\"),\n    path(\"producto/agregar/\", views.agregar_producto, name=\"agregar_producto\"),\n    path(\"producto/editar/<int:pk>/\", views.editar_producto, name=\"editar_producto\"),\n    path(\"producto/eliminar/<int:pk>/\", views.eliminar_producto, name=\"eliminar_producto\"),\n    #path(\"producto/nuevo/\", views.producto_crear, name=\"producto_crear\"),  # ← NUEVO (creación rápida con ?next)\n    path(\"proveedores/nuevo/\", views.proveedor_crear, name=\"proveedor_crear\"),\n    path(\"api/producto/<int:pk>/precio/\", views.producto_precio_api, name=\"producto_precio\"),\n    path(\"producto/ver/<int:pk>/\", views.ver_producto, name=\"ver_producto\"),",
         "detail": "inventario.urls",
         "documentation": {}
     },
@@ -1156,7 +1213,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def listar_proveedores(request):\n    return HttpResponse(\"Listado de proveedores (placeholder)\")\ndef crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef agregar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\n#---------------------------------------------------------------------------------------------------------------------------\n@login_required\n@permission_required(\"inventario.add_producto\", raise_exception=True)\ndef agregar_producto(request):",
+        "peekOfCode": "def listar_proveedores(request):\n    return HttpResponse(\"Listado de proveedores (placeholder)\")\ndef crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\n#---------------------------------------------------------------------------------------------------------------------------\n@login_required\n@permission_required(\"inventario.add_producto\", raise_exception=True)\ndef agregar_producto(request):\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST)",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1165,7 +1222,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\ndef agregar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\n#---------------------------------------------------------------------------------------------------------------------------\n@login_required\n@permission_required(\"inventario.add_producto\", raise_exception=True)\ndef agregar_producto(request):\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST)",
+        "peekOfCode": "def crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\n#---------------------------------------------------------------------------------------------------------------------------\n@login_required\n@permission_required(\"inventario.add_producto\", raise_exception=True)\ndef agregar_producto(request):\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST)\n        if form.is_valid():\n            prod = form.save()",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1174,16 +1231,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def agregar_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\n#---------------------------------------------------------------------------------------------------------------------------\n@login_required\n@permission_required(\"inventario.add_producto\", raise_exception=True)\ndef agregar_producto(request):\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST)\n        if form.is_valid():\n            prod = form.save()",
-        "detail": "inventario.views",
-        "documentation": {}
-    },
-    {
-        "label": "agregar_producto",
-        "kind": 2,
-        "importPath": "inventario.views",
-        "description": "inventario.views",
-        "peekOfCode": "def agregar_producto(request):\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST)\n        if form.is_valid():\n            prod = form.save()\n            messages.success(request, f'Producto \"{prod}\" creado correctamente.')\n            # Redirige a la lista (si prefieres otra, me dices)\n            return redirect(reverse(\"inventario:listar_productos\"))\n    else:\n        form = ProductoForm()",
+        "peekOfCode": "def agregar_producto(request):\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST)\n        if form.is_valid():\n            prod = form.save()\n            messages.success(request, f'Producto \"{prod}\" creado correctamente.')\n            # Redirige a la lista (si prefieres otra, me dices)\n            #return redirect(reverse(\"inventario:listar_productos\"))\n            return redirect(\"inventario:ver_producto\", pk=prod.pk)  # ← ver detalle readonly\n    else:",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1192,7 +1240,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def editar_producto(request, pk):\n    prod = get_object_or_404(Producto, pk=pk)\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST, instance=prod)\n        if form.is_valid():\n            prod = form.save()\n            messages.success(request, f'Producto \"{prod}\" actualizado.')\n            return redirect(reverse(\"inventario:listar_productos\"))\n    else:\n        form = ProductoForm(instance=prod)",
+        "peekOfCode": "def editar_producto(request, pk):\n    prod = get_object_or_404(Producto, pk=pk)\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST, instance=prod)\n        if form.is_valid():\n            prod = form.save()\n            messages.success(request, f'Producto \"{prod}\" Editado exitosamente') #mensaje de edicion exitosa\n            return redirect(\"inventario:ver_producto\", pk = prod.pk)\n    else:\n        form = ProductoForm(instance=prod)",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1202,6 +1250,15 @@
         "importPath": "inventario.views",
         "description": "inventario.views",
         "peekOfCode": "def eliminar_producto(request, pk):\n    prod = get_object_or_404(Producto, pk=pk)\n    if request.method == \"POST\":\n        nombre = str(prod)\n        prod.delete()\n        messages.success(request, f'Producto \"{nombre}\" eliminado.')\n        return redirect(reverse(\"inventario:listar_productos\"))\n    # Confirmación (según tu árbol: eliminar_confirm_lista.html)\n    return render(\n        request,",
+        "detail": "inventario.views",
+        "documentation": {}
+    },
+    {
+        "label": "ver_producto",
+        "kind": 2,
+        "importPath": "inventario.views",
+        "description": "inventario.views",
+        "peekOfCode": "def ver_producto(request, pk):\n    \"\"\"\n    Detalle SOLO LECTURA del producto.\n    Mantiene el mismo patrón visual que Compras (readonly).\n    \"\"\"\n    producto = get_object_or_404(Producto, pk=pk)\n    # Reusar un form deshabilitado mantiene estilos/partials si los usas\n    form = ProductoForm(instance=producto)\n    for f in form.fields.values():\n        f.disabled = True",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1399,8 +1456,17 @@
         "kind": 5,
         "importPath": "suministros.urls",
         "description": "suministros.urls",
-        "peekOfCode": "urlpatterns = [\n    path('admin/', admin.site.urls),\n    # incluye las urls de la app compras\n    #path('compras/', include('compras.urls', namespace='compras')),\n    path(\"compras/\", include((\"compras.urls\", \"compras\"), namespace=\"compras\")),\n    path('ventas/', include('ventas.urls')),\n    path('inventario/', include('inventario.urls')),\n    # Home global (sin app)\n    path('', TemplateView.as_view(template_name='index.html'), name='home'),\n]",
+        "peekOfCode": "urlpatterns = [\n    path('admin/', admin.site.urls),\n    path(\"compras/\", include((\"compras.urls\", \"compras\"), namespace=\"compras\")),\n    path('ventas/', include('ventas.urls')),\n    path('inventario/', include(('inventario.urls', 'inventario'), namespace='inventario')),\n    # Home global (con lógica y contexto dinámico)\n    path('', views.index, name='home'),\n]",
         "detail": "suministros.urls",
+        "documentation": {}
+    },
+    {
+        "label": "index",
+        "kind": 2,
+        "importPath": "suministros.views",
+        "description": "suministros.views",
+        "peekOfCode": "def index(request):\n    contexto = {\n        \"compras_count\": Compra.objects.count(),\n        \"productos_count\": Producto.objects.count(),\n        \"proveedores_count\": Proveedor.objects.count(),\n    }\n    return render(request, \"index.html\", contexto)",
+        "detail": "suministros.views",
         "documentation": {}
     },
     {

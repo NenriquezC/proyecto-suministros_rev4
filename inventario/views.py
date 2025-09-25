@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect         # ✅ Vistas: render templates y redirecciones
+from django.shortcuts import render, redirect , get_object_or_404        # ✅ Vistas: render templates y redirecciones
 from django.urls import reverse                       # ✅ Útil si construyes URLs en código (p.ej. messages+redirect)
 from django.contrib import messages                   # ✅ Para flash messages en vistas
 from django.contrib.auth.decorators import login_required, permission_required  # ✅ Decoradores en vistas protegidas
@@ -13,7 +13,7 @@ from django.views.decorators.http import require_GET  # ✅ Si tu endpoint preci
 from .models import Producto, Categoria                         # ✅ Vistas que consultan productos
 from django.core.paginator import Paginator           # ✅ Listados con paginación (listar_productos)
 from django.db.models import Q, F                     # ✅ Filtros de búsqueda y comparaciones (stock <= stock_minimo)
-
+from decimal import Decimal
 
 @login_required
 @permission_required("inventario.add_proveedor", raise_exception=True)
@@ -63,8 +63,7 @@ def listar_proveedores(request):
 def crear_producto(request):
     return HttpResponse("Crear producto (placeholder)")
 
-def agregar_producto(request):
-    return HttpResponse("Crear producto (placeholder)")
+
 #---------------------------------------------------------------------------------------------------------------------------
 @login_required
 @permission_required("inventario.add_producto", raise_exception=True)
@@ -75,7 +74,8 @@ def agregar_producto(request):
             prod = form.save()
             messages.success(request, f'Producto "{prod}" creado correctamente.')
             # Redirige a la lista (si prefieres otra, me dices)
-            return redirect(reverse("inventario:listar_productos"))
+            #return redirect(reverse("inventario:listar_productos"))
+            return redirect("inventario:ver_producto", pk=prod.pk)  # ← ver detalle readonly
     else:
         form = ProductoForm()
 
@@ -93,8 +93,8 @@ def editar_producto(request, pk):
         form = ProductoForm(request.POST, instance=prod)
         if form.is_valid():
             prod = form.save()
-            messages.success(request, f'Producto "{prod}" actualizado.')
-            return redirect(reverse("inventario:listar_productos"))
+            messages.success(request, f'Producto "{prod}" Editado exitosamente') #mensaje de edicion exitosa
+            return redirect("inventario:ver_producto", pk = prod.pk)
     else:
         form = ProductoForm(instance=prod)
 
@@ -120,6 +120,34 @@ def eliminar_producto(request, pk):
         "inventario/productos/listar_producto/eliminar_confirm_lista.html",
         {"producto": prod},
     )
+##------------------------------------------------------------------------------------------------------------------------------
+@login_required
+@permission_required("inventario.view_producto", raise_exception=True)
+def ver_producto(request, pk):
+    """
+    Detalle SOLO LECTURA del producto.
+    Mantiene el mismo patrón visual que Compras (readonly).
+    """
+    producto = get_object_or_404(Producto, pk=pk)
+
+    # Reusar un form deshabilitado mantiene estilos/partials si los usas
+    form = ProductoForm(instance=producto)
+    for f in form.fields.values():
+        f.disabled = True
+
+    # Margen en dinero = precio_venta - precio_compra
+    margen = (producto.precio_venta - producto.precio_compra).quantize(Decimal("0.01"))
+
+    return render(
+        request,
+        "inventario/productos/editar_producto/editar_producto.html",
+        {
+            "producto": producto,
+            "form": form,
+            "readonly": True,   # bandera de UI (igual que en compras)
+            "margen": margen,
+        },
+    )
 #------------------------------------------------------------------------------------------------------------------------------
 #Qué cambié y por qué (rápido)
 #Filtros: añadí q, categoria, estado para replicar el UX de compras.
@@ -129,7 +157,6 @@ def eliminar_producto(request, pk):
 #Con esto, tus partials funcionan tal cual y el badge de reposición aparecerá cuando stock <= stock_minimo.
 #En resumen: q = “query” (lo que escribe el usuario para buscar). Es el mismo patrón que usa media internet desde 1998, incluidos buscadores y nuestras tablas 😄.
 #------------------------------------------------------------------------------------------------------------------------------
-
 @login_required
 @permission_required("inventario.view_producto", raise_exception=True)
 def listar_productos(request):

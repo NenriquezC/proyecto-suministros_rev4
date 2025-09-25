@@ -11,6 +11,7 @@
             <th scope="col" class="text-end">Costo</th>
             <th scope="col" class="text-end">Precio venta</th>
             <th scope="col" class="text-end">Acciones</th>
+            
         </tr>
         </thead>
         <tbody>
@@ -21,7 +22,7 @@
                 <span class="badge bg-warning text-dark ms-2">Contactar proveedor</span>
                 
                 {% endif %}
-            </td>
+            
             <td>
                 {{ p.nombre }}
                 <!--{% if p.stock|default:0 <= p.stock_minimo|default:0 and p.stock_minimo %}
@@ -36,9 +37,9 @@
             <td class="text-end">{{ p.stock_minimo|default:"—" }}</td>
             <td class="text-end">${{ p.precio_compra }}</td>
             <td class="text-end">${{ p.precio_venta }}</td>
-            <td class="text-end">
-                <a class="btn btn-sm btn-outline" href="{% url 'inventario:editar_producto' p.id %}">Editar</a>
-                <a class="btn btn-sm btn-outline" href="{% url 'inventario:eliminar_producto' p.id %}">Eliminar</a>
+            </td>
+            <td class="text-end text-nowrap">
+            {% include "inventario/productos/listar_producto/_partials/_lista_producto_acciones_fila.html" with producto=p %}
             </td>
             </tr>
         {% empty %}
