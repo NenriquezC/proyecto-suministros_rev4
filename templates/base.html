@@ -324,12 +324,32 @@
         <!--<input type="text" placeholder="Buscar..."> -->
         <!--</div>-->
         <div class="topbar-links">
-            <a href="#"><i class="fa fa-question-circle"></i> Help</a>
-            <span class="topbar-user"><i class="fa fa-user"></i> NombreUsuario</span>
-            <a href="#" class="btn-login"><i class="fa fa-sign-in-alt"></i> Inciar Sesión</a>
-            <a href="#" class="btn-logout"><i class="fa fa-sign-out-alt"></i> Cerrar Sesión</a>
-        </div>
+            
+
+            {% if user.is_authenticated %}
+                <span class="topbar-user">
+                <i class="fa fa-user"></i>
+            {{ user.get_full_name|default:user.username }}
+            </span>
+
+            <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-logout"
+                    style="background:#ef4565; color:#fff; border:none; border-radius:8px;
+                    padding:6px 16px; font-weight:600; box-shadow:0 2px 8px #09406720;
+                    display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                    <i class="fa fa-sign-out-alt"></i> Cerrar sesión
+                </button>
+            </form>
+            {% else %}
+                <span class="topbar-user"><i class="fa fa-user"></i> Invitado</span>
+                    <a href="/accounts/login/?next={{ request.get_full_path }}" class="btn-login">
+                        <i class="fa fa-sign-in-alt"></i> Iniciar sesión
+                    </a>
+            {% endif %}
+</div>
     </div>
+    {% if user.is_authenticated %}
     <div class="menubar">
         <a class="home-link" href="{% url 'home' %}"><i class="fa fa-home"></i> Home</a>
         <ul class="nav">
@@ -380,12 +400,39 @@
         </ul>
         <div class="menu-right"></div>
     </div>
+    {% endif %}
+    {% if user.is_authenticated or request.resolver_match.url_name == 'login' %}
     <div class="container-app">
-    <main>
-    {% block content %}
-    {% endblock %}
-</main>
+        <main>
+            {% block content %}{% endblock %}
+        </main>
     </div>
+    {% else %}
+        <div class="container-app">
+        <main>
+            <h1 class="h3" style="color:var(--headline);">Autenticación requerida</h1>
+            <p><strong>Bienvenidos a la Web de gestión de productos y proveedores de Tecknosfera</strong></p>
+            <p><strong>Si eres Administrativo o Cliente ingresa aquí</strong></p>
+            <p>Usa el botón <strong>Iniciar sesión</strong> de la barra superior.</p>
+
+            <!-- Logo centrado y grande -->
+            <div style="margin-top: 18px; display: flex; justify-content: center;">
+                <img
+                    src="{% static 'img/logo_tecknosfera.jpg' %}"
+                    alt="Logo Tecknosfera"
+                    style="
+                    display:block;
+                    width: min(58vw, 420px);
+                    max-width: 100%;
+                    height: auto;
+                    filter: drop-shadow(0 2px 14px rgba(9,64,103,0.18));
+                    "
+                >
+
+
+        </main>
+    </div>
+    {% endif %}
     <footer>
         <p style="color:var(--paragraph);">by NenriquezC.</p>
     </footer>

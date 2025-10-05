@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+    {# Si necesitas algo extra para esta página, colócalo aquí. #}
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-4" style="max-width: 560px;">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="h3 mb-3" style="color:#094067;">INICIAR SESIÓN</h1>
+
+        {# Errores no asociadas a campos #}
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+            {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'login' %}" novalidate>
+            {% csrf_token %}
+
+            <div class="form-row mb-3">
+            <label for="id_username" class="form-label-left">Usuario</label>
+            <div class="form-field">
+                <input type="text"
+                    name="username"
+                    id="id_username"
+                    class="form-control"
+                    required
+                    autofocus
+                    placeholder="tu_usuario">
+                {% if form.username.errors %}
+                <div class="invalid-feedback" style="display:block;">
+                    {{ form.username.errors|striptags }}
+                </div>
+                {% endif %}
+            </div>
+            </div>
+
+            <div class="form-row mb-3">
+            <label for="id_password" class="form-label-left">Contraseña</label>
+            <div class="form-field">
+                <input type="password"
+                    name="password"
+                    id="id_password"
+                    class="form-control"
+                    required
+                    placeholder="********">
+                {% if form.password.errors %}
+                <div class="invalid-feedback" style="display:block;">
+                    {{ form.password.errors|striptags }}
+                </div>
+                    {% endif %}
+            </div>
+        </div>
+
+        {# Django rellenará 'next' si llegaste rebotado desde una vista protegida #}
+        <input type="hidden" name="next" value="{{ next }}">
+
+            <div class="d-flex align-items-center gap-2 mt-2">
+                <button type="submit" class="btn btn-main">Entrar</button>
+                <a class="btn btn-outline" href="/">Cancelar</a>
+            </div>
+
+            <div class="mt-3">
+                <a class="link" href="{% url 'password_reset' %}">¿Olvidaste tu contraseña?</a>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    {# Si necesitas JS específico, colócalo aquí (dejamos limpio por ahora). #}
+{% endblock %}

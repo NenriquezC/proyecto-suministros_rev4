@@ -54,6 +54,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware', #  este middleware es necesario para manejar los frames de clickjacking en nuestras solicitudes y respuestas de nuestra aplicación.
 ]
 
+# --- Autenticación ---
+LOGIN_URL = "/accounts/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
+
+
+
 ROOT_URLCONF = 'suministros.urls'
 
 TEMPLATES = [

@@ -1339,7 +1339,34 @@
         "kind": 5,
         "importPath": "suministros.settings",
         "description": "suministros.settings",
-        "peekOfCode": "MIDDLEWARE = [\n    'django.middleware.security.SecurityMiddleware', # este middleware es necesario para proteger nuestra aplicación contra ataques de seguridad.\n    'django.contrib.sessions.middleware.SessionMiddleware', # este middleware es necesario para manejar las sesiones de usuario en nuestra aplicación.\n    'django.middleware.common.CommonMiddleware', # este middleware es necesario para manejar las solicitudes y respuestas de nuestra aplicación.\n    'django.middleware.csrf.CsrfViewMiddleware', # este middleware es necesario para manejar los formularios de autenticación y registro de usuarios en nuestra aplicación.\n    'django.contrib.auth.middleware.AuthenticationMiddleware', # este middleware es necesario para manejar las solicitudes y respuestas de nuestra aplicación.\n    'django.contrib.messages.middleware.MessageMiddleware', #  este middleware es necesario para manejar los mensajes de nuestra aplicación.\n    'django.middleware.clickjacking.XFrameOptionsMiddleware', #  este middleware es necesario para manejar los frames de clickjacking en nuestras solicitudes y respuestas de nuestra aplicación.\n]\nROOT_URLCONF = 'suministros.urls'",
+        "peekOfCode": "MIDDLEWARE = [\n    'django.middleware.security.SecurityMiddleware', # este middleware es necesario para proteger nuestra aplicación contra ataques de seguridad.\n    'django.contrib.sessions.middleware.SessionMiddleware', # este middleware es necesario para manejar las sesiones de usuario en nuestra aplicación.\n    'django.middleware.common.CommonMiddleware', # este middleware es necesario para manejar las solicitudes y respuestas de nuestra aplicación.\n    'django.middleware.csrf.CsrfViewMiddleware', # este middleware es necesario para manejar los formularios de autenticación y registro de usuarios en nuestra aplicación.\n    'django.contrib.auth.middleware.AuthenticationMiddleware', # este middleware es necesario para manejar las solicitudes y respuestas de nuestra aplicación.\n    'django.contrib.messages.middleware.MessageMiddleware', #  este middleware es necesario para manejar los mensajes de nuestra aplicación.\n    'django.middleware.clickjacking.XFrameOptionsMiddleware', #  este middleware es necesario para manejar los frames de clickjacking en nuestras solicitudes y respuestas de nuestra aplicación.\n]\n# --- Autenticación ---",
+        "detail": "suministros.settings",
+        "documentation": {}
+    },
+    {
+        "label": "LOGIN_URL",
+        "kind": 5,
+        "importPath": "suministros.settings",
+        "description": "suministros.settings",
+        "peekOfCode": "LOGIN_URL = \"/accounts/login/\"\nLOGIN_REDIRECT_URL = \"/\"\nLOGOUT_REDIRECT_URL = \"/\"\nROOT_URLCONF = 'suministros.urls'\nTEMPLATES = [\n    {\n        'BACKEND': 'django.template.backends.django.DjangoTemplates',\n        'DIRS': [os.path.join(BASE_DIR, \"templates\")],# Si tienes templates globales, pon aquí su ruta\n        'APP_DIRS': True,\n        'OPTIONS': {",
+        "detail": "suministros.settings",
+        "documentation": {}
+    },
+    {
+        "label": "LOGIN_REDIRECT_URL",
+        "kind": 5,
+        "importPath": "suministros.settings",
+        "description": "suministros.settings",
+        "peekOfCode": "LOGIN_REDIRECT_URL = \"/\"\nLOGOUT_REDIRECT_URL = \"/\"\nROOT_URLCONF = 'suministros.urls'\nTEMPLATES = [\n    {\n        'BACKEND': 'django.template.backends.django.DjangoTemplates',\n        'DIRS': [os.path.join(BASE_DIR, \"templates\")],# Si tienes templates globales, pon aquí su ruta\n        'APP_DIRS': True,\n        'OPTIONS': {\n            'context_processors': [",
+        "detail": "suministros.settings",
+        "documentation": {}
+    },
+    {
+        "label": "LOGOUT_REDIRECT_URL",
+        "kind": 5,
+        "importPath": "suministros.settings",
+        "description": "suministros.settings",
+        "peekOfCode": "LOGOUT_REDIRECT_URL = \"/\"\nROOT_URLCONF = 'suministros.urls'\nTEMPLATES = [\n    {\n        'BACKEND': 'django.template.backends.django.DjangoTemplates',\n        'DIRS': [os.path.join(BASE_DIR, \"templates\")],# Si tienes templates globales, pon aquí su ruta\n        'APP_DIRS': True,\n        'OPTIONS': {\n            'context_processors': [\n                'django.template.context_processors.request',",
         "detail": "suministros.settings",
         "documentation": {}
     },
@@ -1456,7 +1483,7 @@
         "kind": 5,
         "importPath": "suministros.urls",
         "description": "suministros.urls",
-        "peekOfCode": "urlpatterns = [\n    path('admin/', admin.site.urls),\n    path(\"compras/\", include((\"compras.urls\", \"compras\"), namespace=\"compras\")),\n    path('ventas/', include('ventas.urls')),\n    path('inventario/', include(('inventario.urls', 'inventario'), namespace='inventario')),\n    # Home global (con lógica y contexto dinámico)\n    path('', views.index, name='home'),\n]",
+        "peekOfCode": "urlpatterns = [\n    path('admin/', admin.site.urls),\n    path(\"compras/\", include((\"compras.urls\", \"compras\"), namespace=\"compras\")),\n    path('ventas/', include('ventas.urls')),\n    path('inventario/', include(('inventario.urls', 'inventario'), namespace='inventario')),\n    path(\"accounts/\", include(\"django.contrib.auth.urls\")),  # <- clave\n    # Home global (con lógica y contexto dinámico)\n    path('', views.index, name='home'),\n]",
         "detail": "suministros.urls",
         "documentation": {}
     },
