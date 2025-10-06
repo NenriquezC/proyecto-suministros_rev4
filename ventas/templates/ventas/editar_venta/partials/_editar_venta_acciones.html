@@ -1,0 +1,13 @@
+{# Botonera de acciones en editar_venta. Respeta el modo readonly #}
+<div class="acciones-form" style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+  {% if readonly %}
+    {# MODO SOLO LECTURA (venimos de ventas:ver_venta) #}
+    <a href="{% url 'ventas:editar_venta' venta.pk %}" class="btn btn-main">Editar</a>
+    <a href="{% url 'ventas:listar_ventas' %}" class="btn btn-sec">Volver a la lista</a>
+  {% else %}
+    {# MODO EDICIÓN #}
+    <button type="submit" class="btn btn-main">Guardar cambios</button>
+    <a href="{% url 'ventas:ver_venta' venta.pk %}" class="btn btn-sec">Ver (solo lectura)</a>
+    <a href="{% url 'ventas:listar_ventas' %}" class="btn btn-sec">Volver a la lista</a>
+  {% endif %}
+</div>

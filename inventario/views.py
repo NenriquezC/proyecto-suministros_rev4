@@ -10,12 +10,12 @@ from django.http import HttpResponse                  # ❓ Rara vez; puedes qui
 from django.http import JsonResponse, Http404         # ✅ JsonResponse para APIs (ej: precio); Http404 si levantas 404
 from django.views.decorators.http import require_GET  # ✅ Si tu endpoint precio usa @require_GET
 
-from .models import Producto, Categoria                         # ✅ Vistas que consultan productos
+from .models import Producto, Categoria, Proveedor                         # ✅ Vistas que consultan productos
 from django.core.paginator import Paginator           # ✅ Listados con paginación (listar_productos)
 from django.db.models import Q, F                     # ✅ Filtros de búsqueda y comparaciones (stock <= stock_minimo)
 from decimal import Decimal
 
-@login_required
+"""@login_required
 @permission_required("inventario.add_proveedor", raise_exception=True)
 def proveedor_crear(request):
     next_url = request.GET.get("next") or reverse("compras:agregar_compra")
@@ -35,9 +35,124 @@ def proveedor_crear(request):
         request,
         "inventario/proveedores/crear_proveedor/crear_proveedor.html",
         {"form": form},
+    )"""
+
+# --- CREAR ---
+@login_required
+@permission_required("inventario.add_proveedor", raise_exception=True)
+def agregar_proveedor(request):
+    next_url = request.GET.get("next")
+    if request.method == "POST":
+        form = ProveedorForm(request.POST)
+        if form.is_valid():
+            proveedor = form.save()
+            messages.success(request, "Proveedor creado correctamente.")
+            if next_url:
+                return redirect(next_url)
+            # PARIDAD CON PRODUCTOS: ir a editar
+            return redirect("inventario:ver_proveedor", pk=proveedor.pk)
+        messages.error(request, "Revisa los errores del formulario.")
+    else:
+        form = ProveedorForm()
+    return render(
+        request,
+        "inventario/proveedores/crear_proveedor/crear_proveedor.html",
+        {"form": form},
     )
-def inventario(request):
-    return HttpResponse("Inventario OK")  # placeholder temporal
+
+
+# --- EDITAR ---
+@login_required
+@permission_required("inventario.change_proveedor", raise_exception=True)
+def editar_proveedor(request, pk):
+    proveedor = get_object_or_404(Proveedor, pk=pk)
+    if request.method == "POST":
+        form = ProveedorForm(request.POST, instance=proveedor)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Proveedor actualizado correctamente.")
+            # PARIDAD CON PRODUCTOS: quedarse en editar (PRG)
+            return redirect("inventario:ver_proveedor", pk=proveedor.pk)
+        messages.error(request, "Revisa los errores del formulario.")
+    else:
+        form = ProveedorForm(instance=proveedor)
+    return render(
+        request,
+        "inventario/proveedores/editar_proveedor/editar_proveedor.html",
+        {"form": form, "proveedor": proveedor},
+    )
+
+# --- ELIMINAR (confirmación en listar_proveedor) ---
+@login_required
+@permission_required("inventario.delete_proveedor", raise_exception=True)
+def eliminar_proveedor(request, pk):
+    """
+    Confirmación y borrado.
+    Template (GET): templates/inventario/proveedores/listar_proveedor/eliminar_confirm_proveedor.html
+    """
+    proveedor = get_object_or_404(Proveedor, pk=pk)
+
+    if request.method == "POST":
+        proveedor.delete()
+        messages.success(request, "Proveedor eliminado correctamente.")
+        return redirect("inventario:listar_proveedores")
+
+    # ⬇️ Ruta EXACTA según tu estructura actual
+    return render(
+        request,
+        "inventario/proveedores/listar_proveedor/eliminar_confirm_proveedor.html",
+        {"proveedor": proveedor},
+    )
+
+
+# --- LISTAR ---
+@login_required
+@permission_required("inventario.view_proveedor", raise_exception=True)
+def listar_proveedores(request):
+    """
+    Lista paginada de proveedores.
+    Template: templates/inventario/proveedores/listar_proveedor/listar_proveedor.html
+    """
+    queryset = Proveedor.objects.all().order_by("-id")
+
+    # Filtro simple opcional por ?q=
+    q = request.GET.get("q")
+    if q:
+        # Ajusta campos si tus nombres reales difieren
+        queryset = queryset.filter(
+            Q(nombre__icontains=q) | Q(email__icontains=q) | Q(telefono__icontains=q)
+        )
+
+    paginator = Paginator(queryset, 10)
+    page = request.GET.get("page")
+    proveedores = paginator.get_page(page)
+
+    return render(
+        request,
+        "inventario/proveedores/listar_proveedor/listar_proveedor.html",
+        {"proveedores": proveedores},
+    )
+
+
+@login_required
+@permission_required("inventario.view_proveedor", raise_exception=True)
+def ver_proveedor(request, pk):
+    proveedor = get_object_or_404(Proveedor, pk=pk)
+
+    # Reusar el mismo template de EDITAR con el form deshabilitado
+    form = ProveedorForm(instance=proveedor)
+    for f in form.fields.values():
+        f.disabled = True
+
+    return render(
+        request,
+        "inventario/proveedores/editar_proveedor/editar_proveedor.html",
+        {
+            "proveedor": proveedor,
+            "form": form,
+            "readonly": True,  # EXACTAMENTE como en ver_producto
+        },
+    )
 
 @login_required
 @permission_required("inventario.view_producto", raise_exception=True)
@@ -55,13 +170,6 @@ def listar_productos(request):
         "paginator": paginator,
     }
     return render(request, "inventario/productos/listar_producto/lista_producto.html", context)
-
-# Si también tienes estas rutas en urls.py, crea sus placeholders ya:
-def listar_proveedores(request):
-    return HttpResponse("Listado de proveedores (placeholder)")
-
-def crear_producto(request):
-    return HttpResponse("Crear producto (placeholder)")
 
 
 #---------------------------------------------------------------------------------------------------------------------------
@@ -241,3 +349,19 @@ def producto_precio_api(request, pk):
         "nombre": getattr(p, "nombre", str(p)),
         "precio_unitario": float(precio or 0),
     })
+
+
+
+@login_required
+def inventario(request):
+    # Redirige al listado que SÍ existe (Proveedores, ya lo dejamos OK)
+    return redirect("inventario:listar_proveedores")
+    # Si prefieres ir a productos, cambia por:
+    # return redirect("inventario:listar_productos")
+
+    # Alias para compatibilidad con tu URL/plantillas antiguas
+@login_required
+@permission_required("inventario.add_proveedor", raise_exception=True)
+def proveedor_crear(request):
+    # Reusa la lógica de agregar_proveedor para no duplicar código
+    return agregar_proveedor(request)

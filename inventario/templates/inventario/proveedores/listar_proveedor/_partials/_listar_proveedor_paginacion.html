@@ -1,0 +1,45 @@
+{% if page_obj and page_obj.has_other_pages %}
+<nav aria-label="Paginación">
+  <ul class="pagination justify-content-center">
+
+    {# Base con los parámetros actuales (?q=...) #}
+    {% with base='?'|add:request.GET.urlencode %}
+
+      {# « Anterior #}
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link"
+             href="{{ base }}{% if request.GET %}&{% endif %}page={{ page_obj.previous_page_number }}"
+             aria-label="Anterior">&laquo;</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+      {% endif %}
+
+      {# Números #}
+      {% for i in page_obj.paginator.page_range %}
+        {% if page_obj.number == i %}
+          <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+        {% else %}
+          <li class="page-item">
+            <a class="page-link"
+               href="{{ base }}{% if request.GET %}&{% endif %}page={{ i }}">{{ i }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+
+      {# Siguiente » #}
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link"
+             href="{{ base }}{% if request.GET %}&{% endif %}page={{ page_obj.next_page_number }}"
+             aria-label="Siguiente">&raquo;</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+      {% endif %}
+
+    {% endwith %}
+  </ul>
+</nav>
+{% endif %}

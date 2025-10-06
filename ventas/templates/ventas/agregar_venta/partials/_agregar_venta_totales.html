@@ -1,0 +1,40 @@
+{# inputs: form #}
+<div class="card totals-card">
+  <div class="card-body p-3">
+    <h6 class="mb-3">Totales</h6>
+
+    <table class="table table-sm mb-2">
+      <tbody>
+        <tr>
+          <th>Subtotal</th>
+          <td class="text-end"><span id="subtotal-general">0,00</span></td>
+        </tr>
+
+        <tr>
+          <th>Descuento</th>
+          <td class="text-end">
+            {# Mostrar SIEMPRE el valor de descuento_total del form #}
+            <span id="descuento-general">
+              {{ form.descuento_total.value|default_if_none:"0,00" }}
+            </span>
+            {# No duplicamos el input aquí para no enviar dos veces #}
+          </td>
+        </tr>
+
+        <tr>
+          <th>Impuestos</th>
+          <td class="text-end"><span id="impuestos-general">0,00</span></td>
+        </tr>
+
+        <tr>
+          <th>Total</th>
+          <td class="text-end"><strong id="total-general">0,00</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <small class="text-muted">
+      Vista previa de totales en cliente; el cálculo definitivo se confirma en el servidor.
+    </small>
+  </div>
+</div>

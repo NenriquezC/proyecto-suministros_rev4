@@ -17,4 +17,13 @@ urlpatterns = [
 
     path("producto/ver/<int:pk>/", views.ver_producto, name="ver_producto"),
     path("producto/detalle/<int:pk>/", views.ver_producto, name="detalle_producto"),  # alias opcional
+
+    # --- PROVEEDORES (clon 1:1 de Productos; sin "ver") ---
+    path("proveedores/", views.listar_proveedores, name="listar_proveedores"),
+    path("proveedores/nuevo/", views.agregar_proveedor, name="agregar_proveedor"),
+    path("proveedores/<int:pk>/editar/", views.editar_proveedor, name="editar_proveedor"),
+    path("proveedores/<int:pk>/eliminar/", views.eliminar_proveedor, name="eliminar_proveedor"),
+
+    path("proveedores/<int:pk>/", views.ver_proveedor, name="ver_proveedor"),
+
 ]

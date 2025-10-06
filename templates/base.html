@@ -365,9 +365,9 @@
             <li>
                 <a href="#"><i class="fas fa-cash-register"></i> Ventas <i class="fa fa-caret-down"></i></a>
                 <div class="submenu">
-                    <a href="#"><i class="fa fa-plus"></i>Ingresar Venta</a>
+                    <a href="{% url 'ventas:agregar_venta' %}"><i class="fa fa-plus"></i>Ingresar Venta</a>
 
-                    <a href="#"><i class="fa fa-edit"></i>Administrar Venta</a>
+                    <a href="{% url 'ventas:listar_ventas' %}"><i class="fa fa-edit"></i>Administrar Venta</a>
                     
                 </div>
             </li>
@@ -386,9 +386,9 @@
             <li>
                 <a href="#"><i class="fas fa-truck"></i> Proveedores <i class="fa fa-caret-down"></i></a>
                 <div class="submenu">
-                    <a href="#"><i class="fa fa-plus"></i> Ingresar Proveedor</a>
+                    <a href="{% url 'inventario:proveedor_crear' %}"><i class="fa fa-plus"></i> Ingresar Proveedor</a>
                     
-                    <a href="#"><i class="fa fa-trash"></i>Administrar Proveedor</a>
+                    <a href="{% url 'inventario:listar_proveedores' %}"><i class="fa fa-trash"></i>Administrar Proveedor</a>
                 </div>
             </li>
             <li>

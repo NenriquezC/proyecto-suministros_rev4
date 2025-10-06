@@ -13,4 +13,8 @@ urlpatterns = [
 
     # Home global (con lógica y contexto dinámico)
     path('', views.index, name='home'),
+
+    path('ventas/', include(('ventas.urls', 'ventas'), namespace='ventas')),
+
+
 ]

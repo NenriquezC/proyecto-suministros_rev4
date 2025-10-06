@@ -1,0 +1,81 @@
+{% if formset.non_form_errors %}
+<div class="alert alert-danger">{{ formset.non_form_errors }}</div>
+{% endif %}
+
+{{ formset.management_form }}
+
+<table class="table" id="tabla-lineas" data-formset-prefix="{{ formset.prefix }}">
+  <thead>
+    <tr>
+      <th style="width:36%">Producto</th>
+      <th style="width:12%">Cantidad</th>
+      <th style="width:12%">Precio unit.</th>
+      <th style="width:12%">Descuento %</th>
+      <th style="width:12%" class="right">Subtotal</th>
+      <th style="width:16%">Acciones</th>
+    </tr>
+  </thead>
+
+  <tbody id="tbody-lineas">
+    {% for f in formset %}
+    <tr class="fila-linea" data-index="{{ forloop.counter0 }}">
+      {% if f.id %}{{ f.id }}{% endif %}
+
+      <td>{{ f.producto.errors }}{{ f.producto }}</td>
+      <td>{{ f.cantidad.errors }}{{ f.cantidad }}</td>
+      <td>{{ f.precio_unitario.errors }}{{ f.precio_unitario }}</td>
+
+      <td>
+        {% if f.descuento %}
+          {{ f.descuento.errors }}{{ f.descuento }}
+        {% else %}
+          <span class="muted">—</span>
+        {% endif %}
+      </td>
+
+      <td class="right"><span class="subtotal-linea">0.00</span></td>
+
+      <td>
+        {% if f.DELETE %}
+          {{ f.DELETE }} <button type="button" class="btn btn-danger js-remove-row">Eliminar</button>
+        {% else %}
+          <button type="button" class="btn btn-danger js-remove-row--hard">Eliminar</button>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div style="margin-top:8px;">
+  <button type="button" class="btn btn-sec" id="btn-add-row">+ Añadir línea</button>
+  <span class="muted">Usa el botón para agregar productos; al eliminar se marca DELETE o se quita la fila.</span>
+</div>
+
+<template id="empty-form-template">
+<tr class="fila-linea" data-index="__prefix__">
+  {% if formset.empty_form.id %}{{ formset.empty_form.id }}{% endif %}
+
+  <td>{{ formset.empty_form.producto.errors }}{{ formset.empty_form.producto }}</td>
+  <td>{{ formset.empty_form.cantidad.errors }}{{ formset.empty_form.cantidad }}</td>
+  <td>{{ formset.empty_form.precio_unitario.errors }}{{ formset.empty_form.precio_unitario }}</td>
+
+  <td>
+    {% if formset.empty_form.descuento %}
+      {{ formset.empty_form.descuento.errors }}{{ formset.empty_form.descuento }}
+    {% else %}
+      <span class="muted">—</span>
+    {% endif %}
+  </td>
+
+  <td class="right"><span class="subtotal-linea">0.00</span></td>
+
+  <td>
+    {% if formset.empty_form.DELETE %}
+      {{ formset.empty_form.DELETE }} <button type="button" class="btn btn-danger js-remove-row">Eliminar</button>
+    {% else %}
+      <button type="button" class="btn btn-danger js-remove-row--hard">Eliminar</button>
+    {% endif %}
+  </td>
+</tr>
+</template>

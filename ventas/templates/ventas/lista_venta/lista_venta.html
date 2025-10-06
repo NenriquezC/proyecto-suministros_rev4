@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Ventas - Lista{% endblock %}
+
+<style>
+  /* Ensancha la tabla, no el contenedor */
+  .tabla-ventas {
+    min-width: 1600px; /* prueba 1200–1600px hasta que te guste */
+  }
+
+  /* (Opcional) Ajustar algunas columnas por porcentaje o anchura fija */
+  /* .tabla-ventas th:nth-child(1), .tabla-ventas td:nth-child(1) { min-width: 220px; } */
+  /* .tabla-ventas th:nth-child(5), .tabla-ventas td:nth-child(5) { width: 120px; text-align: right; } */
+</style>
+
+{% block content %}
+  <h1>Ventas</h1>
+  <a class="btn-main" href="{% url 'ventas:agregar_venta' %}">➕ Nueva Venta</a>
+
+  {# Filtros y buscador #}
+  {% include "ventas/lista_venta/partials/_lista_venta_filtros.html" %}
+
+  {# Tabla #}
+  {% include "ventas/lista_venta/partials/_lista_venta_tabla.html" with ventas=ventas %}
+
+  {# Paginación #}
+  {% include "ventas/lista_venta/partials/_lista_venta_paginacion.html" %}
+{% endblock %}

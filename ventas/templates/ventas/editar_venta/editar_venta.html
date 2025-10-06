@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+  {% if readonly %}Ventas · Ver #{{ venta.pk }}{% else %}Ventas · Editar #{{ venta.pk }}{% endif %}
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/global.css' %}">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+  .container { max-width: 1200px; }
+  .page-header { margin: 24px 0 12px; }
+  .page-title { margin: 0; color: #094067; font-weight: 700; }
+  .page-subtitle { margin: 6px 0 0; color: #6c757d; }
+
+  .card { border-radius: 10px; box-shadow: 0 2px 18px rgba(44,62,80,0.08); border: 1px solid #dfe6e9; }
+  .card-header { background: #3a5068; color: #fff; border-bottom: 1px solid #dfe6e9; }
+  .card-title { margin: 0; font-size: 1.12rem; font-weight: 700; }
+
+  .btn-main { background: #3da9fc; color: #fff; border: none; border-radius: 8px; padding: 10px 18px; font-weight: 700; box-shadow: 0 2px 8px #09406720; transition: background .18s, box-shadow .18s; text-decoration: none; }
+  .btn-main:hover { background: #094067; color: #fff; box-shadow: 0 4px 16px #3da9fc2a; }
+  .btn-outline { background: #fff; color: #094067; border: 1px solid #dfe6e9; border-radius: 8px; padding: 10px 18px; font-weight: 600; text-decoration: none; }
+
+  .table-responsive { overflow-x: auto; }
+  .table th, .table td { vertical-align: middle; white-space: nowrap; }
+
+  .form-rows-2col { display: grid; grid-template-columns: 240px 1fr; column-gap: 16px; row-gap: 12px; align-items: center; }
+  .form-label-left { font-weight: 600; text-align: left; color: #094067; }
+  .form-label-left .req { color: #ef4565; }
+  .form-field { display: flex; align-items: center; gap: 8px; }
+  .form-field input, .form-field select, .form-field textarea { width: 100%; max-width: 420px; text-align: left; }
+  .invalid-feedback { margin-top: 4px; }
+
+  .totals-card { max-width: 420px; margin-left: auto; }
+  .totals-grid { display: grid; gap: 8px; }
+  .totals-row { display:flex; justify-content: space-between; }
+  .totals-row--strong { font-weight: 700; font-size: 1.05rem; }
+
+  .card-header--flex { display:flex; justify-content: space-between; align-items:center; }
+
+  @media (max-width: 700px) {
+    .form-rows-2col { grid-template-columns: 1fr; }
+    .form-field input, .form-field select, .form-field textarea { max-width: 100%; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-title">
+      {% if readonly %}VER VENTA N°:{{ venta.pk }}{% else %}EDITAR VENTA N°:{{ venta.pk }}{% endif %}
+    </h1>
+    <p class="page-subtitle">
+      {% if readonly %}Visualización de la venta sin edición{% else %}Completa los datos de la venta{% endif %}
+    </p>
+  </div>
+
+  {# Mensajes flash #}
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" {% if readonly %}onsubmit="return false"{% endif %} novalidate>
+    {% csrf_token %}
+    {% if readonly %}<fieldset disabled>{% endif %}
+
+    {# ======= DATOS DE LA VENTA ======= #}
+    {% include "ventas/agregar_venta/partials/_agregar_venta_cabecera.html" with form=form venta=venta readonly=readonly %}
+
+    {# ======= PRODUCTOS + TOTALES ======= #}
+    <div class="card mb-3">
+      <div class="card-header card-header--flex">
+        <h2 class="card-title">Productos de la venta</h2>
+        {% if not readonly %}
+          <button type="button" class="btn btn-outline" id="btn-add-row">+ Agregar línea</button>
+        {% endif %}
+      </div>
+
+      <div class="card-body">
+        {% if readonly %}
+          <div class="table-responsive">
+            <table class="table table-striped align-middle">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th class="text-end">Cantidad</th>
+                  <th class="text-end">Precio</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for l in venta.detalles.all %}
+                  <tr>
+                    <td class="text-break">{{ l.producto }}</td>
+                    <td class="text-end">{{ l.cantidad }}</td>
+                    <td class="text-end">{{ l.precio_unitario }}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="3" class="text-center">Sin líneas.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card totals-card mt-3">
+            <div class="card-body p-3">
+              <h6 class="mb-3">Totales</h6>
+              <table class="table table-sm mb-2">
+                <tbody>
+                  <tr><th>Subtotal</th>  <td class="text-end">{{ venta.subtotal }}</td></tr>
+                  <tr><th>Descuento</th> <td class="text-end">{{ venta.descuento_total }}</td></tr>
+                  <tr><th>Impuestos</th> <td class="text-end">{{ venta.impuesto }}</td></tr>
+                  <tr><th>Total</th>     <td class="text-end"><strong>{{ venta.total }}</strong></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        {% else %}
+          {% include "ventas/agregar_venta/partials/_agregar_venta_lineas.html" with formset=formset %}
+          {% include "ventas/agregar_venta/partials/_agregar_venta_totales.html" with form=form formset=formset %}
+        {% endif %}
+      </div>
+    </div>
+
+    {% if readonly %}</fieldset>{% endif %}
+
+    {# ======= ACCIONES ======= #}
+    {% include "ventas/editar_venta/partials/_editar_venta_acciones.html" with venta=venta readonly=readonly %}
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {% if not readonly %}
+    {% include "ventas/agregar_venta/partials/_agregar_venta_scripts.html" %}
+    <script>console.log('[ventas] bloque scripts de editar_venta.html cargado');</script>
+  {% endif %}
+{% endblock %}

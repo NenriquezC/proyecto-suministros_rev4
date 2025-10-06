@@ -163,6 +163,14 @@
         "documentation": {}
     },
     {
+        "label": "Decimal",
+        "importPath": "decimal",
+        "description": "decimal",
+        "isExtraImport": true,
+        "detail": "decimal",
+        "documentation": {}
+    },
+    {
         "label": "settings",
         "importPath": "django.conf",
         "description": "django.conf",
@@ -299,19 +307,11 @@
         "documentation": {}
     },
     {
-        "label": "admin",
-        "importPath": "django.contrib",
-        "description": "django.contrib",
+        "label": "transaction",
+        "importPath": "django.db",
+        "description": "django.db",
         "isExtraImport": true,
-        "detail": "django.contrib",
-        "documentation": {}
-    },
-    {
-        "label": "messages",
-        "importPath": "django.contrib",
-        "description": "django.contrib",
-        "isExtraImport": true,
-        "detail": "django.contrib",
+        "detail": "django.db",
         "documentation": {}
     },
     {
@@ -339,7 +339,31 @@
         "documentation": {}
     },
     {
+        "label": "messages",
+        "importPath": "django.contrib",
+        "description": "django.contrib",
+        "isExtraImport": true,
+        "detail": "django.contrib",
+        "documentation": {}
+    },
+    {
         "label": "admin",
+        "importPath": "django.contrib",
+        "description": "django.contrib",
+        "isExtraImport": true,
+        "detail": "django.contrib",
+        "documentation": {}
+    },
+    {
+        "label": "admin",
+        "importPath": "django.contrib",
+        "description": "django.contrib",
+        "isExtraImport": true,
+        "detail": "django.contrib",
+        "documentation": {}
+    },
+    {
+        "label": "messages",
         "importPath": "django.contrib",
         "description": "django.contrib",
         "isExtraImport": true,
@@ -384,6 +408,22 @@
         "description": "django",
         "isExtraImport": true,
         "detail": "django",
+        "documentation": {}
+    },
+    {
+        "label": "forms",
+        "importPath": "django",
+        "description": "django",
+        "isExtraImport": true,
+        "detail": "django",
+        "documentation": {}
+    },
+    {
+        "label": "inlineformset_factory",
+        "importPath": "django.forms",
+        "description": "django.forms",
+        "isExtraImport": true,
+        "detail": "django.forms",
         "documentation": {}
     },
     {
@@ -416,6 +456,14 @@
         "description": "django.utils",
         "isExtraImport": true,
         "detail": "django.utils",
+        "documentation": {}
+    },
+    {
+        "label": "get_user_model",
+        "importPath": "django.contrib.auth",
+        "description": "django.contrib.auth",
+        "isExtraImport": true,
+        "detail": "django.contrib.auth",
         "documentation": {}
     },
     {
@@ -508,6 +556,14 @@
     },
     {
         "label": "F",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "Q",
         "importPath": "django.db.models",
         "description": "django.db.models",
         "isExtraImport": true,
@@ -643,27 +699,11 @@
         "documentation": {}
     },
     {
-        "label": "render",
-        "importPath": "django.shortcuts",
-        "description": "django.shortcuts",
+        "label": "login_required",
+        "importPath": "django.contrib.auth.decorators",
+        "description": "django.contrib.auth.decorators",
         "isExtraImport": true,
-        "detail": "django.shortcuts",
-        "documentation": {}
-    },
-    {
-        "label": "redirect",
-        "importPath": "django.shortcuts",
-        "description": "django.shortcuts",
-        "isExtraImport": true,
-        "detail": "django.shortcuts",
-        "documentation": {}
-    },
-    {
-        "label": "get_object_or_404",
-        "importPath": "django.shortcuts",
-        "description": "django.shortcuts",
-        "isExtraImport": true,
-        "detail": "django.shortcuts",
+        "detail": "django.contrib.auth.decorators",
         "documentation": {}
     },
     {
@@ -696,6 +736,62 @@
         "description": "django.shortcuts",
         "isExtraImport": true,
         "detail": "django.shortcuts",
+        "documentation": {}
+    },
+    {
+        "label": "redirect",
+        "importPath": "django.shortcuts",
+        "description": "django.shortcuts",
+        "isExtraImport": true,
+        "detail": "django.shortcuts",
+        "documentation": {}
+    },
+    {
+        "label": "get_object_or_404",
+        "importPath": "django.shortcuts",
+        "description": "django.shortcuts",
+        "isExtraImport": true,
+        "detail": "django.shortcuts",
+        "documentation": {}
+    },
+    {
+        "label": "render",
+        "importPath": "django.shortcuts",
+        "description": "django.shortcuts",
+        "isExtraImport": true,
+        "detail": "django.shortcuts",
+        "documentation": {}
+    },
+    {
+        "label": "render",
+        "importPath": "django.shortcuts",
+        "description": "django.shortcuts",
+        "isExtraImport": true,
+        "detail": "django.shortcuts",
+        "documentation": {}
+    },
+    {
+        "label": "redirect",
+        "importPath": "django.shortcuts",
+        "description": "django.shortcuts",
+        "isExtraImport": true,
+        "detail": "django.shortcuts",
+        "documentation": {}
+    },
+    {
+        "label": "get_object_or_404",
+        "importPath": "django.shortcuts",
+        "description": "django.shortcuts",
+        "isExtraImport": true,
+        "detail": "django.shortcuts",
+        "documentation": {}
+    },
+    {
+        "label": "Paginator",
+        "importPath": "django.core.paginator",
+        "description": "django.core.paginator",
+        "isExtraImport": true,
+        "detail": "django.core.paginator",
         "documentation": {}
     },
     {
@@ -732,22 +828,6 @@
     },
     {
         "label": "Http404",
-        "importPath": "django.http",
-        "description": "django.http",
-        "isExtraImport": true,
-        "detail": "django.http",
-        "documentation": {}
-    },
-    {
-        "label": "HttpResponse",
-        "importPath": "django.http",
-        "description": "django.http",
-        "isExtraImport": true,
-        "detail": "django.http",
-        "documentation": {}
-    },
-    {
-        "label": "HttpResponse",
         "importPath": "django.http",
         "description": "django.http",
         "isExtraImport": true,
@@ -1191,11 +1271,47 @@
         "documentation": {}
     },
     {
-        "label": "inventario",
+        "label": "agregar_proveedor",
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def inventario(request):\n    return HttpResponse(\"Inventario OK\")  # placeholder temporal\n@login_required\n@permission_required(\"inventario.view_producto\", raise_exception=True)\ndef listar_productos(request):\n    qs = Producto.objects.select_related(\"proveedor\", \"categoria\").order_by(\"nombre\")\n    paginator = Paginator(qs, 20)\n    page_number = request.GET.get(\"page\")\n    page_obj = paginator.get_page(page_number)\n    # Paso variables amplias para no romper tus templates:",
+        "peekOfCode": "def agregar_proveedor(request):\n    next_url = request.GET.get(\"next\")\n    if request.method == \"POST\":\n        form = ProveedorForm(request.POST)\n        if form.is_valid():\n            proveedor = form.save()\n            messages.success(request, \"Proveedor creado correctamente.\")\n            if next_url:\n                return redirect(next_url)\n            # PARIDAD CON PRODUCTOS: ir a editar",
+        "detail": "inventario.views",
+        "documentation": {}
+    },
+    {
+        "label": "editar_proveedor",
+        "kind": 2,
+        "importPath": "inventario.views",
+        "description": "inventario.views",
+        "peekOfCode": "def editar_proveedor(request, pk):\n    proveedor = get_object_or_404(Proveedor, pk=pk)\n    if request.method == \"POST\":\n        form = ProveedorForm(request.POST, instance=proveedor)\n        if form.is_valid():\n            form.save()\n            messages.success(request, \"Proveedor actualizado correctamente.\")\n            # PARIDAD CON PRODUCTOS: quedarse en editar (PRG)\n            return redirect(\"inventario:ver_proveedor\", pk=proveedor.pk)\n        messages.error(request, \"Revisa los errores del formulario.\")",
+        "detail": "inventario.views",
+        "documentation": {}
+    },
+    {
+        "label": "eliminar_proveedor",
+        "kind": 2,
+        "importPath": "inventario.views",
+        "description": "inventario.views",
+        "peekOfCode": "def eliminar_proveedor(request, pk):\n    \"\"\"\n    Confirmación y borrado.\n    Template (GET): templates/inventario/proveedores/listar_proveedor/eliminar_confirm_proveedor.html\n    \"\"\"\n    proveedor = get_object_or_404(Proveedor, pk=pk)\n    if request.method == \"POST\":\n        proveedor.delete()\n        messages.success(request, \"Proveedor eliminado correctamente.\")\n        return redirect(\"inventario:listar_proveedores\")",
+        "detail": "inventario.views",
+        "documentation": {}
+    },
+    {
+        "label": "listar_proveedores",
+        "kind": 2,
+        "importPath": "inventario.views",
+        "description": "inventario.views",
+        "peekOfCode": "def listar_proveedores(request):\n    \"\"\"\n    Lista paginada de proveedores.\n    Template: templates/inventario/proveedores/listar_proveedor/listar_proveedor.html\n    \"\"\"\n    queryset = Proveedor.objects.all().order_by(\"-id\")\n    # Filtro simple opcional por ?q=\n    q = request.GET.get(\"q\")\n    if q:\n        # Ajusta campos si tus nombres reales difieren",
+        "detail": "inventario.views",
+        "documentation": {}
+    },
+    {
+        "label": "ver_proveedor",
+        "kind": 2,
+        "importPath": "inventario.views",
+        "description": "inventario.views",
+        "peekOfCode": "def ver_proveedor(request, pk):\n    proveedor = get_object_or_404(Proveedor, pk=pk)\n    # Reusar el mismo template de EDITAR con el form deshabilitado\n    form = ProveedorForm(instance=proveedor)\n    for f in form.fields.values():\n        f.disabled = True\n    return render(\n        request,\n        \"inventario/proveedores/editar_proveedor/editar_proveedor.html\",\n        {",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1205,24 +1321,6 @@
         "importPath": "inventario.views",
         "description": "inventario.views",
         "peekOfCode": "def listar_productos(request):\n    qs = Producto.objects.select_related(\"proveedor\", \"categoria\").order_by(\"nombre\")\n    paginator = Paginator(qs, 20)\n    page_number = request.GET.get(\"page\")\n    page_obj = paginator.get_page(page_number)\n    # Paso variables amplias para no romper tus templates:\n    context = {\n        \"page_obj\": page_obj,\n        \"object_list\": page_obj.object_list,\n        \"productos\": page_obj.object_list,  # por si el template usa este nombre",
-        "detail": "inventario.views",
-        "documentation": {}
-    },
-    {
-        "label": "listar_proveedores",
-        "kind": 2,
-        "importPath": "inventario.views",
-        "description": "inventario.views",
-        "peekOfCode": "def listar_proveedores(request):\n    return HttpResponse(\"Listado de proveedores (placeholder)\")\ndef crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\n#---------------------------------------------------------------------------------------------------------------------------\n@login_required\n@permission_required(\"inventario.add_producto\", raise_exception=True)\ndef agregar_producto(request):\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST)",
-        "detail": "inventario.views",
-        "documentation": {}
-    },
-    {
-        "label": "crear_producto",
-        "kind": 2,
-        "importPath": "inventario.views",
-        "description": "inventario.views",
-        "peekOfCode": "def crear_producto(request):\n    return HttpResponse(\"Crear producto (placeholder)\")\n#---------------------------------------------------------------------------------------------------------------------------\n@login_required\n@permission_required(\"inventario.add_producto\", raise_exception=True)\ndef agregar_producto(request):\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST)\n        if form.is_valid():\n            prod = form.save()",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1277,6 +1375,24 @@
         "importPath": "inventario.views",
         "description": "inventario.views",
         "peekOfCode": "def producto_precio_api(request, pk):\n    \"\"\"\n    Devuelve info mínima del producto en JSON.\n    Respuesta: {id, nombre, precio_unitario}\n    \"\"\"\n    try:\n        p= Producto.objects.get(pk=pk)\n    except Producto.DoesNotExist:\n        raise Http404(\"El producto no existe\")\n    #AJUSTA ESTE NOMBRE DE CAMPO al real de tu modelo:",
+        "detail": "inventario.views",
+        "documentation": {}
+    },
+    {
+        "label": "inventario",
+        "kind": 2,
+        "importPath": "inventario.views",
+        "description": "inventario.views",
+        "peekOfCode": "def inventario(request):\n    # Redirige al listado que SÍ existe (Proveedores, ya lo dejamos OK)\n    return redirect(\"inventario:listar_proveedores\")\n    # Si prefieres ir a productos, cambia por:\n    # return redirect(\"inventario:listar_productos\")\n    # Alias para compatibilidad con tu URL/plantillas antiguas\n@login_required\n@permission_required(\"inventario.add_proveedor\", raise_exception=True)\ndef proveedor_crear(request):\n    # Reusa la lógica de agregar_proveedor para no duplicar código",
+        "detail": "inventario.views",
+        "documentation": {}
+    },
+    {
+        "label": "proveedor_crear",
+        "kind": 2,
+        "importPath": "inventario.views",
+        "description": "inventario.views",
+        "peekOfCode": "def proveedor_crear(request):\n    # Reusa la lógica de agregar_proveedor para no duplicar código\n    return agregar_proveedor(request)",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1483,7 +1599,7 @@
         "kind": 5,
         "importPath": "suministros.urls",
         "description": "suministros.urls",
-        "peekOfCode": "urlpatterns = [\n    path('admin/', admin.site.urls),\n    path(\"compras/\", include((\"compras.urls\", \"compras\"), namespace=\"compras\")),\n    path('ventas/', include('ventas.urls')),\n    path('inventario/', include(('inventario.urls', 'inventario'), namespace='inventario')),\n    path(\"accounts/\", include(\"django.contrib.auth.urls\")),  # <- clave\n    # Home global (con lógica y contexto dinámico)\n    path('', views.index, name='home'),\n]",
+        "peekOfCode": "urlpatterns = [\n    path('admin/', admin.site.urls),\n    path(\"compras/\", include((\"compras.urls\", \"compras\"), namespace=\"compras\")),\n    path('ventas/', include('ventas.urls')),\n    path('inventario/', include(('inventario.urls', 'inventario'), namespace='inventario')),\n    path(\"accounts/\", include(\"django.contrib.auth.urls\")),  # <- clave\n    # Home global (con lógica y contexto dinámico)\n    path('', views.index, name='home'),\n    path('ventas/', include(('ventas.urls', 'ventas'), namespace='ventas')),\n]",
         "detail": "suministros.urls",
         "documentation": {}
     },
@@ -1542,6 +1658,33 @@
         "documentation": {}
     },
     {
+        "label": "VentaForm",
+        "kind": 6,
+        "importPath": "ventas.forms",
+        "description": "ventas.forms",
+        "peekOfCode": "class VentaForm(forms.ModelForm):\n    class Meta:\n        model = Venta\n        fields = [\"cliente\", \"fecha\", \"descuento_total\", \"impuesto\", \"subtotal\", \"total\"]\n        widgets = {\n            \"fecha\": forms.DateInput(attrs={\"type\": \"date\"}),\n        }\n    # Opcional: normaliza números vacíos\n    def clean_descuento_total(self):\n        v = self.cleaned_data.get(\"descuento_total\")",
+        "detail": "ventas.forms",
+        "documentation": {}
+    },
+    {
+        "label": "VentaProductoForm",
+        "kind": 6,
+        "importPath": "ventas.forms",
+        "description": "ventas.forms",
+        "peekOfCode": "class VentaProductoForm(forms.ModelForm):\n    class Meta:\n        model = VentaProducto\n        fields = [\"producto\", \"cantidad\", \"precio_unitario\", \"descuento\"]\n# *** ESTO ES LO CLAVE ***\nVentaProductoFormSet = inlineformset_factory(\n    parent_model=Venta,\n    model=VentaProducto,\n    form=VentaProductoForm,\n    extra=1,",
+        "detail": "ventas.forms",
+        "documentation": {}
+    },
+    {
+        "label": "VentaProductoFormSet",
+        "kind": 5,
+        "importPath": "ventas.forms",
+        "description": "ventas.forms",
+        "peekOfCode": "VentaProductoFormSet = inlineformset_factory(\n    parent_model=Venta,\n    model=VentaProducto,\n    form=VentaProductoForm,\n    extra=1,\n    can_delete=True,\n    validate_min=False,  # pon True y min_num=1 si quieres exigir al menos 1 línea\n    min_num=0,\n)",
+        "detail": "ventas.forms",
+        "documentation": {}
+    },
+    {
         "label": "Venta",
         "kind": 6,
         "importPath": "ventas.models",
@@ -1573,7 +1716,7 @@
         "kind": 5,
         "importPath": "ventas.urls",
         "description": "ventas.urls",
-        "peekOfCode": "app_name = 'ventas'\nurlpatterns = [\n    path('ver/', views.ver_ventas, name='ver_ventas'),\n    path('crear/', views.crear_venta, name='crear_venta'),\n    path('<int:venta_id>/', views.detalle_venta, name='detalle_venta'),\n    path('<int:venta_id>/editar/', views.editar_venta, name='editar_venta'),\n    path('<int:venta_id>/eliminar/', views.eliminar_venta, name='eliminar_venta'),\n]",
+        "peekOfCode": "app_name = 'ventas'\nurlpatterns = [\n    path(\"\", views.ver_ventas, name=\"listar_ventas\"),\n    path(\"nuevo/\", views.agregar_venta, name=\"agregar_venta\"),\n    path(\"<int:pk>/\", views.ver_venta, name=\"ver_venta\"),\n    path(\"<int:pk>/editar/\", views.editar_venta, name=\"editar_venta\"),\n    path(\"<int:pk>/eliminar/\", views.eliminar_venta, name=\"eliminar_venta\"),\n]",
         "detail": "ventas.urls",
         "documentation": {}
     },
@@ -1582,17 +1725,8 @@
         "kind": 5,
         "importPath": "ventas.urls",
         "description": "ventas.urls",
-        "peekOfCode": "urlpatterns = [\n    path('ver/', views.ver_ventas, name='ver_ventas'),\n    path('crear/', views.crear_venta, name='crear_venta'),\n    path('<int:venta_id>/', views.detalle_venta, name='detalle_venta'),\n    path('<int:venta_id>/editar/', views.editar_venta, name='editar_venta'),\n    path('<int:venta_id>/eliminar/', views.eliminar_venta, name='eliminar_venta'),\n]",
+        "peekOfCode": "urlpatterns = [\n    path(\"\", views.ver_ventas, name=\"listar_ventas\"),\n    path(\"nuevo/\", views.agregar_venta, name=\"agregar_venta\"),\n    path(\"<int:pk>/\", views.ver_venta, name=\"ver_venta\"),\n    path(\"<int:pk>/editar/\", views.editar_venta, name=\"editar_venta\"),\n    path(\"<int:pk>/eliminar/\", views.eliminar_venta, name=\"eliminar_venta\"),\n]",
         "detail": "ventas.urls",
-        "documentation": {}
-    },
-    {
-        "label": "ver_ventas",
-        "kind": 2,
-        "importPath": "ventas.views",
-        "description": "ventas.views",
-        "peekOfCode": "def ver_ventas(request):\n    return HttpResponse(\"Listado de ventas (WIP)\")\ndef crear_venta(request):\n    return HttpResponse(\"Crear venta (WIP)\")\ndef detalle_venta(request, venta_id):\n    return HttpResponse(f\"Detalle venta {venta_id} (WIP)\")\ndef editar_venta(request, venta_id):\n    return HttpResponse(f\"Editar venta {venta_id} (WIP)\")\ndef eliminar_venta(request, venta_id):\n    return HttpResponse(f\"Eliminar venta {venta_id} (WIP)\")",
-        "detail": "ventas.views",
         "documentation": {}
     },
     {
@@ -1600,16 +1734,7 @@
         "kind": 2,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "def crear_venta(request):\n    return HttpResponse(\"Crear venta (WIP)\")\ndef detalle_venta(request, venta_id):\n    return HttpResponse(f\"Detalle venta {venta_id} (WIP)\")\ndef editar_venta(request, venta_id):\n    return HttpResponse(f\"Editar venta {venta_id} (WIP)\")\ndef eliminar_venta(request, venta_id):\n    return HttpResponse(f\"Eliminar venta {venta_id} (WIP)\")",
-        "detail": "ventas.views",
-        "documentation": {}
-    },
-    {
-        "label": "detalle_venta",
-        "kind": 2,
-        "importPath": "ventas.views",
-        "description": "ventas.views",
-        "peekOfCode": "def detalle_venta(request, venta_id):\n    return HttpResponse(f\"Detalle venta {venta_id} (WIP)\")\ndef editar_venta(request, venta_id):\n    return HttpResponse(f\"Editar venta {venta_id} (WIP)\")\ndef eliminar_venta(request, venta_id):\n    return HttpResponse(f\"Eliminar venta {venta_id} (WIP)\")",
+        "peekOfCode": "def crear_venta(request):\n    FORMS_PREFIX = \"lineas\"\n    if request.method == \"POST\":\n        data = request.POST.copy()\n        # normaliza descuento_total vacío a 0\n        if data.get(\"descuento_total\") in (None, \"\"):\n            data[\"descuento_total\"] = \"0\"\n        form = VentaForm(data)\n        if form.is_valid():\n            venta = form.save(commit=False)",
         "detail": "ventas.views",
         "documentation": {}
     },
@@ -1618,7 +1743,25 @@
         "kind": 2,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "def editar_venta(request, venta_id):\n    return HttpResponse(f\"Editar venta {venta_id} (WIP)\")\ndef eliminar_venta(request, venta_id):\n    return HttpResponse(f\"Eliminar venta {venta_id} (WIP)\")",
+        "peekOfCode": "def editar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    # Si necesitas reconciliar stock al editar, captura estado previo de líneas:\n    estado_previo = {l.pk: (l.producto_id, l.cantidad) for l in venta.detalles.all()}\n    if request.method == \"POST\":\n        data = request.POST.copy()\n        if data.get(\"descuento_total\") in (None, \"\"):\n            data[\"descuento_total\"] = \"0\"\n        form = VentaForm(data, instance=venta)\n        formset = VentaProductoFormSet(data, instance=venta, prefix=\"lineas\")",
+        "detail": "ventas.views",
+        "documentation": {}
+    },
+    {
+        "label": "ver_ventas",
+        "kind": 2,
+        "importPath": "ventas.views",
+        "description": "ventas.views",
+        "peekOfCode": "def ver_ventas(request):\n    \"\"\"\n    Lista paginada de Ventas con filtros básicos (clon de ver_compras).\n    Filtros GET:\n        q       : búsqueda por id (icontains) o cliente.username (icontains)\n        desde   : fecha mínima (YYYY-MM-DD)\n        hasta   : fecha máxima (YYYY-MM-DD)\n        cliente : id del usuario cliente\n    \"\"\"\n    ventas_qs = Venta.objects.select_related(\"cliente\").order_by(\"-fecha\", \"-id\")",
+        "detail": "ventas.views",
+        "documentation": {}
+    },
+    {
+        "label": "ver_venta",
+        "kind": 2,
+        "importPath": "ventas.views",
+        "description": "ventas.views",
+        "peekOfCode": "def ver_venta(request, pk):\n    venta = get_object_or_404(Venta.objects.select_related(\"cliente\"), pk=pk)\n    form = VentaForm(instance=venta)\n    for f in form.fields.values():\n        f.disabled = True\n    formset = VentaProductoFormSet(instance=venta)\n    for frm in formset.forms:\n        for f in frm.fields.values():\n            f.disabled = True\n    formset.can_delete = False",
         "detail": "ventas.views",
         "documentation": {}
     },
@@ -1627,7 +1770,43 @@
         "kind": 2,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "def eliminar_venta(request, venta_id):\n    return HttpResponse(f\"Eliminar venta {venta_id} (WIP)\")",
+        "peekOfCode": "def eliminar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    if request.method == \"POST\":\n        # Si manejas inventario, considera revertir stock aquí antes de borrar.\n        venta.delete()\n        messages.success(request, \"Venta eliminada.\")\n        return redirect(\"ventas:ver_ventas\")\n    # En Ventas, el template se llama eliminar_confirm_venta.html\n    return render(request, \"ventas/eliminar_confirm_venta.html\", {\"venta\": venta})",
+        "detail": "ventas.views",
+        "documentation": {}
+    },
+    {
+        "label": "User",
+        "kind": 5,
+        "importPath": "ventas.views",
+        "description": "ventas.views",
+        "peekOfCode": "User = get_user_model()\n# ─────────────────────────────────────────────────────────────────────────────\n# CREAR\n# ─────────────────────────────────────────────────────────────────────────────\n@login_required\n@transaction.atomic\ndef crear_venta(request):\n    FORMS_PREFIX = \"lineas\"\n    if request.method == \"POST\":\n        data = request.POST.copy()",
+        "detail": "ventas.views",
+        "documentation": {}
+    },
+    {
+        "label": "agregar_venta",
+        "kind": 5,
+        "importPath": "ventas.views",
+        "description": "ventas.views",
+        "peekOfCode": "agregar_venta = crear_venta\n# ─────────────────────────────────────────────────────────────────────────────\n# EDITAR\n# ─────────────────────────────────────────────────────────────────────────────\n@login_required\n@transaction.atomic\ndef editar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    # Si necesitas reconciliar stock al editar, captura estado previo de líneas:\n    estado_previo = {l.pk: (l.producto_id, l.cantidad) for l in venta.detalles.all()}",
+        "detail": "ventas.views",
+        "documentation": {}
+    },
+    {
+        "label": "detalle",
+        "kind": 5,
+        "importPath": "ventas.views",
+        "description": "ventas.views",
+        "peekOfCode": "detalle = ver_venta\ndetalle_venta = ver_venta\n# ─────────────────────────────────────────────────────────────────────────────\n# ELIMINAR (confirmación + POST)\n# ─────────────────────────────────────────────────────────────────────────────\n@login_required\n@transaction.atomic\ndef eliminar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    if request.method == \"POST\":",
+        "detail": "ventas.views",
+        "documentation": {}
+    },
+    {
+        "label": "detalle_venta",
+        "kind": 5,
+        "importPath": "ventas.views",
+        "description": "ventas.views",
+        "peekOfCode": "detalle_venta = ver_venta\n# ─────────────────────────────────────────────────────────────────────────────\n# ELIMINAR (confirmación + POST)\n# ─────────────────────────────────────────────────────────────────────────────\n@login_required\n@transaction.atomic\ndef eliminar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    if request.method == \"POST\":\n        # Si manejas inventario, considera revertir stock aquí antes de borrar.",
         "detail": "ventas.views",
         "documentation": {}
     },

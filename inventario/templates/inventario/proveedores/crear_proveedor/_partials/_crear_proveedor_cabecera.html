@@ -1,0 +1,33 @@
+<div class="card mb-3">
+  <div class="card-header">
+    <h2 class="card-title">Datos del proveedor</h2>
+  </div>
+  <div class="card-body">
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="form-rows-2col">
+      {# ⚠️ Nada de form.as_p. Iteramos campo por campo. #}
+      {% for field in form.visible_fields %}
+        {# Columna 1: LABEL (izquierda) #}
+        <label class="form-label-left" for="{{ field.id_for_label }}">
+          {{ field.label }}{% if field.field.required %}<span class="req">*</span>{% endif %}
+        </label>
+
+        {# Columna 2: INPUT + errores/help (derecha) #}
+        <div class="form-field">
+          {{ field }}
+        </div>
+        {% if field.errors %}
+          <div></div><div class="text-danger small">{{ field.errors|striptags }}</div>
+        {% endif %}
+        {% if field.help_text %}
+          <div></div><div class="text-muted small">{{ field.help_text }}</div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+  </div>
+</div>

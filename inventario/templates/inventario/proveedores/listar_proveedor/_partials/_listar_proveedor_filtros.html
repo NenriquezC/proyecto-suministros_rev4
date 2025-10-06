@@ -1,0 +1,27 @@
+<form method="get" class="row g-2 my-3">
+  <div class="col-md-4">
+    <input type="text"
+           name="q"
+           value="{{ request.GET.q }}"
+           class="form-control"
+           placeholder="Nombre">
+  </div>
+
+  <!--<div class="col-md-3">
+    <select name="categoria" class="form-select">
+      <option value="">Todas las categorías</option>
+      {# Proveedores no usan categorías: dejamos solo el placeholder para que se vea IGUAL que Productos #}
+    </select>
+  </div>
+
+  <div class="col-md-3">
+    <select name="estado" class="form-select">
+      <option value="">Todos</option>
+      {# Sin estados para Proveedores: placeholder solo para paridad visual #}
+    </select>
+  </div>
+-->
+  <div class="col-md-2 d-grid">
+    <button class="btn-main" type="submit">Filtrar</button>
+  </div>
+</form>

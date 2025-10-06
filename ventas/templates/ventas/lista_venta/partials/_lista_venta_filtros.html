@@ -1,0 +1,20 @@
+<form method="get" style="margin:16px 0;">
+  <input type="text"
+         name="q"
+         value="{{ request.GET.q }}"
+         placeholder="Buscar (cliente, id)...">
+
+  <input type="date" name="desde" value="{{ request.GET.desde }}">
+  <input type="date" name="hasta" value="{{ request.GET.hasta }}">
+
+  <select name="cliente">
+    <option value="">Todos los clientes</option>
+    {% for c in lista_clientes %}
+      <option value="{{ c.id }}" {% if request.GET.cliente == c.id|stringformat:"s" %}selected{% endif %}>
+        {{ c }}
+      </option>
+    {% endfor %}
+  </select>
+
+  <button class="btn-main" type="submit">Filtrar</button>
+</form>

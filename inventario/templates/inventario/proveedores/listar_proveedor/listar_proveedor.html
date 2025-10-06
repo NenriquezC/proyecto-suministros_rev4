@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Proveedores - Lista{% endblock %}
+
+<style>
+/* Paridad visual con Productos: ensancha SOLO la tabla */
+.tabla-productos { min-width: 1600px; }
+/* (si quieres, puedes ajustar anchos de columnas igual que en productos) */
+</style>
+
+{% block content %}
+  <h1>Proveedores</h1>
+  {% if perms.inventario.add_proveedor %}
+    <a class="btn-main" href="{% url 'inventario:proveedor_crear' %}">➕ Nuevo Proveedor</a>
+  {% endif %}
+
+  {# Filtros y buscador (mismo patrón que productos) #}
+  {% include "inventario/proveedores/listar_proveedor/_partials/_listar_proveedor_filtros.html" %}
+
+  {# Tabla (misma clase/table-dark/align-middle/text-start que productos) #}
+  {% include "inventario/proveedores/listar_proveedor/_partials/_listar_proveedor_tabla.html" with proveedores=proveedores %}
+
+  {# Paginación (usa page_obj=proveedores como en tu partial) #}
+  {% include "inventario/proveedores/listar_proveedor/_partials/_listar_proveedor_paginacion.html" with page_obj=proveedores %}
+{% endblock %}

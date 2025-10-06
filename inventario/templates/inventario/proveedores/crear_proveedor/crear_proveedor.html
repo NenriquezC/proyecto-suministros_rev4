@@ -1,11 +1,14 @@
 {% extends "base.html" %}
 {% load static %}
 
+{# (opcional) mismo bloque que usas en compras #}
+{% block flash_messages %}{% endblock %}
+
 {% block title %}Inventario · Crear proveedor{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/global.css' %}">
 <style>
+/* === MISMO ESTILO QUE EN PRODUCTOS (copiado tal cual) === */
 .container { max-width: 1200px; }
 .page-header { margin: 24px 0 12px; }
 .page-title { margin: 0; color: #094067; font-weight: 700; }
@@ -15,53 +18,67 @@
 .card-header { background: #3a5068; color: #fff; border-bottom: 1px solid #dfe6e9; }
 .card-title { margin: 0; font-size: 1.12rem; font-weight: 700; }
 
+.btn-main { background: #3da9fc; color: #fff; border: none; border-radius: 8px; padding: 10px 18px; font-weight: 700; box-shadow: 0 2px 8px #09406720; transition: background .18s, box-shadow .18s; text-decoration: none; }
+.btn-main:hover { background: #094067; color: #fff; box-shadow: 0 4px 16px #3da9fc2a; }
+.btn-outline { background: #fff; color: #094067; border: 1px solid #dfe6e9; border-radius: 8px; padding: 10px 18px; font-weight: 600; text-decoration: none; }
+
+.table-responsive { overflow-x: auto; }
+.table th, .table td { vertical-align: middle; white-space: nowrap; }
+
+/* regla tuya: label a la izquierda + grid 2 columnas */
 .form-rows-2col { display: grid; grid-template-columns: 240px 1fr; column-gap: 16px; row-gap: 12px; align-items: center; }
 .form-label-left { font-weight: 600; text-align: left; color: #094067; }
 .form-label-left .req { color: #ef4565; }
 .form-field { display: flex; align-items: center; gap: 8px; }
 .form-field input, .form-field select, .form-field textarea { width: 100%; max-width: 420px; text-align: left; }
-.invalid-feedback { margin-top: 4px; }
 
-.card-actions { display:flex; justify-content:flex-end; gap: 8px; }
+.invalid-feedback { margin-top: 4px; }
+.totals-card { max-width: 420px; margin-left: auto; }
+.totals-grid { display: grid; gap: 8px; }
+.totals-row { display:flex; justify-content: space-between; }
+.totals-row--strong { font-weight: 700; font-size: 1.05rem; }
+.card-header--flex { display:flex; justify-content: space-between; align-items:center; }
 
 @media (max-width: 700px) {
-    .form-rows-2col { grid-template-columns: 1fr; }
-    .form-field input, .form-field select, .form-field textarea { max-width: 100%; }
+  .form-rows-2col { grid-template-columns: 1fr; }
+  .form-field input, .form-field select, .form-field textarea { max-width: 100%; }
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container my-3">
-<div class="page-header">
+<div class="container">
+  <div class="page-header">
     <h1 class="page-title">NUEVO PROVEEDOR</h1>
-    <p class="page-subtitle">Registra un proveedor para usarlo en compras</p>
-</div>
+    <p class="page-subtitle">Ingrese los datos del nuevo proveedor</p>
+  </div>
 
-<form method="post" novalidate id="form-proveedor">
+  {# Mensajes flash (igual que en productos/compras) #}
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" novalidate>
     {% csrf_token %}
 
-    {% include "inventario/proveedores/crear_proveedor/partials/_crear_proveedor_cabecera.html" %}
-    {% include "inventario/proveedores/crear_proveedor/partials/_crear_proveedor_acciones.html" %}
-</form>
+    {# ======= DATOS DEL PROVEEDOR (card principal) ======= #}
+    {% include "inventario/proveedores/crear_proveedor/_partials/_crear_proveedor_cabecera.html" with form=form %}
+
+    {# ======= ACCIONES ======= #}
+    {% include "inventario/proveedores/crear_proveedor/_partials/_crear_proveedor_acciones.html" %}
+  </form>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-  // Evita doble envío y enfoca el primer campo
-(function(){
-    const form = document.getElementById('form-proveedor');
-    if (form) {
-    let sent = false;
-    form.addEventListener('submit', function(e){
-        if (sent) { e.preventDefault(); return false; }
-        sent = true;
-    }, {capture:true});
-      // foco amable
-    const first = form.querySelector('input, select, textarea');
-    if (first) try { first.focus(); } catch(e){}
-    }
-})();
+  console.log('[inventario/proveedores] bloque scripts de crear_proveedor.html cargado');
+  // Hook para validaciones/UX futuras (placeholder)
 </script>
 {% endblock %}

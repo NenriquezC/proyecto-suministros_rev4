@@ -1,0 +1,38 @@
+{# inputs: formulario_venta #}
+<div class="grid" style="display:grid; grid-template-columns: repeat(12, 1fr); gap:12px;">
+
+  <!-- Cliente -->
+  <div class="col-6" style="grid-column: span 6;">
+    <label for="{{ formulario_venta.cliente.id_for_label }}">Cliente</label>
+    {{ formulario_venta.cliente.errors }}
+    {{ formulario_venta.cliente }}
+  </div>
+
+  <!-- Fecha -->
+  <div class="col-3" style="grid-column: span 3;">
+    <label for="{{ formulario_venta.fecha.id_for_label }}">Fecha</label>
+    {{ formulario_venta.fecha.errors }}
+    {{ formulario_venta.fecha }}
+  </div>
+
+  {# Totales se calculan; no se editan aquí. Si en tu form vienen como read-only, puedes mostrarlos: #}
+  {# 
+  <div class="col-3" style="grid-column: span 3;">
+    <label>Subtotal</label>
+    {{ formulario_venta.subtotal }}
+  </div>
+  <div class="col-3" style="grid-column: span 3;">
+    <label>Impuesto</label>
+    {{ formulario_venta.impuesto }}
+  </div>
+  <div class="col-3" style="grid-column: span 3;">
+    <label>Descuento total</label>
+    {{ formulario_venta.descuento_total }}
+  </div>
+  <div class="col-3" style="grid-column: span 3;">
+    <label>Total</label>
+    {{ formulario_venta.total }}
+  </div>
+  #}
+
+</div>

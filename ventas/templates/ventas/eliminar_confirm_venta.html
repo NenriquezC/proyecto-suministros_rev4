@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Ventas · Eliminar #{{ venta.pk }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+  <h1 class="mb-3" style="color:#094067;">Eliminar venta Identificador N°:{{ venta.pk }}</h1>
+
+  <div class="alert alert-warning">
+    <strong>¿Estás seguro?</strong> Esta acción eliminará la venta y sus líneas asociadas.
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header" style="background:#3a5068;color:#fff;">Resumen</div>
+    <div class="card-body">
+      <p><b>Cliente:</b> {{ venta.cliente }}</p>
+      <p><b>Fecha:</b> {{ venta.fecha }}</p>
+      <p class="mb-0"><b>Total:</b> {{ venta.total }}</p>
+    </div>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <a href="{% url 'ventas:listar_ventas' %}" class="btn btn-outline-secondary">Cancelar</a>
+    <button type="submit" class="btn btn-danger">Eliminar definitivamente</button>
+  </form>
+</div>
+{% endblock %}
