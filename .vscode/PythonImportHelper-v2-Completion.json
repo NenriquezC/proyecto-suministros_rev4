@@ -171,11 +171,43 @@
         "documentation": {}
     },
     {
-        "label": "settings",
-        "importPath": "django.conf",
-        "description": "django.conf",
+        "label": "Decimal",
+        "importPath": "decimal",
+        "description": "decimal",
         "isExtraImport": true,
-        "detail": "django.conf",
+        "detail": "decimal",
+        "documentation": {}
+    },
+    {
+        "label": "Decimal",
+        "importPath": "decimal",
+        "description": "decimal",
+        "isExtraImport": true,
+        "detail": "decimal",
+        "documentation": {}
+    },
+    {
+        "label": "ROUND_HALF_UP",
+        "importPath": "decimal",
+        "description": "decimal",
+        "isExtraImport": true,
+        "detail": "decimal",
+        "documentation": {}
+    },
+    {
+        "label": "ROUND_HALF_UP",
+        "importPath": "decimal",
+        "description": "decimal",
+        "isExtraImport": true,
+        "detail": "decimal",
+        "documentation": {}
+    },
+    {
+        "label": "Decimal",
+        "importPath": "decimal",
+        "description": "decimal",
+        "isExtraImport": true,
+        "detail": "decimal",
         "documentation": {}
     },
     {
@@ -187,6 +219,14 @@
         "documentation": {}
     },
     {
+        "label": "settings",
+        "importPath": "django.conf",
+        "description": "django.conf",
+        "isExtraImport": true,
+        "detail": "django.conf",
+        "documentation": {}
+    },
+    {
         "label": "migrations",
         "importPath": "django.db",
         "description": "django.db",
@@ -243,6 +283,14 @@
         "documentation": {}
     },
     {
+        "label": "models",
+        "importPath": "django.db",
+        "description": "django.db",
+        "isExtraImport": true,
+        "detail": "django.db",
+        "documentation": {}
+    },
+    {
         "label": "migrations",
         "importPath": "django.db",
         "description": "django.db",
@@ -315,19 +363,11 @@
         "documentation": {}
     },
     {
-        "label": "admin",
-        "importPath": "django.contrib",
-        "description": "django.contrib",
+        "label": "transaction",
+        "importPath": "django.db",
+        "description": "django.db",
         "isExtraImport": true,
-        "detail": "django.contrib",
-        "documentation": {}
-    },
-    {
-        "label": "messages",
-        "importPath": "django.contrib",
-        "description": "django.contrib",
-        "isExtraImport": true,
-        "detail": "django.contrib",
+        "detail": "django.db",
         "documentation": {}
     },
     {
@@ -368,6 +408,38 @@
         "description": "django.contrib",
         "isExtraImport": true,
         "detail": "django.contrib",
+        "documentation": {}
+    },
+    {
+        "label": "admin",
+        "importPath": "django.contrib",
+        "description": "django.contrib",
+        "isExtraImport": true,
+        "detail": "django.contrib",
+        "documentation": {}
+    },
+    {
+        "label": "admin",
+        "importPath": "django.contrib",
+        "description": "django.contrib",
+        "isExtraImport": true,
+        "detail": "django.contrib",
+        "documentation": {}
+    },
+    {
+        "label": "messages",
+        "importPath": "django.contrib",
+        "description": "django.contrib",
+        "isExtraImport": true,
+        "detail": "django.contrib",
+        "documentation": {}
+    },
+    {
+        "label": "AppConfig",
+        "importPath": "django.apps",
+        "description": "django.apps",
+        "isExtraImport": true,
+        "detail": "django.apps",
         "documentation": {}
     },
     {
@@ -432,6 +504,14 @@
         "description": "django.forms",
         "isExtraImport": true,
         "detail": "django.forms",
+        "documentation": {}
+    },
+    {
+        "label": "timezone",
+        "importPath": "django.utils",
+        "description": "django.utils",
+        "isExtraImport": true,
+        "detail": "django.utils",
         "documentation": {}
     },
     {
@@ -491,6 +571,30 @@
         "documentation": {}
     },
     {
+        "label": "annotations",
+        "importPath": "__future__",
+        "description": "__future__",
+        "isExtraImport": true,
+        "detail": "__future__",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Tuple",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "Dict",
         "importPath": "typing",
         "description": "typing",
@@ -547,7 +651,7 @@
         "documentation": {}
     },
     {
-        "label": "Q",
+        "label": "Sum",
         "importPath": "django.db.models",
         "description": "django.db.models",
         "isExtraImport": true,
@@ -571,6 +675,102 @@
         "documentation": {}
     },
     {
+        "label": "F",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "F",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "Sum",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "DecimalField",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "ExpressionWrapper",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "Q",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "F",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "Sum",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "DecimalField",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "ExpressionWrapper",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "ValidationError",
+        "importPath": "django.core.exceptions",
+        "description": "django.core.exceptions",
+        "isExtraImport": true,
+        "detail": "django.core.exceptions",
+        "documentation": {}
+    },
+    {
+        "label": "ValidationError",
+        "importPath": "django.core.exceptions",
+        "description": "django.core.exceptions",
+        "isExtraImport": true,
+        "detail": "django.core.exceptions",
+        "documentation": {}
+    },
+    {
         "label": "Producto",
         "importPath": "inventario.models",
         "description": "inventario.models",
@@ -595,7 +795,23 @@
         "documentation": {}
     },
     {
+        "label": "Producto",
+        "importPath": "inventario.models",
+        "description": "inventario.models",
+        "isExtraImport": true,
+        "detail": "inventario.models",
+        "documentation": {}
+    },
+    {
         "label": "Proveedor",
+        "importPath": "inventario.models",
+        "description": "inventario.models",
+        "isExtraImport": true,
+        "detail": "inventario.models",
+        "documentation": {}
+    },
+    {
+        "label": "Producto",
         "importPath": "inventario.models",
         "description": "inventario.models",
         "isExtraImport": true,
@@ -624,6 +840,22 @@
         "description": "django.test",
         "isExtraImport": true,
         "detail": "django.test",
+        "documentation": {}
+    },
+    {
+        "label": "TestCase",
+        "importPath": "django.test",
+        "description": "django.test",
+        "isExtraImport": true,
+        "detail": "django.test",
+        "documentation": {}
+    },
+    {
+        "label": "path",
+        "importPath": "django.urls",
+        "description": "django.urls",
+        "isExtraImport": true,
+        "detail": "django.urls",
         "documentation": {}
     },
     {
@@ -691,6 +923,14 @@
         "documentation": {}
     },
     {
+        "label": "login_required",
+        "importPath": "django.contrib.auth.decorators",
+        "description": "django.contrib.auth.decorators",
+        "isExtraImport": true,
+        "detail": "django.contrib.auth.decorators",
+        "documentation": {}
+    },
+    {
         "label": "permission_required",
         "importPath": "django.contrib.auth.decorators",
         "description": "django.contrib.auth.decorators",
@@ -739,6 +979,14 @@
         "documentation": {}
     },
     {
+        "label": "render",
+        "importPath": "django.shortcuts",
+        "description": "django.shortcuts",
+        "isExtraImport": true,
+        "detail": "django.shortcuts",
+        "documentation": {}
+    },
+    {
         "label": "redirect",
         "importPath": "django.shortcuts",
         "description": "django.shortcuts",
@@ -808,6 +1056,62 @@
         "description": "django.core.paginator",
         "isExtraImport": true,
         "detail": "django.core.paginator",
+        "documentation": {}
+    },
+    {
+        "label": "timedelta",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "TruncDate",
+        "importPath": "django.db.models.functions",
+        "description": "django.db.models.functions",
+        "isExtraImport": true,
+        "detail": "django.db.models.functions",
+        "documentation": {}
+    },
+    {
+        "label": "Least",
+        "importPath": "django.db.models.functions",
+        "description": "django.db.models.functions",
+        "isExtraImport": true,
+        "detail": "django.db.models.functions",
+        "documentation": {}
+    },
+    {
+        "label": "Compra",
+        "importPath": "compras.models",
+        "description": "compras.models",
+        "isExtraImport": true,
+        "detail": "compras.models",
+        "documentation": {}
+    },
+    {
+        "label": "Compra",
+        "importPath": "compras.models",
+        "description": "compras.models",
+        "isExtraImport": true,
+        "detail": "compras.models",
+        "documentation": {}
+    },
+    {
+        "label": "Venta",
+        "importPath": "ventas.models",
+        "description": "ventas.models",
+        "isExtraImport": true,
+        "detail": "ventas.models",
+        "documentation": {}
+    },
+    {
+        "label": "VentaProducto",
+        "importPath": "ventas.models",
+        "description": "ventas.models",
+        "isExtraImport": true,
+        "detail": "ventas.models",
         "documentation": {}
     },
     {
@@ -868,11 +1172,11 @@
         "documentation": {}
     },
     {
-        "label": "Compra",
-        "importPath": "compras.models",
-        "description": "compras.models",
+        "label": "index",
+        "importPath": "dashboard.views",
+        "description": "dashboard.views",
         "isExtraImport": true,
-        "detail": "compras.models",
+        "detail": "dashboard.views",
         "documentation": {}
     },
     {
@@ -1023,7 +1327,7 @@
         "kind": 2,
         "importPath": "compras.services",
         "description": "compras.services",
-        "peekOfCode": "def redondear_moneda(importe: Decimal) -> Decimal:\n    \"\"\"\n    Redondea un importe monetario a 2 decimales con HALF_UP (estándar contable).\n    Por qué: para valores monetarios “normales” (2 decimales).\n    \"\"\"\n    return importe.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n# ==== Totales de la compra ====\n@transaction.atomic\ndef calcular_y_guardar_totales_compra(compra: Compra,tasa_impuesto_pct: Decimal | None = None,) -> Compra:\n    \"\"\"",
+        "peekOfCode": "def redondear_moneda(importe: Decimal) -> Decimal:\n    return importe.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n# ==== Helper: aplicar delta seguro al stock (atómico + anti-negativos) ====\ndef _aplicar_delta_stock_seguro(producto_id: int, delta_unidades):\n    if not delta_unidades:\n        return\n    filas = Producto.objects.filter(pk=producto_id).update(stock=F(\"stock\") + delta_unidades)\n    if filas == 0:\n        raise ValidationError(f\"No existe Producto id={producto_id}.\")\n    prod_lock = Producto.objects.select_for_update().get(pk=producto_id)",
         "detail": "compras.services",
         "documentation": {}
     },
@@ -1032,16 +1336,7 @@
         "kind": 2,
         "importPath": "compras.services",
         "description": "compras.services",
-        "peekOfCode": "def calcular_y_guardar_totales_compra(compra: Compra,tasa_impuesto_pct: Decimal | None = None,) -> Compra:\n    \"\"\"\n    Recalcula y guarda los totales de una compra a partir de sus líneas.\n    - subtotal = SUM(cantidad * precio_unitario)  (se calcula en la BD)\n    - descuento_total: se respeta el valor que tenga la compra\n    (si quieres manejar descuento_porcentaje, lo calculas antes y lo asignas).\n    - impuesto_total: si 'tasa_impuesto_pct' viene, se recalcula como:\n        impuesto_total = subtotal * tasa_impuesto_pct\n    Si no viene, se deja el valor actual.\n    - total = subtotal - descuento_total + impuesto_total",
-        "detail": "compras.services",
-        "documentation": {}
-    },
-    {
-        "label": "fijar_minimo_por_reposicion",
-        "kind": 2,
-        "importPath": "compras.services",
-        "description": "compras.services",
-        "peekOfCode": "def fijar_minimo_por_reposicion(producto) -> None:\n    \"\"\"\n    Sube el stock_minimo si la reposición lo amerita.\n    Nunca lo baja.\n    \"\"\"\n    stock_total = int(producto.stock or 0)\n    minimo_candidato = int(stock_total * 0.90)\n    minimo_actual = int(producto.stock_minimo or 0)\n    if minimo_candidato > minimo_actual:\n        producto.stock_minimo = minimo_candidato",
+        "peekOfCode": "def calcular_y_guardar_totales_compra(\n    compra: Compra,\n    tasa_impuesto_pct: Decimal | None = None,\n) -> Compra:\n    total_linea_expr = ExpressionWrapper(\n        F(\"cantidad\") * F(\"precio_unitario\"),\n        output_field=DecimalField(max_digits=16, decimal_places=6),\n    )\n    agregados = CompraProducto.objects.filter(compra=compra).aggregate(subtotal=Sum(total_linea_expr))\n    subtotal_calculado = agregados[\"subtotal\"] or Decimal(\"0\")",
         "detail": "compras.services",
         "documentation": {}
     },
@@ -1050,7 +1345,7 @@
         "kind": 2,
         "importPath": "compras.services",
         "description": "compras.services",
-        "peekOfCode": "def aplicar_stock_despues_de_crear_compra(compra: Compra) -> None:\n    \"\"\"\n    Tras crear la compra y sus líneas:\n    - Suma la cantidad de cada línea al stock del producto.\n    - Actualiza 'precio' del producto como último costo (precio_unitario).\n    - Marca la línea como aplicada (_stock_aplicado=True) para no duplicar.\n    Qué hace:\n    Para cada línea recién creada y aún no aplicada (_stock_aplicado=False):\n    Suma la cantidad al stock del producto.\n    Actualiza precio del producto al precio_unitario (estrategia “último costo”).",
+        "peekOfCode": "def aplicar_stock_despues_de_crear_compra(compra: Compra) -> None:\n    \"\"\"\n    Suma la cantidad de cada línea al stock del producto (usa F()) y actualiza precio_compra.\n    \"\"\"\n    for linea in CompraProducto.objects.select_related(\"producto\").filter(compra=compra).order_by(\"id\"):\n        _aplicar_delta_stock_seguro(linea.producto_id, linea.cantidad)  # suma\n        # actualizar último costo y mínimo\n        producto = Producto.objects.select_for_update().get(pk=linea.producto_id)\n        producto.precio_compra = linea.precio_unitario\n        # regla de reposición simple (90%)",
         "detail": "compras.services",
         "documentation": {}
     },
@@ -1059,7 +1354,7 @@
         "kind": 2,
         "importPath": "compras.services",
         "description": "compras.services",
-        "peekOfCode": "def reconciliar_stock_tras_editar_compra(compra: Compra,lineas_previas: Dict[int, Tuple[int, Decimal]],) -> None:\n    \"\"\"\n    Ajusta el stock después de editar una compra.\n    'lineas_previas' es un diccionario con el estado ANTERIOR de las líneas:\n        { linea_pk: (producto_id_anterior, cantidad_anterior) }\n    Se compara contra el estado ACTUAL (después de guardar el formset):\n    - Líneas eliminadas: restar su cantidad al producto antiguo.\n    - Líneas nuevas: sumar su cantidad al producto nuevo.\n    - Líneas que permanecen:\n           * Si cambió el producto: restar al viejo y sumar al nuevo.",
+        "peekOfCode": "def reconciliar_stock_tras_editar_compra(\n    compra: Compra,\n    lineas_previas: Dict[int, Tuple[int, Decimal]],\n) -> None:\n    \"\"\"\n    - Eliminadas  → restar del producto viejo.\n    - Nuevas      → sumar al producto nuevo.\n    - Persisten   → si mismo producto: delta; si cambió: restar viejo y sumar nuevo.\n    \"\"\"\n    lineas_actuales_qs = CompraProducto.objects.filter(compra=compra)",
         "detail": "compras.services",
         "documentation": {}
     },
@@ -1142,6 +1437,51 @@
         "description": "compras.views",
         "peekOfCode": "agregar_compra = crear_compra",
         "detail": "compras.views",
+        "documentation": {}
+    },
+    {
+        "label": "DashboardConfig",
+        "kind": 6,
+        "importPath": "dashboard.apps",
+        "description": "dashboard.apps",
+        "peekOfCode": "class DashboardConfig(AppConfig):\n    default_auto_field = 'django.db.models.BigAutoField'\n    name = 'dashboard'",
+        "detail": "dashboard.apps",
+        "documentation": {}
+    },
+    {
+        "label": "app_name",
+        "kind": 5,
+        "importPath": "dashboard.urls",
+        "description": "dashboard.urls",
+        "peekOfCode": "app_name = \"dashboard\"\nurlpatterns = [\n    path(\"\", views.panel, name=\"panel\"),\n]",
+        "detail": "dashboard.urls",
+        "documentation": {}
+    },
+    {
+        "label": "urlpatterns",
+        "kind": 5,
+        "importPath": "dashboard.urls",
+        "description": "dashboard.urls",
+        "peekOfCode": "urlpatterns = [\n    path(\"\", views.panel, name=\"panel\"),\n]",
+        "detail": "dashboard.urls",
+        "documentation": {}
+    },
+    {
+        "label": "panel",
+        "kind": 2,
+        "importPath": "dashboard.views",
+        "description": "dashboard.views",
+        "peekOfCode": "def panel(request):\n    tznow = timezone.now()\n    hoy = tznow.date()\n    inicio_mes = hoy.replace(day=1)\n    hace_14 = hoy - timedelta(days=13)  # 14 días con hoy\n    # ───────────────── KPIs rápidas ─────────────────\n    compras_hoy = Compra.objects.filter(fecha__date=hoy).aggregate(s=Sum(\"total\"))[\"s\"] or Decimal(\"0\")\n    ventas_hoy  = Venta.objects.filter(fecha=hoy).aggregate(s=Sum(\"total\"))[\"s\"] or Decimal(\"0\")\n    compras_mes = Compra.objects.filter(fecha__date__gte=inicio_mes).aggregate(s=Sum(\"total\"))[\"s\"] or Decimal(\"0\")\n    ventas_mes  = Venta.objects.filter(fecha__gte=inicio_mes).aggregate(s=Sum(\"total\"))[\"s\"] or Decimal(\"0\")",
+        "detail": "dashboard.views",
+        "documentation": {}
+    },
+    {
+        "label": "index",
+        "kind": 2,
+        "importPath": "dashboard.views",
+        "description": "dashboard.views",
+        "peekOfCode": "def index(request):\n    from django.db.models import F, Sum, Case, When, Value, IntegerField, DecimalField\n    from django.db.models.functions import Coalesce\n    hoy = timezone.localdate()\n    inicio_mes = hoy.replace(day=1)\n    next_month = (inicio_mes + timedelta(days=32)).replace(day=1)\n    # Totales HOY (Compra.fecha suele ser DateTimeField; Venta.fecha suele ser DateField)\n    compras_hoy = (\n        Compra.objects.filter(fecha__date=hoy)\n        .aggregate(s=Coalesce(Sum(\"total\"), Value(0), output_field=DecimalField(max_digits=12, decimal_places=2)))",
+        "detail": "dashboard.views",
         "documentation": {}
     },
     {
@@ -1599,7 +1939,7 @@
         "kind": 5,
         "importPath": "suministros.urls",
         "description": "suministros.urls",
-        "peekOfCode": "urlpatterns = [\n    path('admin/', admin.site.urls),\n    path(\"compras/\", include((\"compras.urls\", \"compras\"), namespace=\"compras\")),\n    path('ventas/', include('ventas.urls')),\n    path('inventario/', include(('inventario.urls', 'inventario'), namespace='inventario')),\n    path(\"accounts/\", include(\"django.contrib.auth.urls\")),  # <- clave\n    # Home global (con lógica y contexto dinámico)\n    path('', views.index, name='home'),\n    path('ventas/', include(('ventas.urls', 'ventas'), namespace='ventas')),\n]",
+        "peekOfCode": "urlpatterns = [\n    path('admin/', admin.site.urls),\n    path(\"\", index, name=\"home\"),                 # ← http://127.0.0.1:8000/\n    path(\"compras/\", include((\"compras.urls\", \"compras\"), namespace=\"compras\")),\n    #path('ventas/', include('ventas.urls')),\n    path('inventario/', include(('inventario.urls', 'inventario'), namespace='inventario')),\n    path(\"accounts/\", include(\"django.contrib.auth.urls\")),  # <- clave\n    # Home global (con lógica y contexto dinámico)\n    path('', views.index, name='home'),\n    path('ventas/', include(('ventas.urls', 'ventas'), namespace='ventas')),",
         "detail": "suministros.urls",
         "documentation": {}
     },
@@ -1662,7 +2002,7 @@
         "kind": 6,
         "importPath": "ventas.forms",
         "description": "ventas.forms",
-        "peekOfCode": "class VentaForm(forms.ModelForm):\n    class Meta:\n        model = Venta\n        fields = [\"cliente\", \"fecha\", \"descuento_total\", \"impuesto\", \"subtotal\", \"total\"]\n        widgets = {\n            \"fecha\": forms.DateInput(attrs={\"type\": \"date\"}),\n        }\n    # Opcional: normaliza números vacíos\n    def clean_descuento_total(self):\n        v = self.cleaned_data.get(\"descuento_total\")",
+        "peekOfCode": "class VentaForm(forms.ModelForm):\n    class Meta:\n        model = Venta\n        # SOLO los campos que el usuario rellena\n        fields = [\"cliente\", \"fecha\", \"descuento_total\", \"impuesto\"]\n        widgets = {\n            \"fecha\": forms.DateInput(attrs={\"type\": \"date\"}),\n        }\n    def clean_descuento_total(self):\n        v = self.cleaned_data.get(\"descuento_total\")",
         "detail": "ventas.forms",
         "documentation": {}
     },
@@ -1712,11 +2052,47 @@
         "documentation": {}
     },
     {
+        "label": "calcular_y_guardar_totales_venta",
+        "kind": 2,
+        "importPath": "ventas.services",
+        "description": "ventas.services",
+        "peekOfCode": "def calcular_y_guardar_totales_venta(\n    venta: Venta,\n    tasa_impuesto_pct: Decimal | None = None\n) -> Venta:\n    total_linea_expr = ExpressionWrapper(\n        F(\"cantidad\") * F(\"precio_unitario\") * (1 - (F(\"descuento\") / 100.0)),\n        output_field=DecimalField(max_digits=16, decimal_places=6),\n    )\n    agg = VentaProducto.objects.filter(venta=venta).aggregate(subtotal=Sum(total_linea_expr))\n    subtotal_calc = agg[\"subtotal\"] or Decimal(\"0\")",
+        "detail": "ventas.services",
+        "documentation": {}
+    },
+    {
+        "label": "aplicar_stock_despues_de_crear_venta",
+        "kind": 2,
+        "importPath": "ventas.services",
+        "description": "ventas.services",
+        "peekOfCode": "def aplicar_stock_despues_de_crear_venta(venta: Venta) -> None:\n    \"\"\"\n    Resta del stock la cantidad de cada línea de venta.\n    \"\"\"\n    for linea in VentaProducto.objects.select_related(\"producto\").filter(venta=venta).order_by(\"id\"):\n        _aplicar_delta_stock_seguro(linea.producto_id, -linea.cantidad)  # resta\n# ==== Stock en edición de venta (no depende de related_name) ====\n@transaction.atomic\ndef reconciliar_stock_tras_editar_venta(\n    venta: Venta,",
+        "detail": "ventas.services",
+        "documentation": {}
+    },
+    {
+        "label": "reconciliar_stock_tras_editar_venta",
+        "kind": 2,
+        "importPath": "ventas.services",
+        "description": "ventas.services",
+        "peekOfCode": "def reconciliar_stock_tras_editar_venta(\n    venta: Venta,\n    lineas_previas: Dict[int, Tuple[int, Decimal]],\n) -> None:\n    \"\"\"\n    - Eliminadas  → devolver al producto viejo (+cantidad_anterior).\n    - Nuevas      → restar del producto nuevo (-cantidad_actual).\n    - Persisten   → si mismo producto: restar delta; si cambió: devolver viejo y restar nuevo.\n    \"\"\"\n    lineas_actuales_qs = VentaProducto.objects.filter(venta=venta)",
+        "detail": "ventas.services",
+        "documentation": {}
+    },
+    {
+        "label": "ALLOW_SOFT_MINIMO_EN_VENTA",
+        "kind": 5,
+        "importPath": "ventas.services",
+        "description": "ventas.services",
+        "peekOfCode": "ALLOW_SOFT_MINIMO_EN_VENTA = True  # política blanda en ventas\ndef _aplicar_delta_stock_seguro(producto_id: int, delta_unidades):\n    \"\"\"\n    Ajusta el stock de forma atómica.\n    Reglas:\n    - Nunca permite stock negativo (bloquea).\n    - Si delta < 0 (venta) y el nuevo stock quedaría por debajo del stock_minimo:\n        * Con política BLANDA (ALLOW_SOFT_MINIMO_EN_VENTA=True): baja automáticamente\n        stock_minimo al nuevo stock en la MISMA UPDATE (LEAST) para no violar el CHECK.\n        * Con política DURA: lanza ValidationError.",
+        "detail": "ventas.services",
+        "documentation": {}
+    },
+    {
         "label": "app_name",
         "kind": 5,
         "importPath": "ventas.urls",
         "description": "ventas.urls",
-        "peekOfCode": "app_name = 'ventas'\nurlpatterns = [\n    path(\"\", views.ver_ventas, name=\"listar_ventas\"),\n    path(\"nuevo/\", views.agregar_venta, name=\"agregar_venta\"),\n    path(\"<int:pk>/\", views.ver_venta, name=\"ver_venta\"),\n    path(\"<int:pk>/editar/\", views.editar_venta, name=\"editar_venta\"),\n    path(\"<int:pk>/eliminar/\", views.eliminar_venta, name=\"eliminar_venta\"),\n]",
+        "peekOfCode": "app_name = \"ventas\"\nurlpatterns = [\n    # LISTADO\n    path(\"ver/\", views.ver_ventas, name=\"ver_ventas\"),\n    # DETALLE / VER (solo lectura)\n    path(\"detalle/<int:pk>/\", views.ver_venta, name=\"detalle\"),   # alias usado por redirects\n    path(\"ver/<int:pk>/\",      views.ver_venta, name=\"ver_venta\"),\n    # EDITAR\n    path(\"editar/<int:pk>/\", views.editar_venta, name=\"editar_venta\"),\n    # ELIMINAR",
         "detail": "ventas.urls",
         "documentation": {}
     },
@@ -1725,7 +2101,7 @@
         "kind": 5,
         "importPath": "ventas.urls",
         "description": "ventas.urls",
-        "peekOfCode": "urlpatterns = [\n    path(\"\", views.ver_ventas, name=\"listar_ventas\"),\n    path(\"nuevo/\", views.agregar_venta, name=\"agregar_venta\"),\n    path(\"<int:pk>/\", views.ver_venta, name=\"ver_venta\"),\n    path(\"<int:pk>/editar/\", views.editar_venta, name=\"editar_venta\"),\n    path(\"<int:pk>/eliminar/\", views.eliminar_venta, name=\"eliminar_venta\"),\n]",
+        "peekOfCode": "urlpatterns = [\n    # LISTADO\n    path(\"ver/\", views.ver_ventas, name=\"ver_ventas\"),\n    # DETALLE / VER (solo lectura)\n    path(\"detalle/<int:pk>/\", views.ver_venta, name=\"detalle\"),   # alias usado por redirects\n    path(\"ver/<int:pk>/\",      views.ver_venta, name=\"ver_venta\"),\n    # EDITAR\n    path(\"editar/<int:pk>/\", views.editar_venta, name=\"editar_venta\"),\n    # ELIMINAR\n    path(\"eliminar/<int:pk>/\", views.eliminar_venta, name=\"eliminar_venta\"),",
         "detail": "ventas.urls",
         "documentation": {}
     },
@@ -1734,7 +2110,7 @@
         "kind": 2,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "def crear_venta(request):\n    FORMS_PREFIX = \"lineas\"\n    if request.method == \"POST\":\n        data = request.POST.copy()\n        # normaliza descuento_total vacío a 0\n        if data.get(\"descuento_total\") in (None, \"\"):\n            data[\"descuento_total\"] = \"0\"\n        form = VentaForm(data)\n        if form.is_valid():\n            venta = form.save(commit=False)",
+        "peekOfCode": "def crear_venta(request):\n    PREFIX = \"lineas\"\n    if request.method == \"POST\":\n        data = request.POST.copy()\n        if data.get(\"descuento_total\") in (None, \"\"):\n            data[\"descuento_total\"] = \"0\"\n        form = VentaForm(data)\n        if form.is_valid():\n            venta = form.save(commit=False)\n            # venta.usuario_id = request.user.pk  # si corresponde",
         "detail": "ventas.views",
         "documentation": {}
     },
@@ -1743,7 +2119,7 @@
         "kind": 2,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "def editar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    # Si necesitas reconciliar stock al editar, captura estado previo de líneas:\n    estado_previo = {l.pk: (l.producto_id, l.cantidad) for l in venta.detalles.all()}\n    if request.method == \"POST\":\n        data = request.POST.copy()\n        if data.get(\"descuento_total\") in (None, \"\"):\n            data[\"descuento_total\"] = \"0\"\n        form = VentaForm(data, instance=venta)\n        formset = VentaProductoFormSet(data, instance=venta, prefix=\"lineas\")",
+        "peekOfCode": "def editar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    estado_previo = {l.pk: (l.producto_id, l.cantidad) for l in venta.detalles.all()}\n    if request.method == \"POST\":\n        data = request.POST.copy()\n        if data.get(\"descuento_total\") in (None, \"\"):\n            data[\"descuento_total\"] = \"0\"\n        form = VentaForm(data, instance=venta)\n        formset = VentaProductoFormSet(data, instance=venta, prefix=\"lineas\")\n        if form.is_valid() and formset.is_valid():",
         "detail": "ventas.views",
         "documentation": {}
     },
@@ -1752,7 +2128,7 @@
         "kind": 2,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "def ver_ventas(request):\n    \"\"\"\n    Lista paginada de Ventas con filtros básicos (clon de ver_compras).\n    Filtros GET:\n        q       : búsqueda por id (icontains) o cliente.username (icontains)\n        desde   : fecha mínima (YYYY-MM-DD)\n        hasta   : fecha máxima (YYYY-MM-DD)\n        cliente : id del usuario cliente\n    \"\"\"\n    ventas_qs = Venta.objects.select_related(\"cliente\").order_by(\"-fecha\", \"-id\")",
+        "peekOfCode": "def ver_ventas(request):\n    ventas_qs = Venta.objects.select_related(\"cliente\").order_by(\"-fecha\", \"-id\")\n    q = request.GET.get(\"q\", \"\").strip()\n    desde = request.GET.get(\"desde\")\n    hasta = request.GET.get(\"hasta\")\n    cliente_id = request.GET.get(\"cliente\")\n    if q:\n        ventas_qs = ventas_qs.filter(Q(id__icontains=q) | Q(cliente__username__icontains=q))\n    if desde:\n        ventas_qs = ventas_qs.filter(fecha__gte=desde)",
         "detail": "ventas.views",
         "documentation": {}
     },
@@ -1770,7 +2146,16 @@
         "kind": 2,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "def eliminar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    if request.method == \"POST\":\n        # Si manejas inventario, considera revertir stock aquí antes de borrar.\n        venta.delete()\n        messages.success(request, \"Venta eliminada.\")\n        return redirect(\"ventas:ver_ventas\")\n    # En Ventas, el template se llama eliminar_confirm_venta.html\n    return render(request, \"ventas/eliminar_confirm_venta.html\", {\"venta\": venta})",
+        "peekOfCode": "def eliminar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    if request.method == \"POST\":\n        venta.delete()\n        messages.success(request, \"Venta eliminada.\")\n        return redirect(\"ventas:ver_ventas\")\n    return render(request, \"ventas/eliminar_confirm_venta.html\", {\"venta\": venta})\ndef _round2(x: Decimal) -> Decimal:\n    return (x or Decimal(\"0\")).quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n@transaction.atomic",
+        "detail": "ventas.views",
+        "documentation": {}
+    },
+    {
+        "label": "calcular_y_guardar_totales_venta",
+        "kind": 2,
+        "importPath": "ventas.views",
+        "description": "ventas.views",
+        "peekOfCode": "def calcular_y_guardar_totales_venta(venta: Venta, tasa_impuesto_pct: Decimal | None = None) -> Venta:\n    \"\"\"\n    Recalcula subtotal, impuesto (importe) y total de una VENTA, guardándolos en la BD.\n    - Suma en BD: SUM(cantidad * precio_unitario)\n    - Respeta venta.descuento_total (importe absoluto)\n    - Si se pasa `tasa_impuesto_pct` (ej. 0.23), recalcula `venta.impuesto` como base * tasa\n    - total = subtotal - descuento_total + impuesto\n    \"\"\"\n    total_linea = ExpressionWrapper(\n        F(\"cantidad\") * F(\"precio_unitario\"),",
         "detail": "ventas.views",
         "documentation": {}
     },
@@ -1779,7 +2164,7 @@
         "kind": 5,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "User = get_user_model()\n# ─────────────────────────────────────────────────────────────────────────────\n# CREAR\n# ─────────────────────────────────────────────────────────────────────────────\n@login_required\n@transaction.atomic\ndef crear_venta(request):\n    FORMS_PREFIX = \"lineas\"\n    if request.method == \"POST\":\n        data = request.POST.copy()",
+        "peekOfCode": "User = get_user_model()\n# ─────────────────────────────────────────────────────────────────────────────\n# CREAR\n# ─────────────────────────────────────────────────────────────────────────────\n@login_required\n@transaction.atomic\ndef crear_venta(request):\n    PREFIX = \"lineas\"\n    if request.method == \"POST\":\n        data = request.POST.copy()",
         "detail": "ventas.views",
         "documentation": {}
     },
@@ -1788,7 +2173,7 @@
         "kind": 5,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "agregar_venta = crear_venta\n# ─────────────────────────────────────────────────────────────────────────────\n# EDITAR\n# ─────────────────────────────────────────────────────────────────────────────\n@login_required\n@transaction.atomic\ndef editar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    # Si necesitas reconciliar stock al editar, captura estado previo de líneas:\n    estado_previo = {l.pk: (l.producto_id, l.cantidad) for l in venta.detalles.all()}",
+        "peekOfCode": "agregar_venta = crear_venta  # alias\n# ─────────────────────────────────────────────────────────────────────────────\n# EDITAR\n# ─────────────────────────────────────────────────────────────────────────────\n@login_required\n@transaction.atomic\ndef editar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    estado_previo = {l.pk: (l.producto_id, l.cantidad) for l in venta.detalles.all()}\n    if request.method == \"POST\":",
         "detail": "ventas.views",
         "documentation": {}
     },
@@ -1797,16 +2182,7 @@
         "kind": 5,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "detalle = ver_venta\ndetalle_venta = ver_venta\n# ─────────────────────────────────────────────────────────────────────────────\n# ELIMINAR (confirmación + POST)\n# ─────────────────────────────────────────────────────────────────────────────\n@login_required\n@transaction.atomic\ndef eliminar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    if request.method == \"POST\":",
-        "detail": "ventas.views",
-        "documentation": {}
-    },
-    {
-        "label": "detalle_venta",
-        "kind": 5,
-        "importPath": "ventas.views",
-        "description": "ventas.views",
-        "peekOfCode": "detalle_venta = ver_venta\n# ─────────────────────────────────────────────────────────────────────────────\n# ELIMINAR (confirmación + POST)\n# ─────────────────────────────────────────────────────────────────────────────\n@login_required\n@transaction.atomic\ndef eliminar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    if request.method == \"POST\":\n        # Si manejas inventario, considera revertir stock aquí antes de borrar.",
+        "peekOfCode": "detalle = ver_venta  # alias\n# ─────────────────────────────────────────────────────────────────────────────\n# ELIMINAR\n# ─────────────────────────────────────────────────────────────────────────────\n@login_required\n@transaction.atomic\ndef eliminar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    if request.method == \"POST\":\n        venta.delete()",
         "detail": "ventas.views",
         "documentation": {}
     },

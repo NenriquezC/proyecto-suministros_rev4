@@ -367,7 +367,7 @@
                 <div class="submenu">
                     <a href="{% url 'ventas:agregar_venta' %}"><i class="fa fa-plus"></i>Ingresar Venta</a>
 
-                    <a href="{% url 'ventas:listar_ventas' %}"><i class="fa fa-edit"></i>Administrar Venta</a>
+                    <a href="{% url 'ventas:ver_ventas' %}"><i class="fa fa-edit"></i>Administrar Venta</a>
                     
                 </div>
             </li>
@@ -392,7 +392,7 @@
                 </div>
             </li>
             <li>
-                <a href="#"><i class="fas fa-chart-bar"></i> Dashboard</a>
+                <a href="{% url 'dashboard:panel' %}"><i class="fas fa-chart-bar"></i> Dashboard</a>
             </li>
             <li>
                 <a href="/admin/"><i class="fas fa-user-shield"></i> Administración</a>

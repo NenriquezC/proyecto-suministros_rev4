@@ -7,19 +7,19 @@ from .models import Venta, VentaProducto
 class VentaForm(forms.ModelForm):
     class Meta:
         model = Venta
-        fields = ["cliente", "fecha", "descuento_total", "impuesto", "subtotal", "total"]
+        # SOLO los campos que el usuario rellena
+        fields = ["cliente", "fecha", "descuento_total", "impuesto"]
         widgets = {
             "fecha": forms.DateInput(attrs={"type": "date"}),
         }
 
-    # Opcional: normaliza números vacíos
     def clean_descuento_total(self):
         v = self.cleaned_data.get("descuento_total")
-        return v if v is not None else Decimal("0.00")
+        return v or Decimal("0.00")
 
     def clean_impuesto(self):
         v = self.cleaned_data.get("impuesto")
-        return v if v is not None else Decimal("0.00")
+        return v or Decimal("0.00")
 
 class VentaProductoForm(forms.ModelForm):
     class Meta:

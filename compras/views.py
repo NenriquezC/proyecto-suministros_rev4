@@ -50,6 +50,12 @@ def crear_compra(request):
             if formset.is_valid():
                 formset.save()
 
+                # ⬇️⬇️⬇️ ESTA LÍNEA ES LA CLAVE ⬇️⬇️⬇️
+                services.aplicar_stock_despues_de_crear_compra(compra)
+                # ⬆️⬆️⬆️ --------------------------- ⬆️⬆️⬆️
+
+
+
                 # DEBUG: cuántas líneas quedaron realmente
                 print("DEBUG >>> líneas guardadas:", compra.lineas.count())
                 print("DEBUG >>> detalle:", list(compra.lineas.values_list("producto_id","cantidad","precio_unitario")))

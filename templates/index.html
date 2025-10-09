@@ -1,56 +1,110 @@
+{# templates/index.html #}
 {% extends "base.html" %}
-
 {% block title %}Inicio · Tecknosfera{% endblock %}
 
 {% block content %}
-<div class="container py-3">
-    <!-- Bienvenida -->
-    <div class="mb-4">
-        <h2 class="mb-1">Bienvenido a Control Suministros Tecknosfera</h2>
-        <p class="text-muted mb-0">
-        Gestiona compras, productos y proveedores desde un solo lugar.
-        </p>
-    </div>
+<div class="container py-3 text-start">
+  <h2 class="mb-3">INICIO</h2>
 
-    <!-- Accesos rápidos -->
-    <div class="d-flex flex-wrap gap-2 mb-4">
-        <a href="{% url 'compras:ver_compras' %}" class="btn btn-primary btn-lg">
-        📦 Compras
-        </a>
-        <a href="{% url 'inventario:listar_productos' %}" class="btn btn-secondary btn-lg">
-        🛒 Productos
-        </a>
-        <a href="#" class="btn btn-info btn-lg disabled" aria-disabled="true">
-        🏭 Proveedores (próximamente)
-        </a>
-    </div>
+  <!-- Accesos rápidos -->
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    <a href="{% url 'dashboard:panel' %}" class="btn btn-outline-secondary btn-sm">📊 Dashboard</a>
+    <a href="{% url 'compras:ver_compras' %}" class="btn btn-primary btn-sm">📦 Compras</a>
+    <a href="{% url 'ventas:ver_ventas' %}" class="btn btn-primary btn-sm">🧾 Ventas</a>
+    <a href="{% url 'inventario:listar_productos' %}" class="btn btn-primary btn-sm">🗂️ Inventario</a>
+  </div>
 
-    <!-- Mini-dashboard (conteos) -->
-    <div class="row g-3">
-        <div class="col-12 col-md-4">
-        <div class="card h-100 text-center">
-            <div class="card-body">
-            <h3 class="mb-1">{{ compras_count|default:0 }}</h3>
-            <div class="text-muted">Compras registradas</div>
-            </div>
+  <!-- KPIs HOY -->
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-md-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="fw-bold text-muted">Compras (hoy)</div>
+          <div class="h4 mb-0">${{ compras_hoy|floatformat:2 }}</div>
         </div>
-        </div>
-        <div class="col-12 col-md-4">
-        <div class="card h-100 text-center">
-            <div class="card-body">
-            <h3 class="mb-1">{{ productos_count|default:0 }}</h3>
-            <div class="text-muted">Productos activos</div>
-            </div>
-        </div>
-        </div>
-        <div class="col-12 col-md-4">
-        <div class="card h-100 text-center">
-            <div class="card-body">
-            <h3 class="mb-1">{{ proveedores_count|default:0 }}</h3>
-            <div class="text-muted">Proveedores</div>
-            </div>
-        </div>
-        </div>
+      </div>
     </div>
+    <div class="col-12 col-md-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="fw-bold text-muted">Ventas (hoy)</div>
+          <div class="h4 mb-0">${{ ventas_hoy|floatformat:2 }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPIs MES -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="fw-bold text-muted">Compras (mes)</div>
+          <div class="h4 mb-0">${{ compras_mes|floatformat:2 }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="fw-bold text-muted">Ventas (mes)</div>
+          <div class="h4 mb-0">${{ ventas_mes|floatformat:2 }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Productos a contactar proveedor (stock ≤ mínimo) -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="fw-bold">Productos para reponer (stock ≤ mínimo)</div>
+        <small class="text-muted">Top 20 por urgencia</small>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Proveedor</th>
+              <th class="text-end">Stock</th>
+              <th class="text-end">Mínimo</th>
+              <th class="text-end">Déficit</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in low_stock_contact %}
+              <tr>
+                <td>{{ p.nombre }}</td>
+                <td>
+                  {% if p.proveedor %}
+                    {{ p.proveedor.nombre }}
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+                <td class="text-end">{{ p.stock }}</td>
+                <td class="text-end">{{ p.stock_minimo }}</td>
+                <td class="text-end">{{ p.deficit }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-center text-muted">
+                  Todo OK ✅ — no hay productos bajo el mínimo.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-2 d-flex gap-2">
+        <a href="{% url 'compras:ver_compras' %}" class="btn btn-sm btn-outline-primary">
+          Crear orden de compra
+        </a>
+        
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

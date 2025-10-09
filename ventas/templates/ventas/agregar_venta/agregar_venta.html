@@ -4,37 +4,33 @@
 {% block title %}Ventas · Agregar{% endblock %}
 
 {% block extra_head %}
+
+<!-- (mismo patrón que agregar_compra: sin CSS extra enlazado aquí) -->
+
 <style>
 .container { max-width: 1200px; }
 .page-header { margin: 24px 0 12px; }
 .page-title { margin: 0; color: #094067; font-weight: 700; }
 .page-subtitle { margin: 6px 0 0; color: #6c757d; }
-
 .card { border-radius: 10px; box-shadow: 0 2px 18px rgba(44,62,80,0.08); border: 1px solid #dfe6e9; }
 .card-header { background: #3a5068; color: #fff; border-bottom: 1px solid #dfe6e9; }
 .card-title { margin: 0; font-size: 1.12rem; font-weight: 700; }
-
 .btn-main { background: #3da9fc; color: #fff; border: none; border-radius: 8px; padding: 10px 18px; font-weight: 700; box-shadow: 0 2px 8px #09406720; transition: background .18s, box-shadow .18s; text-decoration: none; }
 .btn-main:hover { background: #094067; color: #fff; box-shadow: 0 4px 16px #3da9fc2a; }
 .btn-outline { background: #fff; color: #094067; border: 1px solid #dfe6e9; border-radius: 8px; padding: 10px 18px; font-weight: 600; text-decoration: none; }
-
 .table-responsive { overflow-x: auto; }
 .table th, .table td { vertical-align: middle; white-space: nowrap; }
-
 .form-rows-2col { display: grid; grid-template-columns: 240px 1fr; column-gap: 16px; row-gap: 12px; align-items: center; }
 .form-label-left { font-weight: 600; text-align: left; color: #094067; }
 .form-label-left .req { color: #ef4565; }
 .form-field { display: flex; align-items: center; gap: 8px; }
 .form-field input, .form-field select, .form-field textarea { width: 100%; max-width: 420px; text-align: left; }
-
 .invalid-feedback { margin-top: 4px; }
 .totals-card { max-width: 420px; margin-left: auto; }
 .totals-grid { display: grid; gap: 8px; }
 .totals-row { display:flex; justify-content: space-between; }
 .totals-row--strong { font-weight: 700; font-size: 1.05rem; }
-
 .card-header--flex { display:flex; justify-content: space-between; align-items:center; }
-
 @media (max-width: 700px) {
   .form-rows-2col { grid-template-columns: 1fr; }
   .form-field input, .form-field select, .form-field textarea { max-width: 100%; }
@@ -66,13 +62,14 @@
     {# ======= DATOS DE LA VENTA ======= #}
     {% include "ventas/agregar_venta/partials/_agregar_venta_cabecera.html" with form=form %}
 
-    {# ======= PRODUCTOS + TOTALES ======= #}
+    {# ======= PRODUCTOS + TOTALES (dentro de la misma card, igual que compras) ======= #}
     <div class="card mb-3">
+      <!--Seccion del titulo de productos de la venta mas el boton de agregar linea-->
       <div class="card-header card-header--flex">
         <h2 class="card-title">Productos de la venta</h2>
 
         <div class="d-flex align-items-center" style="gap: 8px;">
-          {# Nuevo producto en otra pestaña, volverá con ?next a esta vista #}
+          <!-- Botón: Nuevo producto (abre crear_producto) -->
           <a
             href="{% url 'inventario:agregar_producto' %}?next={% url 'ventas:agregar_venta' %}"
             class="btn btn-outline"
@@ -81,7 +78,7 @@
           >
             + Nuevo producto
           </a>
-
+          <!-- Botón: Agregar línea -->
           <button type="button" class="btn btn-outline" id="btn-add-row">+ Agregar línea</button>
         </div>
       </div>
@@ -98,8 +95,10 @@
 </div>
 {% endblock %}
 
-{# Bloque de scripts (cuando hagamos la parte 2 reutilizamos IDs y hooks) #}
+{# SOLO UN BLOQUE SCRIPTS (igual que compras) #}
 {% block scripts %}
   {% include "ventas/agregar_venta/partials/_agregar_venta_scripts.html" %}
-  <script>console.log('[ventas] bloque scripts de agregar_venta.html cargado');</script>
+  <script>
+    console.log('[ventas] bloque scripts de agregar_venta.html cargado');
+  </script>
 {% endblock %}

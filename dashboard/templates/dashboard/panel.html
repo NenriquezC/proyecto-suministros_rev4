@@ -1,0 +1,218 @@
+{# templates/dashboard/panel.html #}
+{% extends "base.html" %}
+{% block title %}Dashboard · Tecknosfera{% endblock %}
+
+{% block content %}
+<div class="container py-3 text-start">
+  <h2 class="mb-3">Dashboard</h2>
+
+  <!-- KPIs -->
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-md-3">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="fw-bold text-muted">Compras (hoy)</div>
+          <div class="h4 mb-0">${{ compras_hoy|floatformat:2 }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="fw-bold text-muted">Ventas (hoy)</div>
+          <div class="h4 mb-0">${{ ventas_hoy|floatformat:2 }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="fw-bold text-muted">Compras (mes)</div>
+          <div class="h4 mb-0">${{ compras_mes|floatformat:2 }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="fw-bold text-muted">Ventas (mes)</div>
+          <div class="h4 mb-0">${{ ventas_mes|floatformat:2 }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPIs 2 -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-3">
+      <div class="card h-100 text-center shadow-sm">
+        <div class="card-body">
+          <div class="fw-bold text-muted">Productos</div>
+          <div class="h4 mb-0">{{ productos_activos }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card h-100 text-center shadow-sm">
+        <div class="card-body">
+          <div class="fw-bold text-muted">Proveedores</div>
+          <div class="h4 mb-0">{{ proveedores_activos }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card h-100 text-center shadow-sm">
+        <div class="card-body">
+          <div class="fw-bold text-muted"># Compras</div>
+          <div class="h4 mb-0">{{ compras_count }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card h-100 text-center shadow-sm">
+        <div class="card-body">
+          <div class="fw-bold text-muted"># Ventas</div>
+          <div class="h4 mb-0">{{ ventas_count }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-lg-7">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body" style="height: 340px;">
+          <div class="fw-bold mb-2">Compras vs Ventas · últimos 14 días</div>
+          <canvas id="chartLine" style="width:100%; height: 280px;"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-5">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body" style="height: 340px;">
+          <div class="fw-bold mb-2">Top 5 productos vendidos</div>
+          <canvas id="chartBar" style="width:100%; height: 280px;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tablas -->
+  <div class="row g-3">
+    <div class="col-12 col-lg-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="fw-bold mb-2">Top vendidos (cantidad)</div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead>
+                <tr><th>Producto</th><th class="text-end">Cantidad</th></tr>
+              </thead>
+              <tbody>
+                {% for it in top_vendidos %}
+                  <tr>
+                    <td>{{ it.nombre }}</td>
+                    <td class="text-end">{{ it.cantidad }}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="2" class="text-center text-muted">Sin datos</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="fw-bold mb-2">Stock bajo (≤ mínimo)</div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead>
+                <tr><th>Producto</th><th class="text-end">Stock</th><th class="text-end">Mínimo</th></tr>
+              </thead>
+              <tbody>
+                {% for p in low_stock %}
+                  <tr>
+                    <td>{{ p.nombre }}</td>
+                    <td class="text-end">{{ p.stock }}</td>
+                    <td class="text-end">{{ p.stock_minimo }}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="3" class="text-center text-muted">Todo OK ✅</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  {# JSON seguro embebido (evita errores de sintaxis y comas) #}
+  {# La vista debe pasar un dict "chart" con:
+      chart = {
+        "labels": labels,             # lista de strings/fechas
+        "compras": data_compras,      # lista de números
+        "ventas": data_ventas,        # lista de números
+        "top_labels": top_labels,     # lista de strings
+        "top_data": top_data          # lista de números
+      }
+  #}
+  {{ chart|json_script:"chart-data" }}
+
+  <script>
+    const chart = JSON.parse(document.getElementById("chart-data").textContent);
+
+    const labels      = Array.isArray(chart.labels) ? chart.labels : [];
+    const dataCompras = Array.isArray(chart.compras) ? chart.compras : [];
+    const dataVentas  = Array.isArray(chart.ventas)  ? chart.ventas  : [];
+    const topLabels   = Array.isArray(chart.top_labels) ? chart.top_labels : [];
+    const topData     = Array.isArray(chart.top_data)   ? chart.top_data   : [];
+
+    // Line chart
+    const ctxLine = document.getElementById('chartLine').getContext('2d');
+    new Chart(ctxLine, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'Compras', data: dataCompras, tension: 0.3, borderWidth: 2 },
+          { label: 'Ventas',  data: dataVentas,  tension: 0.3, borderWidth: 2 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true } },
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+
+    // Bar chart Top vendidos
+    const ctxBar = document.getElementById('chartBar').getContext('2d');
+    new Chart(ctxBar, {
+      type: 'bar',
+      data: {
+        labels: topLabels,
+        datasets: [{ label: 'Unidades', data: topData, borderWidth: 1 }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+        plugins: { legend: { display: false } }
+      }
+    });
+  </script>
+{% endblock %}

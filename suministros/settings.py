@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "compras.apps.ComprasConfig", # 👈 nuestra app
     "inventario.apps.InventarioConfig", #v 👈 nuestra app
     "ventas.apps.VentasConfig",
+    "dashboard.apps.DashboardConfig",  # 👈 nuevo
     
 ]
 
