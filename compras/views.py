@@ -28,8 +28,8 @@ from inventario.models import Proveedor
 # ─────────────────────────────────────────────────────────────────────────────
 # CREAR
 # ─────────────────────────────────────────────────────────────────────────────
-@login_required
-@transaction.atomic
+@login_required #solos funcionarios autenticados
+@transaction.atomic #todo lo que pase dentro es una transaccion . Si algo falla follback (no quedan cabeceras huerfanas ni stock a medias)
 def crear_compra(request):
     FORMS_PREFIX = "lineas"
 
