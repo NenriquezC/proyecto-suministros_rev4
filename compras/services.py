@@ -1,25 +1,59 @@
 # compras/services.py
+"""
+Servicios (reglas de negocio) para la app 'compras'.
+
+Responsabilidades:
+- Cálculo y persistencia de totales (subtotal, impuesto_total, total).
+- Actualización consistente de stock ante creación/edición de compras.
+- Utilidades de redondeo monetario.
+
+Diseño:
+- Todas las operaciones que afecten stock/valores se envuelven en transacciones atómicas.
+- La UI (views/forms) NO debe duplicar estas reglas: aquí vive la “fuente de verdad”.
+"""
+
 from __future__ import annotations
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, Tuple
-
 from django.db import transaction
 from django.db.models import F, Sum, DecimalField, ExpressionWrapper
 from django.core.exceptions import ValidationError
-
 from .models import Compra, CompraProducto
 from inventario.models import Producto
 
 
-# ==== Utilidades ====
+# # ─────────────────────────────────────────────────────────────────────────────
+# Utilidades
+# ─────────────────────────────────────────────────────────────────────────────
 
 def redondear_moneda(importe: Decimal) -> Decimal:
+    """
+    Redondea un importe a 2 decimales con HALF_UP (regla típica financiera).
+    Args:
+    importe: Decimal a redondear.
+    Returns:
+    Decimal con 2 decimales.
+    """
     return importe.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
-# ==== Helper: aplicar delta seguro al stock (atómico + anti-negativos) ====
+# ─────────────────────────────────────────────────────────────────────────────
+# Stock helpers (atómico + anti-negativos)
+# ─────────────────────────────────────────────────────────────────────────────
 
 def _aplicar_delta_stock_seguro(producto_id: int, delta_unidades):
+    """
+    Aplica un delta al stock del Producto de forma segura.
+    Estrategia:
+    1) Actualiza stock con F() (evita condiciones de carrera en suma/resta).
+    2) Bloquea la fila con select_for_update() y verifica que no quede negativo.
+    3) Si quedó negativo, revierte el delta y lanza ValidationError.
+    Args:
+    producto_id: PK del producto a actualizar.
+    delta_unidades: Entero (positivo suma, negativo resta). Si es 0 o None, no hace nada.
+    Raises:
+    ValidationError: Si el producto no existe o si el stock resultante es negativo.
+    """
     if not delta_unidades:
         return
     filas = Producto.objects.filter(pk=producto_id).update(stock=F("stock") + delta_unidades)
@@ -33,13 +67,27 @@ def _aplicar_delta_stock_seguro(producto_id: int, delta_unidades):
         )
 
 
-# ==== Totales de la compra ====
-
+# ─────────────────────────────────────────────────────────────────────────────
+# Totales de la compra
+# ─────────────────────────────────────────────────────────────────────────────
 @transaction.atomic
-def calcular_y_guardar_totales_compra(
-    compra: Compra,
-    tasa_impuesto_pct: Decimal | None = None,
-) -> Compra:
+def calcular_y_guardar_totales_compra(compra: Compra,tasa_impuesto_pct: Decimal | None = None,) -> Compra:
+    """
+    Calcula subtotal, impuesto_total (opcional) y total de una compra y los persiste.
+    Reglas:
+    - subtotal = Σ(cantidad * precio_unitario) de las líneas (con precisión intermedia).
+    - impuesto_total:
+        * Si 'tasa_impuesto_pct' es un número (p.ej. 0.19 para 19%), se recalcula como:
+            impuesto_total = redondear(subtotal * tasa_impuesto_pct)
+        * Si es None, NO se recalcula (se respeta lo que venga de UI o estado previo).
+    - total = redondear(subtotal - descuento_total + impuesto_total)
+    - Todo se guarda con 2 decimales (redondeo HALF_UP).
+    Args:
+    compra: Instancia de Compra ya persistida (PK existente).
+    tasa_impuesto_pct: Decimal o None. Si se pasa, se fuerza el recálculo del impuesto.
+    Returns:
+    La misma instancia 'compra' con campos 'subtotal', 'impuesto_total' (si corresponde) y 'total' actualizados.
+    """
     total_linea_expr = ExpressionWrapper(
         F("cantidad") * F("precio_unitario"),
         output_field=DecimalField(max_digits=16, decimal_places=6),
@@ -59,12 +107,20 @@ def calcular_y_guardar_totales_compra(
     return compra
 
 
-# ==== Stock en creación de compra (no depende de related_name) ====
+# ─────────────────────────────────────────────────────────────────────────────
+# Stock en creación de compra
+# ─────────────────────────────────────────────────────────────────────────────
 
 @transaction.atomic
 def aplicar_stock_despues_de_crear_compra(compra: Compra) -> None:
     """
-    Suma la cantidad de cada línea al stock del producto (usa F()) y actualiza precio_compra.
+    Ajusta stock tras crear una compra y actualiza metadata del producto.
+    Efectos por línea:
+    - Suma 'cantidad' al stock del producto.
+    - Actualiza 'precio_compra' con el último costo registrado.
+    - Ajusta 'stock_minimo' simple: 90% del stock total si supera el mínimo actual.
+    Args:
+        compra: Instancia de Compra recién creada (con líneas ya guardadas).
     """
     for linea in CompraProducto.objects.select_related("producto").filter(compra=compra).order_by("id"):
         _aplicar_delta_stock_seguro(linea.producto_id, linea.cantidad)  # suma
@@ -79,17 +135,27 @@ def aplicar_stock_despues_de_crear_compra(compra: Compra) -> None:
         producto.save(update_fields=["precio_compra", "stock_minimo"])
 
 
-# ==== Stock en edición de compra (no depende de related_name) ====
-
+# ─────────────────────────────────────────────────────────────────────────────
+# Stock en edición de compra
+# ─────────────────────────────────────────────────────────────────────────────
 @transaction.atomic
 def reconciliar_stock_tras_editar_compra(
     compra: Compra,
     lineas_previas: Dict[int, Tuple[int, Decimal]],
 ) -> None:
     """
-    - Eliminadas  → restar del producto viejo.
-    - Nuevas      → sumar al producto nuevo.
-    - Persisten   → si mismo producto: delta; si cambió: restar viejo y sumar nuevo.
+    Reconciliación de stock tras editar una compra (agregar/quitar/modificar líneas).
+    Estrategia:
+    - Líneas eliminadas: restar su cantidad del producto “viejo”.
+    - Líneas nuevas: sumar su cantidad al producto “nuevo”.
+    - Líneas persistentes:
+        * Si el producto no cambió → aplicar delta de cantidades.
+        * Si cambió de producto → restar al anterior y sumar al nuevo.
+    Args:
+        compra: Instancia editada de Compra (líneas actuales ya guardadas).
+        lineas_previas: Snapshot previo {pk_linea: (producto_id, cantidad)} tomado antes de guardar.
+    Raises:
+        ValidationError: Si alguna operación deja stock negativo (propagada desde helper).
     """
     lineas_actuales_qs = CompraProducto.objects.filter(compra=compra)
     lineas_actuales = {l.pk: (l.producto_id, l.cantidad) for l in lineas_actuales_qs}

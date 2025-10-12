@@ -1,66 +1,66 @@
 # compras/forms.py
 """
-Formularios de 'compras'.
+Formularios de la app 'compras'.
 
-Incluye:
-- CompraForm: cabecera de la compra (proveedor/fecha/descuentos/impuestos).
-- CompraProductoForm: líneas (producto/cantidad/precio_unitario).
+Responsabilidades:
+- CompraForm: formulario de cabecera (proveedor, fecha, descuentos, impuestos).
+- CompraProductoForm: formulario de línea (producto, cantidad, precio_unitario).
 - CompraProductoFormSet: formset inline para gestionar N líneas por compra.
 
-Criterios:
-- Validaciones simples y explícitas (>=0, >0 donde corresponda).
-- Widgets acordes (datetime-local para compatibilidad con navegadores).
-- Sin lógica de negocio/persistencia: eso vive en services o modelos.
+Diseño:
+- Validaciones ligeras y explícitas en el form (p. ej., no negatividad por campo).
+- Lógica de negocio pesada (cálculo de totales/stock) vive en services/modelos.
+- Widgets acordes a la UI (datetime-local) y mensajes de error personalizables.
 """
 from decimal import Decimal
 from django import forms
 from django.forms import inlineformset_factory
 from .models import Compra, CompraProducto
 
-# -------------------------
-# FORMULARIO CABECERA
-# -------------------------
+# ─────────────────────────────────────────────────────────────────────────────
+# Formulario de cabecera
+# ─────────────────────────────────────────────────────────────────────────────
 class CompraForm(forms.ModelForm):
     """
     Form de cabecera para 'Compra'.
 
-    Expone únicamente campos de UI acordados y aplica validaciones
-    genéricas de no-negatividad a descuentos/impuestos.
-
-    NOTA: El cálculo real de totales debe residir en services/modelo; aquí
-    solo se valida entrada del usuario.
-    
+    Expone los campos visibles en UI y aplica validaciones mínimas de entrada.
+    Notas:
+        - El cálculo de subtotal/impuestos/total NO se hace aquí (ver services).
+        - Si quieres permitir que 'descuento_total' quede vacío y se trate como 0,
+        es mejor marcarlo como no requerido en el form en lugar de normalizar en la vista.
     """
-
-    # 👇 Override explícito: deja de ser obligatorio
-    #eso sí o sí deja de exigir el campo (el required=False del override manda). 
-    # No hay que reiniciar el server más allá del autoreload habitual, pero si tienes dudas, reinícialo.
-    #descuento_total = forms.DecimalField(required=False)  # opcional; sin validators extra aquí
 
     class Meta:
         model = Compra
         # Solo los campos acordados en cabecera
         fields = ['proveedor', 'fecha', 'descuento_porcentaje', 'descuento_total', 'impuesto_total']
         #codigo para personalizar el error al no llenar los campos--------------------------------
-        error_messages = {
+        """error_messages = {
             "proveedor": {
-                "required": "*"
+                "required": "Campo obligatorio"
             },
             "fecha": {
-                "required": "*"
+                "required": "Campo obligatorio"
             },
             "descuento_porcentaje": {
                 "required": "Escribe el % de descuento (0 si no aplica)."
             },
-        }
+        }"""
         #-------------------------------------------------------------------------------------------
         widgets = {'fecha': forms.DateTimeInput(attrs={'type': 'datetime-local'})}
 
     def clean(self):
         """
-        Validación a nivel de formulario:
-        - Reglas genéricas de no-negatividad en descuentos/impuestos.
-        - (Opcional) Cohesión: si % > 0 y total descuento manual > 0, avisar conflicto.
+        Validación a nivel formulario (cruzada opcional y reglas genéricas).
+
+        Reglas actuales:
+            - No negatividad en campos numéricos de entrada.
+        Notas:
+            - 'descuento_porcentaje' también está acotado por el modelo (0..100);
+            este chequeo mantiene feedback inmediato a nivel de form.
+            - Si centralizas min_value en el modelo (validators), puedes limitarte
+            a delegar y solo personalizar mensajes vía Meta.error_messages.
         """
         data = super().clean()
         # Reglas generales: nada negativo
@@ -70,16 +70,18 @@ class CompraForm(forms.ModelForm):
                 self.add_error(f, 'No puede ser negativo.')
         return data
 
-# -------------------------
-# FORMULARIO DETALLE (LÍNEAS)
-# -------------------------
+# ─────────────────────────────────────────────────────────────────────────────
+# Formulario de línea (detalle)
+# ─────────────────────────────────────────────────────────────────────────────
 class CompraProductoForm(forms.ModelForm):
     """
     Form de línea para 'CompraProducto'.
 
-    Valida entradas mínimas:
-    - cantidad > 0
-    - precio_unitario >= 0
+    Validaciones:
+        - cantidad > 0
+        - precio_unitario ≥ 0
+
+    Mensajes de error personalizados para mejorar feedback en UI.
     """
     class Meta:
         model = CompraProducto
@@ -88,7 +90,7 @@ class CompraProductoForm(forms.ModelForm):
     # Validaciones por campo (claras y suficientes)
     def clean_cantidad(self):
         """
-        cantidad debe ser > 0.
+        cantidad debe ser > 0 (refuerza el validator del modelo con mensaje claro).
         """
         cantidad = self.cleaned_data.get('cantidad')
         if cantidad is None or cantidad <= 0:
@@ -97,16 +99,16 @@ class CompraProductoForm(forms.ModelForm):
 
     def clean_precio_unitario(self):
         """
-        precio_unitario debe ser >= 0.
+        precio_unitario debe ser ≥ 0 (refuerza el validator del modelo con mensaje claro).
         """
         pu = self.cleaned_data.get('precio_unitario')
         if pu is None or pu < Decimal('0'):
             raise forms.ValidationError('El precio unitario no puede ser negativo.')
         return pu
 
-# -------------------------
-# FORMSET INLINE
-# -------------------------
+# ─────────────────────────────────────────────────────────────────────────────
+# Formset inline (líneas de compra)
+# ─────────────────────────────────────────────────────────────────────────────
 CompraProductoFormSet = inlineformset_factory(
     parent_model=Compra,
     model=CompraProducto,

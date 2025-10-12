@@ -1,42 +1,24 @@
+
+# compras/urls.py
+"""
+Rutas de la app 'compras'.
+
+Mapa URL → Vista → Template (resumen)
+- Listado: /compras/ver/                      → views.ver_compras → templates/compras/lista_compra/lista.html
+- Detalle (solo lectura): /compras/detalle/<pk>/       → views.detalle_compra → templates/compras/editar_compra/editar_compra.html
+- Ver (alias de detalle): /compras/ver/<pk>/           → views.ver_compra     → templates/compras/editar_compra/editar_compra.html
+- Editar: /compras/editar/<pk>/                        → views.editar_compra  → templates/compras/editar_compra/editar_compra.html
+- Eliminar: /compras/eliminar/<pk>/                    → views.eliminar_compra→ templates/compras/eliminar_confirm.html
+- Agregar (crear): /compras/agregar/                   → views.crear_compra   → templates/compras/agregar_compra/agregar_compra.html
+
+Nota:
+- Si quieres exponer también /compras/crear/ y /compras/<pk>/ver/ (mencionadas en documentación previa),
+puedes habilitarlas en la sección “Aliases opcionales” de abajo para mantener compatibilidad de URLs.
+"""
+
 from django.urls import path
 from . import views
-"""
-Rutas de la app 'compras'
 
-Mapa URL → Vista → Template
-
-Listado (plural)
-- /compras/ver/                      (name="ver_compras")
-    → views.ver_compras
-    → templates/compras/lista_compra/lista.html
-
-Detalle (solo lectura)
-- /compras/detalle/<pk>/             (name="detalle")
-    → views.detalle_compra
-    → templates/compras/editar_compra/editar_compra.html (readonly=True)
-
-Ver (alias de detalle, solo lectura)
-- /compras/ver/<pk>/                 (name="ver_compra")
-- /compras/<pk>/ver/                 (name="ver")
-    → views.ver_compra
-    → templates/compras/editar_compra/editar_compra.html (readonly=True)
-
-Editar
-- /compras/editar/<pk>/              (name="editar_compra")
-    → views.editar_compra
-    → templates/compras/editar_compra/editar_compra.html (readonly=False)
-
-Agregar (crear)
-- /compras/agregar/                  (name="agregar_compra")
-- /compras/crear/                    (name="crear")
-    → views.crear_compra
-    → templates/compras/agregar_compra/agregar_compra.html
-
-Eliminar
-- /compras/eliminar/<pk>/            (name="eliminar_compra")
-    → views.eliminar_compra
-    → templates/compras/eliminar_confirm.html
-"""
 app_name = "compras"
 
 urlpatterns = [

@@ -159,6 +159,7 @@
   {{ block.super }}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+
   {# JSON seguro embebido (evita errores de sintaxis y comas) #}
   {# La vista debe pasar un dict "chart" con:
       chart = {
@@ -201,11 +202,21 @@
 
     // Bar chart Top vendidos
     const ctxBar = document.getElementById('chartBar').getContext('2d');
+
+    // Paleta de colores (se cicla si hay más barras que colores)
+    const palette = ['#3da9fc', '#ef4565', '#94a1b2', '#0ea5e9', '#f59e0b'];
+
     new Chart(ctxBar, {
       type: 'bar',
       data: {
         labels: topLabels,
-        datasets: [{ label: 'Unidades', data: topData, borderWidth: 1 }]
+        datasets: [{
+          label: 'Unidades',
+          data: topData,
+          backgroundColor: topLabels.map((_, i) => palette[i % palette.length] + '33'), // ~20% opacidad
+          borderColor: topLabels.map((_, i) => palette[i % palette.length]),
+          borderWidth: 1
+        }]
       },
       options: {
         responsive: true,

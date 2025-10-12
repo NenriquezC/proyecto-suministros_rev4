@@ -33,12 +33,15 @@ def panel(request):
     ventas_count  = Venta.objects.count()
 
     # ──────────────── Top productos vendidos (cantidad) ────────────────
-    top_vendidos = (
+    top_vendidos_qs = (
         VentaProducto.objects
         .values(nombre=F("producto__nombre"))
         .annotate(cantidad=Sum("cantidad"))
         .order_by("-cantidad")[:5]
     )
+    _top_vendidos_list = list(top_vendidos_qs)
+    top_labels = [it["nombre"] for it in _top_vendidos_list]
+    top_data   = [int(it["cantidad"] or 0) for it in _top_vendidos_list]
 
     # ──────────────── Low stock (stock <= stock_minimo) ────────────────
     low_stock = (
@@ -75,6 +78,15 @@ def panel(request):
     data_ventas  = [float(idx_v.get(d, 0) or 0) for d in dias]
     labels = [d.strftime("%d-%m") for d in dias]
 
+    # Payload para el json_script del template
+    chart = {
+        "labels": labels,
+        "compras": data_compras,
+        "ventas": data_ventas,
+        "top_labels": top_labels,
+        "top_data": top_data,
+    }
+
     contexto = {
         # KPIs
         "compras_hoy": compras_hoy,
@@ -87,13 +99,14 @@ def panel(request):
         "ventas_count": ventas_count,
 
         # tablas
-        "top_vendidos": list(top_vendidos),
+        "top_vendidos": _top_vendidos_list,
         "low_stock": list(low_stock),
 
         # charts
-        "labels": labels,
-        "data_compras": data_compras,
-        "data_ventas": data_ventas,
+        "labels": labels,             # opcional si solo usas 'chart' en el template
+        "data_compras": data_compras, # opcional
+        "data_ventas": data_ventas,   # opcional
+        "chart": chart,               # <-- lo que consume {{ chart|json_script:"chart-data" }}
     }
     return render(request, "dashboard/panel.html", contexto)
 

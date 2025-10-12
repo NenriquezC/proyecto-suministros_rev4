@@ -2,15 +2,22 @@
 """
 Vistas de la app 'compras'.
 
-Incluye flujos CRUD (crear, editar, ver detalle/solo lectura, listar y eliminar)
-para el modelo Compra y su formset de líneas. Las vistas críticas se decoran con
-transacciones atómicas para asegurar consistencia entre cabecera y líneas.
+Flujos cubiertos:
+- Crear/Editar Compra (cabecera + líneas via formset)
+- Ver detalle solo-lectura (reutiliza plantilla de edición)
+- Listar compras con filtros y paginación
+- Eliminar compra con confirmación
+
+Notas de diseño:
+- Transacciones atómicas en operaciones críticas para mantener consistencia entre cabecera y líneas.
+- La lógica de negocio pesada (stock, totales) vive en `services`.
+- La validación de datos de entrada vive en `forms`/`formsets`; aquí solo orquestamos.
 
 Dependencias:
-- forms.CompraForm y forms.CompraProductoFormSet
-- models.Compra
-- services: utilidades de negocio (reconciliar stock, calcular totales)
-- inventario.models.Proveedor: para filtros y listados
+- forms: CompraForm, CompraProductoFormSet
+- models: Compra
+- services: aplicar_stock_despues_de_crear_compra, reconciliar_stock_tras_editar_compra, calcular_y_guardar_totales_compra
+- inventario.models.Proveedor: opciones/filtros en listado
 """
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
@@ -28,9 +35,26 @@ from inventario.models import Proveedor
 # ─────────────────────────────────────────────────────────────────────────────
 # CREAR
 # ─────────────────────────────────────────────────────────────────────────────
-@login_required #solos funcionarios autenticados
-@transaction.atomic #todo lo que pase dentro es una transaccion . Si algo falla follback (no quedan cabeceras huerfanas ni stock a medias)
+@login_required 
+@transaction.atomic 
 def crear_compra(request):
+
+    """
+    Crea una Compra y sus líneas (formset).
+
+    POST:
+    - Normaliza entrada (p. ej. descuento_total vacío → "0")
+    - Valida cabecera (CompraForm) y líneas (CompraProductoFormSet)
+    - Si ok: guarda, ajusta stock y recalcula totales en `services`
+    - Mensaje de éxito y redirect a detalle
+
+    GET:
+    - Renderiza formulario vacío (1 formset según configuración)
+
+    Seguridad/Consistencia:
+    - Transacción atómica para no dejar cabeceras huérfanas ni stock inconsistente.
+    """
+
     FORMS_PREFIX = "lineas"
 
     if request.method == "POST":
@@ -87,6 +111,23 @@ def crear_compra(request):
 # ─────────────────────────────────────────────────────────────────────────────
 @transaction.atomic
 def editar_compra(request, pk):
+    """
+    Edita una Compra existente (cabecera + líneas).
+
+    Flujo:
+    - Captura estado previo de líneas para reconciliar stock luego de guardar
+    - Valida cabecera y formset
+    - Guarda cambios
+    - Reconciliar stock (deltas) y recalcular totales
+    - Éxito → redirect a detalle
+
+    Seguridad:
+    - Transacción atómica para garantizar consistencia.
+
+    Observación:
+    - Los except amplios se silencian; en producción usar logging y/o feedback controlado.
+    """
+
     compra = get_object_or_404(Compra, pk=pk)
     estado_previo_lineas = {l.pk: (l.producto_id, l.cantidad) for l in compra.lineas.all()}
 
@@ -141,24 +182,17 @@ def editar_compra(request, pk):
 # ─────────────────────────────────────────────────────────────────────────────
 def ver_compras(request):
     """
-    Lista paginada de Compras con filtros básicos.
+    Lista paginada de compras con filtros básicos.
 
-    Filtros GET:
-        q        : búsqueda por id (icontains) o proveedor.nombre (icontains)
-        desde    : fecha mínima (YYYY-MM-DD)
-        hasta    : fecha máxima (YYYY-MM-DD)
-        proveedor: id de proveedor
+    GET params:
+    - q:        texto libre (id icontains o proveedor.nombre icontains)
+    - desde:    fecha mínima (YYYY-MM-DD)
+    - hasta:    fecha máxima (YYYY-MM-DD)
+    - proveedor: id de proveedor
 
-    Returns:
-        HttpResponse con la plantilla de listado y contexto:
-        {
-            'compras', 'pagina_actual', 'hay_paginacion', 'lista_proveedores',
-            'texto_busqueda', 'fecha_desde', 'fecha_hasta', 'proveedor_id_seleccionado'
-        }
-
-    Notas:
-        - select_related("proveedor") para evitar N+1 en la tabla.
-        - Orden por fecha DESC y id DESC para estabilidad.
+    Optimización:
+    - select_related("proveedor") evita N+1 en la tabla.
+    - Orden por fecha DESC e id DESC para estabilidad en resultados recientes.
     """
     compras_queryset = Compra.objects.select_related("proveedor").order_by("-fecha", "-id")
 
@@ -206,15 +240,10 @@ def ver_compras(request):
 
 def ver_compra(request, pk):
     """
-    Vista SOLO lectura (UI de editar, pero todo disabled).
-    Útil para “ojo”/detalle sin riesgo de modificación.
+    Modo solo-lectura reutilizando la plantilla de edición.
 
-    Args:
-        pk (int): Identificador de Compra.
-
-    Returns:
-        HttpResponse usando 'compras/editar_compra/editar_compra.html' con
-        {'form', 'formset', 'compra', 'readonly': True}.
+    - Deshabilita todos los campos del form y del formset.
+    - Bandera `readonly=True` para que la plantilla oculte botones/JS de edición.
     """
     # NADA de POST acá: esta vista es solo lectura
     compra = get_object_or_404(Compra.objects.select_related("proveedor"), pk=pk)
@@ -245,17 +274,8 @@ def ver_compra(request, pk):
 #    return render(request, "compras/detalle.html", {"compra": compra})
 def detalle_compra(request, pk): #recibe request y la clave primario PK de la compra que quiero mostrar
     """
-    Docstring explicativa: deja claro que esto es un detalle en solo lectura reutilizando la vista/plantilla de edición. 
-    También documenta parámetros y qué devuelve. (Gracias, “yo del futuro” lo aprecia.)
-    Detalle de Compra en modo solo lectura, reusando la plantilla de edición.
-    (Equivalente a ver_compra; se mantiene por compatibilidad semántica/URLs)
-
-    Args:
-        pk (int): Identificador de Compra.
-
-    Returns:
-        HttpResponse con la plantilla 'compras/editar_compra/editar_compra.html'
-        y {'compra', 'form', 'formset', 'readonly': True}.
+    Detalle de compra en solo-lectura.
+    Alias semántico de `ver_compra`, conservado por compatibilidad de URLs.
     """
     #Busca la instancia de Compra con esa pk.
     #Si no existe, lanza 404 automáticamente (no hay que escribir try/except).
@@ -297,20 +317,15 @@ def detalle_compra(request, pk): #recibe request y la clave primario PK de la co
 @transaction.atomic
 def eliminar_compra(request, pk):
     """
-    Elimina una Compra previa confirmación.
-
-    Args:
-        pk (int): Identificador de Compra.
+    Elimina una compra previa confirmación.
 
     POST:
-        - Elimina la compra (y cascada según on_delete configurado).
-        - Envía mensaje de éxito y redirige al listado.
+    - Borra la compra
+    - Envía mensaje de éxito
+    - Redirige al listado
 
     GET:
-        - Muestra pantalla de confirmación.
-
-    Returns:
-        HttpResponse (confirmación) o Redirect (éxito).
+    - Muestra plantilla de confirmación
     """
     compra = get_object_or_404(Compra, pk=pk)
     if request.method == "POST":

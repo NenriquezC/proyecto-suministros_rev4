@@ -1237,7 +1237,7 @@
         "kind": 6,
         "importPath": "compras.admin",
         "description": "compras.admin",
-        "peekOfCode": "class CompraProductoInline(admin.TabularInline):\n    model = CompraProducto\n    extra = 0\n    readonly_fields = ('total_linea',)  # para ver el total sin poder editarlo\n    fields = ('producto', 'cantidad', 'precio_unitario', 'total_linea')\n    show_change_link = True\n@admin.register(Compra)\nclass CompraAdmin(admin.ModelAdmin):\n    list_display = (\n        'id', 'proveedor', 'usuario', 'fecha',",
+        "peekOfCode": "class CompraProductoInline(admin.TabularInline):\n    \"\"\"\n    Inline tabular para editar/visualizar líneas (CompraProducto) dentro de Compra.\n    Notas:\n    - `extra=0` evita filas vacías no deseadas.\n    - `total_linea` es de solo lectura (se calcula en el modelo).\n    - `show_change_link=True` permite abrir la línea en su admin propio.\n    \"\"\"\n    model = CompraProducto\n    extra = 0",
         "detail": "compras.admin",
         "documentation": {}
     },
@@ -1273,7 +1273,7 @@
         "kind": 6,
         "importPath": "compras.forms",
         "description": "compras.forms",
-        "peekOfCode": "class CompraForm(forms.ModelForm):\n    \"\"\"\n    Form de cabecera para 'Compra'.\n    Expone únicamente campos de UI acordados y aplica validaciones\n    genéricas de no-negatividad a descuentos/impuestos.\n    NOTA: El cálculo real de totales debe residir en services/modelo; aquí\n    solo se valida entrada del usuario.\n    \"\"\"\n    # 👇 Override explícito: deja de ser obligatorio\n    #eso sí o sí deja de exigir el campo (el required=False del override manda). ",
+        "peekOfCode": "class CompraForm(forms.ModelForm):\n    \"\"\"\n    Form de cabecera para 'Compra'.\n    Expone los campos visibles en UI y aplica validaciones mínimas de entrada.\n    Notas:\n        - El cálculo de subtotal/impuestos/total NO se hace aquí (ver services).\n        - Si quieres permitir que 'descuento_total' quede vacío y se trate como 0,\n        es mejor marcarlo como no requerido en el form en lugar de normalizar en la vista.\n    \"\"\"\n    class Meta:",
         "detail": "compras.forms",
         "documentation": {}
     },
@@ -1282,7 +1282,7 @@
         "kind": 6,
         "importPath": "compras.forms",
         "description": "compras.forms",
-        "peekOfCode": "class CompraProductoForm(forms.ModelForm):\n    \"\"\"\n    Form de línea para 'CompraProducto'.\n    Valida entradas mínimas:\n    - cantidad > 0\n    - precio_unitario >= 0\n    \"\"\"\n    class Meta:\n        model = CompraProducto\n        fields = ['producto', 'cantidad', 'precio_unitario']",
+        "peekOfCode": "class CompraProductoForm(forms.ModelForm):\n    \"\"\"\n    Form de línea para 'CompraProducto'.\n    Validaciones:\n        - cantidad > 0\n        - precio_unitario ≥ 0\n    Mensajes de error personalizados para mejorar feedback en UI.\n    \"\"\"\n    class Meta:\n        model = CompraProducto",
         "detail": "compras.forms",
         "documentation": {}
     },
@@ -1300,7 +1300,7 @@
         "kind": 6,
         "importPath": "compras.models",
         "description": "compras.models",
-        "peekOfCode": "class Compra(models.Model):\n    \"\"\"\n    Modelo de la tabla \"compras\". Se relaciona con la tabla \"proveedores\" y \"usuarios\".\n    atributos: proveedor, usuario, fecha, subtotal, impuesto, descuento_total, total, creado_en, actualizado_en\n    \"\"\"\n    proveedor = models.ForeignKey('inventario.Proveedor', on_delete=models.PROTECT, related_name='compras')\n    usuario = models.ForeignKey(User, on_delete=models.PROTECT, related_name='compras_registradas')\n    fecha = models.DateTimeField(default=timezone.now)\n    #Es una validación a nivel Django (antes de grabar en DB). MinValueValidator(0) asegura que el valor nunca sea negativo.\n    #Si alguien intenta guardar -50.00, Django lanza un ValidationError.",
+        "peekOfCode": "class Compra(models.Model):\n    \"\"\"\n    Cabecera de una compra.\n    Campos:\n        proveedor            FK → inventario.Proveedor (PROTECT)\n        usuario              FK → auth.User (o custom), registra quién creó la compra\n        fecha                Fecha/hora de la compra (default=timezone.now)\n        subtotal             Suma de líneas (≥ 0)\n        descuento_porcentaje Porcentaje 0..100 (entero pequeño)\n        impuesto_total       Monto total de impuestos (≥ 0)",
         "detail": "compras.models",
         "documentation": {}
     },
@@ -1309,7 +1309,7 @@
         "kind": 6,
         "importPath": "compras.models",
         "description": "compras.models",
-        "peekOfCode": "class CompraProducto(models.Model):\n    \"\"\"\n    Modelo de la tabla \"compras_productos\". Se relaciona con la tabla \"compras\" y \"productos\".\n    atributos: compra, producto, cantidad, precio_unitario, descuento, creado_en\n    \"\"\"\n    compra = models.ForeignKey(Compra, on_delete=models.CASCADE, related_name='lineas')\n    producto = models.ForeignKey('inventario.Producto', on_delete=models.PROTECT, related_name='compras')\n    cantidad = models.PositiveIntegerField(validators=[MinValueValidator(1)])\n    precio_unitario = models.DecimalField(max_digits=12, decimal_places=2,\n                                        validators=[MinValueValidator(Decimal('0'))])",
+        "peekOfCode": "class CompraProducto(models.Model):\n    \"\"\"\n    Línea de una compra (detalle por producto).\n    Campos:\n        compra          FK → Compra (CASCADE)\n        producto        FK → inventario.Producto (PROTECT)\n        cantidad        > 0 (entero positivo)\n        precio_unitario ≥ 0\n        total_linea     cantidad * precio_unitario (2 decimales, se recalcula en save)\n        creado_en       Timestamp de creación",
         "detail": "compras.models",
         "documentation": {}
     },
@@ -1318,7 +1318,7 @@
         "kind": 5,
         "importPath": "compras.models",
         "description": "compras.models",
-        "peekOfCode": "User = get_user_model()\nclass Compra(models.Model):\n    \"\"\"\n    Modelo de la tabla \"compras\". Se relaciona con la tabla \"proveedores\" y \"usuarios\".\n    atributos: proveedor, usuario, fecha, subtotal, impuesto, descuento_total, total, creado_en, actualizado_en\n    \"\"\"\n    proveedor = models.ForeignKey('inventario.Proveedor', on_delete=models.PROTECT, related_name='compras')\n    usuario = models.ForeignKey(User, on_delete=models.PROTECT, related_name='compras_registradas')\n    fecha = models.DateTimeField(default=timezone.now)\n    #Es una validación a nivel Django (antes de grabar en DB). MinValueValidator(0) asegura que el valor nunca sea negativo.",
+        "peekOfCode": "User = get_user_model()\n# ─────────────────────────────────────────────────────────────────────────────\n# Cabecera de compra\n# ─────────────────────────────────────────────────────────────────────────────\nclass Compra(models.Model):\n    \"\"\"\n    Cabecera de una compra.\n    Campos:\n        proveedor            FK → inventario.Proveedor (PROTECT)\n        usuario              FK → auth.User (o custom), registra quién creó la compra",
         "detail": "compras.models",
         "documentation": {}
     },
@@ -1327,7 +1327,7 @@
         "kind": 2,
         "importPath": "compras.services",
         "description": "compras.services",
-        "peekOfCode": "def redondear_moneda(importe: Decimal) -> Decimal:\n    return importe.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n# ==== Helper: aplicar delta seguro al stock (atómico + anti-negativos) ====\ndef _aplicar_delta_stock_seguro(producto_id: int, delta_unidades):\n    if not delta_unidades:\n        return\n    filas = Producto.objects.filter(pk=producto_id).update(stock=F(\"stock\") + delta_unidades)\n    if filas == 0:\n        raise ValidationError(f\"No existe Producto id={producto_id}.\")\n    prod_lock = Producto.objects.select_for_update().get(pk=producto_id)",
+        "peekOfCode": "def redondear_moneda(importe: Decimal) -> Decimal:\n    \"\"\"\n    Redondea un importe a 2 decimales con HALF_UP (regla típica financiera).\n    Args:\n    importe: Decimal a redondear.\n    Returns:\n    Decimal con 2 decimales.\n    \"\"\"\n    return importe.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n# ─────────────────────────────────────────────────────────────────────────────",
         "detail": "compras.services",
         "documentation": {}
     },
@@ -1336,7 +1336,7 @@
         "kind": 2,
         "importPath": "compras.services",
         "description": "compras.services",
-        "peekOfCode": "def calcular_y_guardar_totales_compra(\n    compra: Compra,\n    tasa_impuesto_pct: Decimal | None = None,\n) -> Compra:\n    total_linea_expr = ExpressionWrapper(\n        F(\"cantidad\") * F(\"precio_unitario\"),\n        output_field=DecimalField(max_digits=16, decimal_places=6),\n    )\n    agregados = CompraProducto.objects.filter(compra=compra).aggregate(subtotal=Sum(total_linea_expr))\n    subtotal_calculado = agregados[\"subtotal\"] or Decimal(\"0\")",
+        "peekOfCode": "def calcular_y_guardar_totales_compra(compra: Compra,tasa_impuesto_pct: Decimal | None = None,) -> Compra:\n    \"\"\"\n    Calcula subtotal, impuesto_total (opcional) y total de una compra y los persiste.\n    Reglas:\n    - subtotal = Σ(cantidad * precio_unitario) de las líneas (con precisión intermedia).\n    - impuesto_total:\n        * Si 'tasa_impuesto_pct' es un número (p.ej. 0.19 para 19%), se recalcula como:\n            impuesto_total = redondear(subtotal * tasa_impuesto_pct)\n        * Si es None, NO se recalcula (se respeta lo que venga de UI o estado previo).\n    - total = redondear(subtotal - descuento_total + impuesto_total)",
         "detail": "compras.services",
         "documentation": {}
     },
@@ -1345,7 +1345,7 @@
         "kind": 2,
         "importPath": "compras.services",
         "description": "compras.services",
-        "peekOfCode": "def aplicar_stock_despues_de_crear_compra(compra: Compra) -> None:\n    \"\"\"\n    Suma la cantidad de cada línea al stock del producto (usa F()) y actualiza precio_compra.\n    \"\"\"\n    for linea in CompraProducto.objects.select_related(\"producto\").filter(compra=compra).order_by(\"id\"):\n        _aplicar_delta_stock_seguro(linea.producto_id, linea.cantidad)  # suma\n        # actualizar último costo y mínimo\n        producto = Producto.objects.select_for_update().get(pk=linea.producto_id)\n        producto.precio_compra = linea.precio_unitario\n        # regla de reposición simple (90%)",
+        "peekOfCode": "def aplicar_stock_despues_de_crear_compra(compra: Compra) -> None:\n    \"\"\"\n    Ajusta stock tras crear una compra y actualiza metadata del producto.\n    Efectos por línea:\n    - Suma 'cantidad' al stock del producto.\n    - Actualiza 'precio_compra' con el último costo registrado.\n    - Ajusta 'stock_minimo' simple: 90% del stock total si supera el mínimo actual.\n    Args:\n        compra: Instancia de Compra recién creada (con líneas ya guardadas).\n    \"\"\"",
         "detail": "compras.services",
         "documentation": {}
     },
@@ -1354,7 +1354,7 @@
         "kind": 2,
         "importPath": "compras.services",
         "description": "compras.services",
-        "peekOfCode": "def reconciliar_stock_tras_editar_compra(\n    compra: Compra,\n    lineas_previas: Dict[int, Tuple[int, Decimal]],\n) -> None:\n    \"\"\"\n    - Eliminadas  → restar del producto viejo.\n    - Nuevas      → sumar al producto nuevo.\n    - Persisten   → si mismo producto: delta; si cambió: restar viejo y sumar nuevo.\n    \"\"\"\n    lineas_actuales_qs = CompraProducto.objects.filter(compra=compra)",
+        "peekOfCode": "def reconciliar_stock_tras_editar_compra(\n    compra: Compra,\n    lineas_previas: Dict[int, Tuple[int, Decimal]],\n) -> None:\n    \"\"\"\n    Reconciliación de stock tras editar una compra (agregar/quitar/modificar líneas).\n    Estrategia:\n    - Líneas eliminadas: restar su cantidad del producto “viejo”.\n    - Líneas nuevas: sumar su cantidad al producto “nuevo”.\n    - Líneas persistentes:",
         "detail": "compras.services",
         "documentation": {}
     },
@@ -1381,7 +1381,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def crear_compra(request):\n    FORMS_PREFIX = \"lineas\"\n    if request.method == \"POST\":\n        data = request.POST.copy()\n        if data.get(\"descuento_total\") in (None, \"\"):\n            data[\"descuento_total\"] = \"0\"\n        form = CompraForm(data)\n        if form.is_valid():\n            compra = form.save(commit=False)\n            # usuario es NOT NULL → set explícito antes del save",
+        "peekOfCode": "def crear_compra(request):\n    \"\"\"\n    Crea una Compra y sus líneas (formset).\n    POST:\n    - Normaliza entrada (p. ej. descuento_total vacío → \"0\")\n    - Valida cabecera (CompraForm) y líneas (CompraProductoFormSet)\n    - Si ok: guarda, ajusta stock y recalcula totales en `services`\n    - Mensaje de éxito y redirect a detalle\n    GET:\n    - Renderiza formulario vacío (1 formset según configuración)",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -1390,7 +1390,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def editar_compra(request, pk):\n    compra = get_object_or_404(Compra, pk=pk)\n    estado_previo_lineas = {l.pk: (l.producto_id, l.cantidad) for l in compra.lineas.all()}\n    if request.method == \"POST\":\n        data = request.POST.copy()\n        if data.get(\"descuento_total\") in (None, \"\"):\n            data[\"descuento_total\"] = \"0\"\n        form = CompraForm(data, instance=compra)\n        formset = CompraProductoFormSet(data, instance=compra, prefix=\"lineas\")\n        if form.is_valid() and formset.is_valid():",
+        "peekOfCode": "def editar_compra(request, pk):\n    \"\"\"\n    Edita una Compra existente (cabecera + líneas).\n    Flujo:\n    - Captura estado previo de líneas para reconciliar stock luego de guardar\n    - Valida cabecera y formset\n    - Guarda cambios\n    - Reconciliar stock (deltas) y recalcular totales\n    - Éxito → redirect a detalle\n    Seguridad:",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -1399,7 +1399,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def ver_compras(request):\n    \"\"\"\n    Lista paginada de Compras con filtros básicos.\n    Filtros GET:\n        q        : búsqueda por id (icontains) o proveedor.nombre (icontains)\n        desde    : fecha mínima (YYYY-MM-DD)\n        hasta    : fecha máxima (YYYY-MM-DD)\n        proveedor: id de proveedor\n    Returns:\n        HttpResponse con la plantilla de listado y contexto:",
+        "peekOfCode": "def ver_compras(request):\n    \"\"\"\n    Lista paginada de compras con filtros básicos.\n    GET params:\n    - q:        texto libre (id icontains o proveedor.nombre icontains)\n    - desde:    fecha mínima (YYYY-MM-DD)\n    - hasta:    fecha máxima (YYYY-MM-DD)\n    - proveedor: id de proveedor\n    Optimización:\n    - select_related(\"proveedor\") evita N+1 en la tabla.",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -1408,7 +1408,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def ver_compra(request, pk):\n    \"\"\"\n    Vista SOLO lectura (UI de editar, pero todo disabled).\n    Útil para “ojo”/detalle sin riesgo de modificación.\n    Args:\n        pk (int): Identificador de Compra.\n    Returns:\n        HttpResponse usando 'compras/editar_compra/editar_compra.html' con\n        {'form', 'formset', 'compra', 'readonly': True}.\n    \"\"\"",
+        "peekOfCode": "def ver_compra(request, pk):\n    \"\"\"\n    Modo solo-lectura reutilizando la plantilla de edición.\n    - Deshabilita todos los campos del form y del formset.\n    - Bandera `readonly=True` para que la plantilla oculte botones/JS de edición.\n    \"\"\"\n    # NADA de POST acá: esta vista es solo lectura\n    compra = get_object_or_404(Compra.objects.select_related(\"proveedor\"), pk=pk)\n    # Deshabilitar campos del form principal\n    form = CompraForm(instance=compra)",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -1417,7 +1417,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def detalle_compra(request, pk): #recibe request y la clave primario PK de la compra que quiero mostrar\n    \"\"\"\n    Docstring explicativa: deja claro que esto es un detalle en solo lectura reutilizando la vista/plantilla de edición. \n    También documenta parámetros y qué devuelve. (Gracias, “yo del futuro” lo aprecia.)\n    Detalle de Compra en modo solo lectura, reusando la plantilla de edición.\n    (Equivalente a ver_compra; se mantiene por compatibilidad semántica/URLs)\n    Args:\n        pk (int): Identificador de Compra.\n    Returns:\n        HttpResponse con la plantilla 'compras/editar_compra/editar_compra.html'",
+        "peekOfCode": "def detalle_compra(request, pk): #recibe request y la clave primario PK de la compra que quiero mostrar\n    \"\"\"\n    Detalle de compra en solo-lectura.\n    Alias semántico de `ver_compra`, conservado por compatibilidad de URLs.\n    \"\"\"\n    #Busca la instancia de Compra con esa pk.\n    #Si no existe, lanza 404 automáticamente (no hay que escribir try/except).\n    compra = get_object_or_404(Compra, pk=pk)\n    # Form de cabecera deshabilitado\n    # Construye el formulario de cabecera (CompraForm) enlazado a la compra (instance=compra).",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -1426,7 +1426,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def eliminar_compra(request, pk):\n    \"\"\"\n    Elimina una Compra previa confirmación.\n    Args:\n        pk (int): Identificador de Compra.\n    POST:\n        - Elimina la compra (y cascada según on_delete configurado).\n        - Envía mensaje de éxito y redirige al listado.\n    GET:\n        - Muestra pantalla de confirmación.",
+        "peekOfCode": "def eliminar_compra(request, pk):\n    \"\"\"\n    Elimina una compra previa confirmación.\n    POST:\n    - Borra la compra\n    - Envía mensaje de éxito\n    - Redirige al listado\n    GET:\n    - Muestra plantilla de confirmación\n    \"\"\"",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -2011,7 +2011,7 @@
         "kind": 6,
         "importPath": "ventas.forms",
         "description": "ventas.forms",
-        "peekOfCode": "class VentaProductoForm(forms.ModelForm):\n    class Meta:\n        model = VentaProducto\n        fields = [\"producto\", \"cantidad\", \"precio_unitario\", \"descuento\"]\n# *** ESTO ES LO CLAVE ***\nVentaProductoFormSet = inlineformset_factory(\n    parent_model=Venta,\n    model=VentaProducto,\n    form=VentaProductoForm,\n    extra=1,",
+        "peekOfCode": "class VentaProductoForm(forms.ModelForm):\n    class Meta:\n        model = VentaProducto\n        fields = [\"producto\", \"cantidad\", \"precio_unitario\"]\n# *** ESTO ES LO CLAVE ***\nVentaProductoFormSet = inlineformset_factory(\n    parent_model=Venta,\n    model=VentaProducto,\n    form=VentaProductoForm,\n    extra=1,",
         "detail": "ventas.forms",
         "documentation": {}
     },
@@ -2020,7 +2020,7 @@
         "kind": 5,
         "importPath": "ventas.forms",
         "description": "ventas.forms",
-        "peekOfCode": "VentaProductoFormSet = inlineformset_factory(\n    parent_model=Venta,\n    model=VentaProducto,\n    form=VentaProductoForm,\n    extra=1,\n    can_delete=True,\n    validate_min=False,  # pon True y min_num=1 si quieres exigir al menos 1 línea\n    min_num=0,\n)",
+        "peekOfCode": "VentaProductoFormSet = inlineformset_factory(\n    parent_model=Venta,\n    model=VentaProducto,\n    form=VentaProductoForm,\n    extra=1,\n    can_delete=True,\n    validate_min=True,  # pon True y min_num=1 si quieres exigir al menos 1 línea\n    min_num=1,\n)",
         "detail": "ventas.forms",
         "documentation": {}
     },

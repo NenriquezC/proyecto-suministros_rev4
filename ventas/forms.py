@@ -24,7 +24,7 @@ class VentaForm(forms.ModelForm):
 class VentaProductoForm(forms.ModelForm):
     class Meta:
         model = VentaProducto
-        fields = ["producto", "cantidad", "precio_unitario", "descuento"]
+        fields = ["producto", "cantidad", "precio_unitario"]
 
 # *** ESTO ES LO CLAVE ***
 VentaProductoFormSet = inlineformset_factory(
@@ -33,6 +33,6 @@ VentaProductoFormSet = inlineformset_factory(
     form=VentaProductoForm,
     extra=1,
     can_delete=True,
-    validate_min=False,  # pon True y min_num=1 si quieres exigir al menos 1 línea
-    min_num=0,
+    validate_min=True,  # pon True y min_num=1 si quieres exigir al menos 1 línea
+    min_num=1,
 )
