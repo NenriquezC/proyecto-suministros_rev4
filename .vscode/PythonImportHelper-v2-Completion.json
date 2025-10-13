@@ -539,6 +539,14 @@
         "documentation": {}
     },
     {
+        "label": "timezone",
+        "importPath": "django.utils",
+        "description": "django.utils",
+        "isExtraImport": true,
+        "detail": "django.utils",
+        "documentation": {}
+    },
+    {
         "label": "get_user_model",
         "importPath": "django.contrib.auth",
         "description": "django.contrib.auth",
@@ -668,6 +676,22 @@
     },
     {
         "label": "Q",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "F",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "Sum",
         "importPath": "django.db.models",
         "description": "django.db.models",
         "isExtraImport": true,
@@ -764,6 +788,14 @@
     },
     {
         "label": "ValidationError",
+        "importPath": "django.core.exceptions",
+        "description": "django.core.exceptions",
+        "isExtraImport": true,
+        "detail": "django.core.exceptions",
+        "documentation": {}
+    },
+    {
+        "label": "PermissionDenied",
         "importPath": "django.core.exceptions",
         "description": "django.core.exceptions",
         "isExtraImport": true,
@@ -947,6 +979,14 @@
         "documentation": {}
     },
     {
+        "label": "permission_required",
+        "importPath": "django.contrib.auth.decorators",
+        "description": "django.contrib.auth.decorators",
+        "isExtraImport": true,
+        "detail": "django.contrib.auth.decorators",
+        "documentation": {}
+    },
+    {
         "label": "render",
         "importPath": "django.shortcuts",
         "description": "django.shortcuts",
@@ -1067,6 +1107,14 @@
         "documentation": {}
     },
     {
+        "label": "timedelta",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
         "label": "TruncDate",
         "importPath": "django.db.models.functions",
         "description": "django.db.models.functions",
@@ -1096,6 +1144,22 @@
         "description": "compras.models",
         "isExtraImport": true,
         "detail": "compras.models",
+        "documentation": {}
+    },
+    {
+        "label": "Venta",
+        "importPath": "ventas.models",
+        "description": "ventas.models",
+        "isExtraImport": true,
+        "detail": "ventas.models",
+        "documentation": {}
+    },
+    {
+        "label": "VentaProducto",
+        "importPath": "ventas.models",
+        "description": "ventas.models",
+        "isExtraImport": true,
+        "detail": "ventas.models",
         "documentation": {}
     },
     {
@@ -1246,7 +1310,7 @@
         "kind": 6,
         "importPath": "compras.admin",
         "description": "compras.admin",
-        "peekOfCode": "class CompraAdmin(admin.ModelAdmin):\n    list_display = (\n        'id', 'proveedor', 'usuario', 'fecha',\n        'subtotal', 'descuento_total', 'impuesto_total', 'total',\n        'creado_en', 'actualizado_en'\n    )\n    list_filter = ('proveedor', 'usuario', 'fecha')\n    search_fields = ('proveedor__nombre', 'usuario__username')\n    inlines = [CompraProductoInline]\n    readonly_fields = ('subtotal', 'descuento_total', 'impuesto_total', 'total', 'creado_en', 'actualizado_en')",
+        "peekOfCode": "class CompraAdmin(admin.ModelAdmin):\n    \"\"\"\n    Admin de la entidad Compra (cabecera).\n    Objetivo:\n    - Mostrar los campos clave (proveedor, usuario, fecha y totales).\n    - Permitir filtrar y buscar de forma rápida.\n    - Gestionar las líneas asociadas mediante inline tabular.\n    Detalles:\n    - `readonly_fields` asegura que los totales/auditoría no se editen a mano.\n    - `inlines` incorpora `CompraProductoInline` para trabajar líneas en la misma vista.",
         "detail": "compras.admin",
         "documentation": {}
     },
@@ -1255,7 +1319,7 @@
         "kind": 6,
         "importPath": "compras.admin",
         "description": "compras.admin",
-        "peekOfCode": "class CompraProductoAdmin(admin.ModelAdmin):\n    list_display = ('id', 'compra', 'producto', 'cantidad', 'precio_unitario', 'total_linea', 'creado_en')\n    list_filter = ('producto', 'compra')\n    search_fields = ('producto__nombre', 'compra__proveedor__nombre')\n    readonly_fields = ('total_linea', 'creado_en')",
+        "peekOfCode": "class CompraProductoAdmin(admin.ModelAdmin):\n    \"\"\"\n    Admin de la entidad CompraProducto (línea de compra).\n    Objetivo:\n    - Consultar rápidamente líneas por compra y por producto.\n    - Evitar modificar el total calculado manualmente.\n    Detalles:\n    - `readonly_fields` protege `total_linea` y la fecha de creación.\n    - `list_filter` facilita navegación por producto/compra.\n    - `search_fields` permite buscar por nombre de producto y proveedor de la compra.",
         "detail": "compras.admin",
         "documentation": {}
     },
@@ -1471,7 +1535,7 @@
         "kind": 2,
         "importPath": "dashboard.views",
         "description": "dashboard.views",
-        "peekOfCode": "def panel(request):\n    tznow = timezone.now()\n    hoy = tznow.date()\n    inicio_mes = hoy.replace(day=1)\n    hace_14 = hoy - timedelta(days=13)  # 14 días con hoy\n    # ───────────────── KPIs rápidas ─────────────────\n    compras_hoy = Compra.objects.filter(fecha__date=hoy).aggregate(s=Sum(\"total\"))[\"s\"] or Decimal(\"0\")\n    ventas_hoy  = Venta.objects.filter(fecha=hoy).aggregate(s=Sum(\"total\"))[\"s\"] or Decimal(\"0\")\n    compras_mes = Compra.objects.filter(fecha__date__gte=inicio_mes).aggregate(s=Sum(\"total\"))[\"s\"] or Decimal(\"0\")\n    ventas_mes  = Venta.objects.filter(fecha__gte=inicio_mes).aggregate(s=Sum(\"total\"))[\"s\"] or Decimal(\"0\")",
+        "peekOfCode": "def panel(request):\n    \"\"\"\n    Calcula y entrega datos para el dashboard (/dashboard/panel).\n    Flujo:\n    1) Fechas de referencia: hoy, inicio de mes, y rango de 14 días.\n    2) KPIs rápidas: totales de hoy y del mes (compras/ventas), contadores.\n    3) Top productos vendidos (cantidad).\n    4) Low stock: productos con stock ≤ stock_minimo.\n    5) Series 14 días: compras (TruncDate) y ventas.\n    6) Prepara payload `chart` para `json_script` en el template.",
         "detail": "dashboard.views",
         "documentation": {}
     },
@@ -1480,7 +1544,7 @@
         "kind": 2,
         "importPath": "dashboard.views",
         "description": "dashboard.views",
-        "peekOfCode": "def index(request):\n    from django.db.models import F, Sum, Case, When, Value, IntegerField, DecimalField\n    from django.db.models.functions import Coalesce\n    hoy = timezone.localdate()\n    inicio_mes = hoy.replace(day=1)\n    next_month = (inicio_mes + timedelta(days=32)).replace(day=1)\n    # Totales HOY (Compra.fecha suele ser DateTimeField; Venta.fecha suele ser DateField)\n    compras_hoy = (\n        Compra.objects.filter(fecha__date=hoy)\n        .aggregate(s=Coalesce(Sum(\"total\"), Value(0), output_field=DecimalField(max_digits=12, decimal_places=2)))",
+        "peekOfCode": "def index(request):\n    \"\"\"\n    Renderiza el índice simple (/) con totales y lista resumida de low stock.\n    Flujo:\n    1) Cálculo de hoy e inicio de mes (y primer día del mes siguiente).\n    2) Totales HOY/MES para comprasy ventas (con Coalesce a 0).\n    3) Low stock: productos con stock ≤ stock_minimo (incluye igualdad).\n    4) Render de `index.html` con el contexto.\n    Parámetros:\n    request (HttpRequest)",
         "detail": "dashboard.views",
         "documentation": {}
     },
@@ -1507,7 +1571,7 @@
         "kind": 6,
         "importPath": "inventario.admin",
         "description": "inventario.admin",
-        "peekOfCode": "class ProductoAdmin(admin.ModelAdmin):\n    readonly_fields = ('stock_minimo',)\n    list_display = ('nombre', 'descripcion','precio_compra', 'stock', 'stock_minimo','proveedor', 'categoria','ganancia', 'creado_en')\n    #bloqueo de campos para que no se puedan editar (stock_minimo es readonly siempre)\n    def get_readonly_fields(self, request, obj=None):\n        # stock_minimo es readonly siempre\n        return self.readonly_fields\n    def precio_venta_display(self, obj): #Si quieres mostrar el precio de venta calculado:\n        return obj.precio_compra * (1 + obj.ganancia / 100)\n    precio_venta_display.short_description = 'Precio de Venta'",
+        "peekOfCode": "class ProductoAdmin(admin.ModelAdmin):\n    \"\"\"\n    Admin de Producto.\n    Notas:\n    - `stock_minimo` se calcula/ajusta vía lógica del modelo (save),\n        por eso permanece en solo lectura en el admin.\n    - `precio_venta_display` muestra el precio de venta en caso de usarse\n        en list_display (aquí NO se agrega para no cambiar tu vista actual).\n    \"\"\"\n    readonly_fields = ('stock_minimo',)",
         "detail": "inventario.admin",
         "documentation": {}
     },
@@ -1516,7 +1580,7 @@
         "kind": 6,
         "importPath": "inventario.admin",
         "description": "inventario.admin",
-        "peekOfCode": "class CategoriaAdmin(admin.ModelAdmin):\n    list_display = ('nombre',)\nclass ProveedorAdmin(admin.ModelAdmin):\n    list_display = ('nombre', 'direccion','telefono', 'tipo_proveedor',  'email', 'creado_en')\nadmin.site.register(Producto, ProductoAdmin)\nadmin.site.register(Categoria, CategoriaAdmin)\nadmin.site.register(Proveedor, ProveedorAdmin)",
+        "peekOfCode": "class CategoriaAdmin(admin.ModelAdmin):\n    \"\"\"Admin de Categoria (listado simple por nombre).\"\"\"\n    list_display = ('nombre',)\n# ─────────────────────────────────────────────────────────────────────────────\n# Admin: Proveedor\n# ─────────────────────────────────────────────────────────────────────────────\nclass ProveedorAdmin(admin.ModelAdmin):\n    \"\"\"Admin de Proveedor (campos básicos, ordenados para lectura rápida).\"\"\"\n    list_display = ('nombre', 'direccion','telefono', 'tipo_proveedor',  'email', 'creado_en')\n# ─────────────────────────────────────────────────────────────────────────────",
         "detail": "inventario.admin",
         "documentation": {}
     },
@@ -1525,7 +1589,7 @@
         "kind": 6,
         "importPath": "inventario.admin",
         "description": "inventario.admin",
-        "peekOfCode": "class ProveedorAdmin(admin.ModelAdmin):\n    list_display = ('nombre', 'direccion','telefono', 'tipo_proveedor',  'email', 'creado_en')\nadmin.site.register(Producto, ProductoAdmin)\nadmin.site.register(Categoria, CategoriaAdmin)\nadmin.site.register(Proveedor, ProveedorAdmin)",
+        "peekOfCode": "class ProveedorAdmin(admin.ModelAdmin):\n    \"\"\"Admin de Proveedor (campos básicos, ordenados para lectura rápida).\"\"\"\n    list_display = ('nombre', 'direccion','telefono', 'tipo_proveedor',  'email', 'creado_en')\n# ─────────────────────────────────────────────────────────────────────────────\n# Registro de modelos\n# ─────────────────────────────────────────────────────────────────────────────\nadmin.site.register(Producto, ProductoAdmin)\nadmin.site.register(Categoria, CategoriaAdmin)\nadmin.site.register(Proveedor, ProveedorAdmin)",
         "detail": "inventario.admin",
         "documentation": {}
     },
@@ -1543,7 +1607,7 @@
         "kind": 6,
         "importPath": "inventario.forms",
         "description": "inventario.forms",
-        "peekOfCode": "class ProveedorForm(forms.ModelForm):\n    class Meta:\n        model = Proveedor\n        fields = \"__all__\"\nclass ProductoForm(forms.ModelForm):\n    class Meta:\n        model = Producto\n        # Temporalmente incluimos todo para que no falle por un campo mal referenciado.\n        fields = \"__all__\"\n        # IMPORTANTE: no pongas aquí labels/help_texts/widgets con claves inexistentes.",
+        "peekOfCode": "class ProveedorForm(forms.ModelForm):\n    class Meta:\n        model = Proveedor\n        fields = \"__all__\"\n# ─────────────────────────────────────────────────────────────────────────────\n# FORM: ProductoForm\n# Propósito: CRUD de Producto con widgets básicos y validación defensiva.\n# ─────────────────────────────────────────────────────────────────────────────\nclass ProductoForm(forms.ModelForm):\n    class Meta:",
         "detail": "inventario.forms",
         "documentation": {}
     },
@@ -1561,7 +1625,7 @@
         "kind": 6,
         "importPath": "inventario.models",
         "description": "inventario.models",
-        "peekOfCode": "class Categoria(models.Model):\n    nombre = models.CharField(max_length=100, unique=True)\n    class Meta:\n        ordering = ['nombre']\n    def __str__(self):\n        return self.nombre\n#============================================================================================================================================\nclass Proveedor(models.Model):\n    nombre = models.CharField(max_length=150)\n    direccion = models.CharField(max_length=255)",
+        "peekOfCode": "class Categoria(models.Model):\n    \"\"\"\n    Categoría de producto (clasificación simple).\n    Campos:\n    - nombre (str, único): nombre visible de la categoría.\n    Meta:\n    - ordering por nombre para listados alfabéticos.\n    \"\"\"\n    nombre = models.CharField(max_length=100, unique=True)\n    class Meta:",
         "detail": "inventario.models",
         "documentation": {}
     },
@@ -1570,7 +1634,7 @@
         "kind": 6,
         "importPath": "inventario.models",
         "description": "inventario.models",
-        "peekOfCode": "class Proveedor(models.Model):\n    nombre = models.CharField(max_length=150)\n    direccion = models.CharField(max_length=255)\n    telefono = models.CharField(max_length=20)\n    email = models.EmailField(blank=True, null=True)\n    tipo_proveedor = models.CharField(\n        max_length=50,\n        choices=[('empresa', 'Empresa'), ('particular', 'Particular')]\n    )\n    #rubro = models.CharField(max_length=100, blank=True)",
+        "peekOfCode": "class Proveedor(models.Model):\n    \"\"\"\n    Proveedor de productos.\n    Campos:\n    - nombre, direccion, telefono, email (opc), tipo_proveedor (empresa/particular)\n    - creado_en (auto_now_add)\n    Meta:\n    - ordering por nombre.\n    - (Opcional) UniqueConstraint por (nombre, telefono) para evitar duplicados exactos.\n    \"\"\"",
         "detail": "inventario.models",
         "documentation": {}
     },
@@ -1579,7 +1643,7 @@
         "kind": 6,
         "importPath": "inventario.models",
         "description": "inventario.models",
-        "peekOfCode": "class Producto(models.Model):\n    nombre = models.CharField(max_length=150)\n    descripcion = models.TextField(blank=True)\n    precio_compra = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0'))])\n    stock = models.PositiveIntegerField()\n    stock_minimo = models.PositiveIntegerField(blank=True, null=True)\n    proveedor = models.ForeignKey('Proveedor', on_delete=models.PROTECT, related_name='productos')\n    categoria = models.ForeignKey('Categoria', on_delete=models.PROTECT, related_name='productos')\n    ganancia = models.DecimalField(\n        max_digits=5,",
+        "peekOfCode": "class Producto(models.Model):\n    \"\"\"\n    Producto del inventario.\n    Campos principales:\n    - nombre, descripcion (opc)\n    - precio_compra (>= 0)\n    - stock (entero, >= 0)\n    - stock_minimo (entero, opcional, >= 0)\n    - proveedor (FK, PROTECT), categoria (FK, PROTECT)\n    - ganancia (0..100, %)",
         "detail": "inventario.models",
         "documentation": {}
     },
@@ -1588,7 +1652,7 @@
         "kind": 5,
         "importPath": "inventario.urls",
         "description": "inventario.urls",
-        "peekOfCode": "app_name = \"inventario\"\nurlpatterns = [\n    path(\"\", views.inventario, name=\"inventario\"),\n    path(\"producto/\", views.listar_productos, name=\"listar_productos\"),\n    path(\"producto/agregar/\", views.agregar_producto, name=\"agregar_producto\"),\n    path(\"producto/editar/<int:pk>/\", views.editar_producto, name=\"editar_producto\"),\n    path(\"producto/eliminar/<int:pk>/\", views.eliminar_producto, name=\"eliminar_producto\"),\n    #path(\"producto/nuevo/\", views.producto_crear, name=\"producto_crear\"),  # ← NUEVO (creación rápida con ?next)\n    path(\"proveedores/nuevo/\", views.proveedor_crear, name=\"proveedor_crear\"),\n    path(\"api/producto/<int:pk>/precio/\", views.producto_precio_api, name=\"producto_precio\"),",
+        "peekOfCode": "app_name = \"inventario\"\nurlpatterns = [\n    # ─────────────────────────────────────────────────────────────────────────\n    # HOME INVENTARIO\n    # GET /inventario/ → redirige a una vista existente (proveedores o productos)\n    # ─────────────────────────────────────────────────────────────────────────\n    path(\"\", views.inventario, name=\"inventario\"),\n    # ─────────────────────────────────────────────────────────────────────────\n    # PRODUCTOS\n    # ─────────────────────────────────────────────────────────────────────────",
         "detail": "inventario.urls",
         "documentation": {}
     },
@@ -1597,7 +1661,7 @@
         "kind": 5,
         "importPath": "inventario.urls",
         "description": "inventario.urls",
-        "peekOfCode": "urlpatterns = [\n    path(\"\", views.inventario, name=\"inventario\"),\n    path(\"producto/\", views.listar_productos, name=\"listar_productos\"),\n    path(\"producto/agregar/\", views.agregar_producto, name=\"agregar_producto\"),\n    path(\"producto/editar/<int:pk>/\", views.editar_producto, name=\"editar_producto\"),\n    path(\"producto/eliminar/<int:pk>/\", views.eliminar_producto, name=\"eliminar_producto\"),\n    #path(\"producto/nuevo/\", views.producto_crear, name=\"producto_crear\"),  # ← NUEVO (creación rápida con ?next)\n    path(\"proveedores/nuevo/\", views.proveedor_crear, name=\"proveedor_crear\"),\n    path(\"api/producto/<int:pk>/precio/\", views.producto_precio_api, name=\"producto_precio\"),\n    path(\"producto/ver/<int:pk>/\", views.ver_producto, name=\"ver_producto\"),",
+        "peekOfCode": "urlpatterns = [\n    # ─────────────────────────────────────────────────────────────────────────\n    # HOME INVENTARIO\n    # GET /inventario/ → redirige a una vista existente (proveedores o productos)\n    # ─────────────────────────────────────────────────────────────────────────\n    path(\"\", views.inventario, name=\"inventario\"),\n    # ─────────────────────────────────────────────────────────────────────────\n    # PRODUCTOS\n    # ─────────────────────────────────────────────────────────────────────────\n    path(\"producto/\", views.listar_productos, name=\"listar_productos\"),",
         "detail": "inventario.urls",
         "documentation": {}
     },
@@ -1615,7 +1679,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def agregar_proveedor(request):\n    next_url = request.GET.get(\"next\")\n    if request.method == \"POST\":\n        form = ProveedorForm(request.POST)\n        if form.is_valid():\n            proveedor = form.save()\n            messages.success(request, \"Proveedor creado correctamente.\")\n            if next_url:\n                return redirect(next_url)\n            # PARIDAD CON PRODUCTOS: ir a editar",
+        "peekOfCode": "def agregar_proveedor(request):\n    \"\"\"\n    Crea un proveedor.\n    Flujo:\n    - GET: muestra formulario vacío.\n    - POST: valida y guarda; redirige a `next` si existe o al detalle (readonly).\n    Contexto:\n    form (ProveedorForm)\n    \"\"\"\n    next_url = request.GET.get(\"next\")",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1624,7 +1688,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def editar_proveedor(request, pk):\n    proveedor = get_object_or_404(Proveedor, pk=pk)\n    if request.method == \"POST\":\n        form = ProveedorForm(request.POST, instance=proveedor)\n        if form.is_valid():\n            form.save()\n            messages.success(request, \"Proveedor actualizado correctamente.\")\n            # PARIDAD CON PRODUCTOS: quedarse en editar (PRG)\n            return redirect(\"inventario:ver_proveedor\", pk=proveedor.pk)\n        messages.error(request, \"Revisa los errores del formulario.\")",
+        "peekOfCode": "def editar_proveedor(request, pk):\n    \"\"\"\n    Edita un proveedor existente.\n    Flujo:\n    - GET: carga formulario con instancia.\n    - POST: valida, guarda y redirige al detalle readonly (PRG).\n    \"\"\"\n    proveedor = get_object_or_404(Proveedor, pk=pk)\n    if request.method == \"POST\":\n        form = ProveedorForm(request.POST, instance=proveedor)",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1633,7 +1697,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def eliminar_proveedor(request, pk):\n    \"\"\"\n    Confirmación y borrado.\n    Template (GET): templates/inventario/proveedores/listar_proveedor/eliminar_confirm_proveedor.html\n    \"\"\"\n    proveedor = get_object_or_404(Proveedor, pk=pk)\n    if request.method == \"POST\":\n        proveedor.delete()\n        messages.success(request, \"Proveedor eliminado correctamente.\")\n        return redirect(\"inventario:listar_proveedores\")",
+        "peekOfCode": "def eliminar_proveedor(request, pk):\n    \"\"\"\n    Elimina un proveedor previa confirmación.\n    Template GET:\n    inventario/proveedores/listar_proveedor/eliminar_confirm_proveedor.html\n    \"\"\"\n    proveedor = get_object_or_404(Proveedor, pk=pk)\n    if request.method == \"POST\":\n        proveedor.delete()\n        messages.success(request, \"Proveedor eliminado correctamente.\")",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1642,7 +1706,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def listar_proveedores(request):\n    \"\"\"\n    Lista paginada de proveedores.\n    Template: templates/inventario/proveedores/listar_proveedor/listar_proveedor.html\n    \"\"\"\n    queryset = Proveedor.objects.all().order_by(\"-id\")\n    # Filtro simple opcional por ?q=\n    q = request.GET.get(\"q\")\n    if q:\n        # Ajusta campos si tus nombres reales difieren",
+        "peekOfCode": "def listar_proveedores(request):\n    \"\"\"\n    Lista paginada de proveedores.\n    Filtros:\n    - q: búsqueda por nombre/email/teléfono.\n    Template:\n    inventario/proveedores/listar_proveedor/listar_proveedor.html\n    \"\"\"\n    queryset = Proveedor.objects.all().order_by(\"-id\")\n    # Filtro simple opcional por ?q=",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1651,7 +1715,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def ver_proveedor(request, pk):\n    proveedor = get_object_or_404(Proveedor, pk=pk)\n    # Reusar el mismo template de EDITAR con el form deshabilitado\n    form = ProveedorForm(instance=proveedor)\n    for f in form.fields.values():\n        f.disabled = True\n    return render(\n        request,\n        \"inventario/proveedores/editar_proveedor/editar_proveedor.html\",\n        {",
+        "peekOfCode": "def ver_proveedor(request, pk):\n    \"\"\"\n    Detalle readonly de Proveedor (reutiliza el template de edición).\n    \"\"\"\n    proveedor = get_object_or_404(Proveedor, pk=pk)\n    # Reusar el mismo template de EDITAR con el form deshabilitado\n    form = ProveedorForm(instance=proveedor)\n    for f in form.fields.values():\n        f.disabled = True\n    return render(",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1660,7 +1724,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def listar_productos(request):\n    qs = Producto.objects.select_related(\"proveedor\", \"categoria\").order_by(\"nombre\")\n    paginator = Paginator(qs, 20)\n    page_number = request.GET.get(\"page\")\n    page_obj = paginator.get_page(page_number)\n    # Paso variables amplias para no romper tus templates:\n    context = {\n        \"page_obj\": page_obj,\n        \"object_list\": page_obj.object_list,\n        \"productos\": page_obj.object_list,  # por si el template usa este nombre",
+        "peekOfCode": "def listar_productos(request):\n    \"\"\"\n    Versión básica de listar productos (compatibilidad con templates antiguos).\n    La versión extendida definida más abajo es la activa en tiempo de ejecución.\n    \"\"\"\n    qs = Producto.objects.select_related(\"proveedor\", \"categoria\").order_by(\"nombre\")\n    paginator = Paginator(qs, 20)\n    page_number = request.GET.get(\"page\")\n    page_obj = paginator.get_page(page_number)\n    # Paso variables amplias para no romper tus templates:",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1669,7 +1733,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def agregar_producto(request):\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST)\n        if form.is_valid():\n            prod = form.save()\n            messages.success(request, f'Producto \"{prod}\" creado correctamente.')\n            # Redirige a la lista (si prefieres otra, me dices)\n            #return redirect(reverse(\"inventario:listar_productos\"))\n            return redirect(\"inventario:ver_producto\", pk=prod.pk)  # ← ver detalle readonly\n    else:",
+        "peekOfCode": "def agregar_producto(request):\n    \"\"\"\n    Crea un producto.\n    Flujo:\n    - GET: formulario vacío.\n    - POST: valida y guarda; redirige a ver_producto.\n    \"\"\"\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST)\n        if form.is_valid():",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1678,7 +1742,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def editar_producto(request, pk):\n    prod = get_object_or_404(Producto, pk=pk)\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST, instance=prod)\n        if form.is_valid():\n            prod = form.save()\n            messages.success(request, f'Producto \"{prod}\" Editado exitosamente') #mensaje de edicion exitosa\n            return redirect(\"inventario:ver_producto\", pk = prod.pk)\n    else:\n        form = ProductoForm(instance=prod)",
+        "peekOfCode": "def editar_producto(request, pk):\n    \"\"\"\n    Edita un producto.\n    Flujo:\n    - GET: formulario con instancia.\n    - POST: valida/guarda; redirige a ver_producto.\n    \"\"\"\n    prod = get_object_or_404(Producto, pk=pk)\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST, instance=prod)",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1687,7 +1751,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def eliminar_producto(request, pk):\n    prod = get_object_or_404(Producto, pk=pk)\n    if request.method == \"POST\":\n        nombre = str(prod)\n        prod.delete()\n        messages.success(request, f'Producto \"{nombre}\" eliminado.')\n        return redirect(reverse(\"inventario:listar_productos\"))\n    # Confirmación (según tu árbol: eliminar_confirm_lista.html)\n    return render(\n        request,",
+        "peekOfCode": "def eliminar_producto(request, pk):\n    \"\"\"\n    Elimina un producto previa confirmación.\n    Template GET:\n    inventario/productos/listar_producto/eliminar_confirm_lista.html\n    \"\"\"\n    prod = get_object_or_404(Producto, pk=pk)\n    if request.method == \"POST\":\n        nombre = str(prod)\n        prod.delete()",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1696,7 +1760,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def ver_producto(request, pk):\n    \"\"\"\n    Detalle SOLO LECTURA del producto.\n    Mantiene el mismo patrón visual que Compras (readonly).\n    \"\"\"\n    producto = get_object_or_404(Producto, pk=pk)\n    # Reusar un form deshabilitado mantiene estilos/partials si los usas\n    form = ProductoForm(instance=producto)\n    for f in form.fields.values():\n        f.disabled = True",
+        "peekOfCode": "def ver_producto(request, pk):\n    \"\"\"\n    Detalle SOLO LECTURA del producto (mismo layout que edición).\n    Extras:\n    - Calcula margen = precio_venta - precio_compra (Decimal a 2 decimales).\n    \"\"\"\n    producto = get_object_or_404(Producto, pk=pk)\n    # Reusar un form deshabilitado mantiene estilos/partials si los usas\n    form = ProductoForm(instance=producto)\n    for f in form.fields.values():",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1705,7 +1769,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def listar_productos(request):\n    # Base query\n    productos_qs = (\n        Producto.objects\n        .select_related(\"proveedor\", \"categoria\")\n        .order_by(\"nombre\")\n    )\n    # --- Filtros ---\n    texto_busqueda = request.GET.get(\"q\", \"\").strip()\n    categoria_id = request.GET.get(\"categoria\") or \"\"",
+        "peekOfCode": "def listar_productos(request):\n    \"\"\"\n    Lista de productos con filtros y paginación.\n    Filtros:\n    - q: texto en nombre o proveedor.\n    - categoria: ID exacto.\n    - estado: 'activos' | 'inactivos' | 'reposicion' (stock <= stock_minimo y stock_minimo > 0).\n    Contexto adicional:\n    - lista_categorias, estado_seleccionado, etc. para partials.\n    \"\"\"",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1714,7 +1778,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def producto_precio_api(request, pk):\n    \"\"\"\n    Devuelve info mínima del producto en JSON.\n    Respuesta: {id, nombre, precio_unitario}\n    \"\"\"\n    try:\n        p= Producto.objects.get(pk=pk)\n    except Producto.DoesNotExist:\n        raise Http404(\"El producto no existe\")\n    #AJUSTA ESTE NOMBRE DE CAMPO al real de tu modelo:",
+        "peekOfCode": "def producto_precio_api(request, pk):\n    \"\"\"\n    Devuelve info mínima del producto en JSON.\n    Respuesta:\n    { \"id\": int, \"nombre\": str, \"precio_unitario\": float }\n    Notas:\n    - Ajusta el atributo de precio según tu modelo (precio_compra/precio_unitario/costo).\n    - Devuelve 404 si el producto no existe.\n    \"\"\"\n    try:",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1723,7 +1787,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def inventario(request):\n    # Redirige al listado que SÍ existe (Proveedores, ya lo dejamos OK)\n    return redirect(\"inventario:listar_proveedores\")\n    # Si prefieres ir a productos, cambia por:\n    # return redirect(\"inventario:listar_productos\")\n    # Alias para compatibilidad con tu URL/plantillas antiguas\n@login_required\n@permission_required(\"inventario.add_proveedor\", raise_exception=True)\ndef proveedor_crear(request):\n    # Reusa la lógica de agregar_proveedor para no duplicar código",
+        "peekOfCode": "def inventario(request):\n    \"\"\"\n    Home de inventario: redirige a una vista existente (por defecto, proveedores).\n    \"\"\"\n    # Redirige al listado que SÍ existe (Proveedores, ya lo dejamos OK)\n    return redirect(\"inventario:listar_proveedores\")\n    # Si prefieres ir a productos, cambia por:\n    # return redirect(\"inventario:listar_productos\")\n    # Alias para compatibilidad con tu URL/plantillas antiguas\n# ─────────────────────────────────────────────────────────────────────────────",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1732,7 +1796,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def proveedor_crear(request):\n    # Reusa la lógica de agregar_proveedor para no duplicar código\n    return agregar_proveedor(request)",
+        "peekOfCode": "def proveedor_crear(request):\n    \"\"\"\n    Alias de `agregar_proveedor` para compatibilidad con rutas/plantillas antiguas.\n    \"\"\"\n    # Reusa la lógica de agregar_proveedor para no duplicar código\n    return agregar_proveedor(request)",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1939,7 +2003,7 @@
         "kind": 5,
         "importPath": "suministros.urls",
         "description": "suministros.urls",
-        "peekOfCode": "urlpatterns = [\n    path('admin/', admin.site.urls),\n    path(\"\", index, name=\"home\"),                 # ← http://127.0.0.1:8000/\n    path(\"compras/\", include((\"compras.urls\", \"compras\"), namespace=\"compras\")),\n    #path('ventas/', include('ventas.urls')),\n    path('inventario/', include(('inventario.urls', 'inventario'), namespace='inventario')),\n    path(\"accounts/\", include(\"django.contrib.auth.urls\")),  # <- clave\n    # Home global (con lógica y contexto dinámico)\n    path('', views.index, name='home'),\n    path('ventas/', include(('ventas.urls', 'ventas'), namespace='ventas')),",
+        "peekOfCode": "urlpatterns = [\n    # Admin\n    path('admin/', admin.site.urls),\n    # Home global (con contexto dinámico de suministros/views.py)\n    path(\"\", views.index, name='home'),                 # ← http://127.0.0.1:8000/\n    # Apps\n    path(\"compras/\", include((\"compras.urls\", \"compras\"), namespace=\"compras\")),\n    path('inventario/', include(('inventario.urls', 'inventario'), namespace='inventario')),\n    path('ventas/', include(('ventas.urls', 'ventas'), namespace='ventas')),\n    path(\"dashboard/\", include((\"dashboard.urls\", \"dashboard\"), namespace=\"dashboard\")),  ",
         "detail": "suministros.urls",
         "documentation": {}
     },
@@ -1948,7 +2012,7 @@
         "kind": 2,
         "importPath": "suministros.views",
         "description": "suministros.views",
-        "peekOfCode": "def index(request):\n    contexto = {\n        \"compras_count\": Compra.objects.count(),\n        \"productos_count\": Producto.objects.count(),\n        \"proveedores_count\": Proveedor.objects.count(),\n    }\n    return render(request, \"index.html\", contexto)",
+        "peekOfCode": "def index(request):\n    \"\"\"\n    Home:\n    - Si es cliente: saludo + gráfica de últimos 30 días de sus compras.\n    - Si NO es cliente: home 'pro' original con KPIs y tabla.\n    \"\"\"\n    user = request.user\n    if _es_cliente(user):\n        # ------- Serie últimos 30 días para ESTE usuario -------\n        hoy = timezone.localdate()",
         "detail": "suministros.views",
         "documentation": {}
     },
@@ -2110,7 +2174,7 @@
         "kind": 2,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "def crear_venta(request):\n    PREFIX = \"lineas\"\n    if request.method == \"POST\":\n        data = request.POST.copy()\n        if data.get(\"descuento_total\") in (None, \"\"):\n            data[\"descuento_total\"] = \"0\"\n        form = VentaForm(data)\n        if form.is_valid():\n            venta = form.save(commit=False)\n            # venta.usuario_id = request.user.pk  # si corresponde",
+        "peekOfCode": "def crear_venta(request):\n    PREFIX = \"lineas\"\n    if request.method == \"POST\":\n        data = request.POST.copy()\n        if data.get(\"descuento_total\") in (None, \"\"):\n            data[\"descuento_total\"] = \"0\"\n        form = VentaForm(data)\n        if form.is_valid():\n            venta = form.save(commit=False)\n            # MODO CLIENTE: auto-asignar el cliente a quien crea la venta",
         "detail": "ventas.views",
         "documentation": {}
     },
@@ -2119,7 +2183,7 @@
         "kind": 2,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "def editar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    estado_previo = {l.pk: (l.producto_id, l.cantidad) for l in venta.detalles.all()}\n    if request.method == \"POST\":\n        data = request.POST.copy()\n        if data.get(\"descuento_total\") in (None, \"\"):\n            data[\"descuento_total\"] = \"0\"\n        form = VentaForm(data, instance=venta)\n        formset = VentaProductoFormSet(data, instance=venta, prefix=\"lineas\")\n        if form.is_valid() and formset.is_valid():",
+        "peekOfCode": "def editar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    # MODO CLIENTE: sólo puede editar sus propias ventas\n    if _es_cliente(request.user) and getattr(venta, \"cliente_id\", None) != request.user.pk:\n        raise PermissionDenied(\"No puedes editar ventas de otros usuarios.\")\n    estado_previo = {l.pk: (l.producto_id, l.cantidad) for l in venta.detalles.all()}\n    if request.method == \"POST\":\n        data = request.POST.copy()\n        if data.get(\"descuento_total\") in (None, \"\"):\n            data[\"descuento_total\"] = \"0\"",
         "detail": "ventas.views",
         "documentation": {}
     },
@@ -2128,7 +2192,7 @@
         "kind": 2,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "def ver_ventas(request):\n    ventas_qs = Venta.objects.select_related(\"cliente\").order_by(\"-fecha\", \"-id\")\n    q = request.GET.get(\"q\", \"\").strip()\n    desde = request.GET.get(\"desde\")\n    hasta = request.GET.get(\"hasta\")\n    cliente_id = request.GET.get(\"cliente\")\n    if q:\n        ventas_qs = ventas_qs.filter(Q(id__icontains=q) | Q(cliente__username__icontains=q))\n    if desde:\n        ventas_qs = ventas_qs.filter(fecha__gte=desde)",
+        "peekOfCode": "def ver_ventas(request):\n    ventas_qs = Venta.objects.select_related(\"cliente\").order_by(\"-fecha\", \"-id\")\n    # MODO CLIENTE: sólo ve sus ventas\n    if _es_cliente(request.user):\n        ventas_qs = ventas_qs.filter(cliente_id=request.user.pk)\n    q = request.GET.get(\"q\", \"\").strip()\n    desde = request.GET.get(\"desde\")\n    hasta = request.GET.get(\"hasta\")\n    cliente_id = request.GET.get(\"cliente\")\n    if q:",
         "detail": "ventas.views",
         "documentation": {}
     },
@@ -2137,7 +2201,7 @@
         "kind": 2,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "def ver_venta(request, pk):\n    venta = get_object_or_404(Venta.objects.select_related(\"cliente\"), pk=pk)\n    form = VentaForm(instance=venta)\n    for f in form.fields.values():\n        f.disabled = True\n    formset = VentaProductoFormSet(instance=venta)\n    for frm in formset.forms:\n        for f in frm.fields.values():\n            f.disabled = True\n    formset.can_delete = False",
+        "peekOfCode": "def ver_venta(request, pk):\n    venta = get_object_or_404(Venta.objects.select_related(\"cliente\"), pk=pk)\n    # MODO CLIENTE: sólo puede ver sus propias ventas\n    if _es_cliente(request.user) and getattr(venta, \"cliente_id\", None) != request.user.pk:\n        raise PermissionDenied(\"No puedes ver ventas de otros usuarios.\")\n    form = VentaForm(instance=venta)\n    for f in form.fields.values():\n        f.disabled = True\n    formset = VentaProductoFormSet(instance=venta)\n    for frm in formset.forms:",
         "detail": "ventas.views",
         "documentation": {}
     },
@@ -2146,7 +2210,7 @@
         "kind": 2,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "def eliminar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    if request.method == \"POST\":\n        venta.delete()\n        messages.success(request, \"Venta eliminada.\")\n        return redirect(\"ventas:ver_ventas\")\n    return render(request, \"ventas/eliminar_confirm_venta.html\", {\"venta\": venta})\ndef _round2(x: Decimal) -> Decimal:\n    return (x or Decimal(\"0\")).quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n@transaction.atomic",
+        "peekOfCode": "def eliminar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    # MODO CLIENTE: sólo puede eliminar sus propias ventas (si tu negocio lo permite)\n    if _es_cliente(request.user) and getattr(venta, \"cliente_id\", None) != request.user.pk:\n        raise PermissionDenied(\"No puedes eliminar ventas de otros usuarios.\")\n    if request.method == \"POST\":\n        venta.delete()\n        messages.success(request, \"Venta eliminada.\")\n        return redirect(\"ventas:ver_ventas\")\n    return render(request, \"ventas/eliminar_confirm_venta.html\", {\"venta\": venta})",
         "detail": "ventas.views",
         "documentation": {}
     },
@@ -2164,7 +2228,7 @@
         "kind": 5,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "User = get_user_model()\n# ─────────────────────────────────────────────────────────────────────────────\n# CREAR\n# ─────────────────────────────────────────────────────────────────────────────\n@login_required\n@transaction.atomic\ndef crear_venta(request):\n    PREFIX = \"lineas\"\n    if request.method == \"POST\":\n        data = request.POST.copy()",
+        "peekOfCode": "User = get_user_model()\n# ─────────────────────────────────────────────────────────────────────────────\n# Helper: detectar \"modo cliente\"\n# Criterio: puede ver/crear ventas, pero NO tiene permisos de compras ni inventario.\n# (Excluye naturalmente a superusuarios, que tienen todo permitido.)\n# ─────────────────────────────────────────────────────────────────────────────\ndef _es_cliente(user) -> bool:\n    if user.is_superuser or user.is_staff:\n        return False\n    return (",
         "detail": "ventas.views",
         "documentation": {}
     },
@@ -2173,7 +2237,7 @@
         "kind": 5,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "agregar_venta = crear_venta  # alias\n# ─────────────────────────────────────────────────────────────────────────────\n# EDITAR\n# ─────────────────────────────────────────────────────────────────────────────\n@login_required\n@transaction.atomic\ndef editar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    estado_previo = {l.pk: (l.producto_id, l.cantidad) for l in venta.detalles.all()}\n    if request.method == \"POST\":",
+        "peekOfCode": "agregar_venta = crear_venta  # alias\n# ─────────────────────────────────────────────────────────────────────────────\n# EDITAR\n# ─────────────────────────────────────────────────────────────────────────────\n@login_required\n@permission_required(\"ventas.change_venta\", raise_exception=True)\n@transaction.atomic\ndef editar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    # MODO CLIENTE: sólo puede editar sus propias ventas",
         "detail": "ventas.views",
         "documentation": {}
     },
@@ -2182,7 +2246,7 @@
         "kind": 5,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "detalle = ver_venta  # alias\n# ─────────────────────────────────────────────────────────────────────────────\n# ELIMINAR\n# ─────────────────────────────────────────────────────────────────────────────\n@login_required\n@transaction.atomic\ndef eliminar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    if request.method == \"POST\":\n        venta.delete()",
+        "peekOfCode": "detalle = ver_venta  # alias\n# ─────────────────────────────────────────────────────────────────────────────\n# ELIMINAR\n# ─────────────────────────────────────────────────────────────────────────────\n@login_required\n@permission_required(\"ventas.delete_venta\", raise_exception=True)\n@transaction.atomic\ndef eliminar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    # MODO CLIENTE: sólo puede eliminar sus propias ventas (si tu negocio lo permite)",
         "detail": "ventas.views",
         "documentation": {}
     },

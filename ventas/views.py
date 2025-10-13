@@ -1,15 +1,14 @@
-# ventas/views.py
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import transaction
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, F, Sum, DecimalField, ExpressionWrapper
 from django.contrib.auth import get_user_model
-from django.db.models import F, Sum, DecimalField, ExpressionWrapper
+from django.core.exceptions import PermissionDenied
+
 from .forms import VentaForm, VentaProductoFormSet
 from .models import Venta, VentaProducto
-
 from decimal import ROUND_HALF_UP, Decimal
 
 try:
@@ -21,9 +20,26 @@ User = get_user_model()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Helper: detectar "modo cliente"
+# Criterio: puede ver/crear ventas, pero NO tiene permisos de compras ni inventario.
+# (Excluye naturalmente a superusuarios, que tienen todo permitido.)
+# ─────────────────────────────────────────────────────────────────────────────
+def _es_cliente(user) -> bool:
+    if user.is_superuser or user.is_staff:
+        return False
+    return (
+        user.has_perm("ventas.view_venta")
+        and user.has_perm("ventas.add_venta")
+        and not user.has_perm("compras.view_compra")
+        and not user.has_perm("inventario.view_producto")
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # CREAR
 # ─────────────────────────────────────────────────────────────────────────────
 @login_required
+@permission_required("ventas.add_venta", raise_exception=True)
 @transaction.atomic
 def crear_venta(request):
     PREFIX = "lineas"
@@ -36,33 +52,34 @@ def crear_venta(request):
         form = VentaForm(data)
         if form.is_valid():
             venta = form.save(commit=False)
-            # venta.usuario_id = request.user.pk  # si corresponde
+
+            # MODO CLIENTE: auto-asignar el cliente a quien crea la venta
+            if _es_cliente(request.user):
+                if hasattr(venta, "cliente_id"):
+                    venta.cliente_id = request.user.pk
+
             venta.save()
 
             formset = VentaProductoFormSet(data, instance=venta, prefix=PREFIX)
             if formset.is_valid():
                 formset.save()
 
-                # ⬇️⬇️⬇️ ESTA LÍNEA ES LA CLAVE ⬇️⬇️⬇️
                 if services_ventas:
                     services_ventas.aplicar_stock_despues_de_crear_venta(venta)
-                # ⬆️⬆️⬆️ --------------------------- ⬆️⬆️⬆️
 
-
-
-                # ───── AQUI: calcular tasa e invocar servicio con tasa ─────
+                # Calcular totales con tasa (si viene)
                 if services_ventas:
                     try:
-                        raw = (data.get("impuesto") or "").replace(",", ".")  # "23" → "23" / "23,5" → "23.5"
-                        tasa_pct = Decimal(raw or "0") / Decimal("100")       # 23 → 0.23
+                        raw = (data.get("impuesto") or "").replace(",", ".")
+                        tasa_pct = Decimal(raw or "0") / Decimal("100")
                         services_ventas.calcular_y_guardar_totales_venta(venta, tasa_impuesto_pct=tasa_pct)
                     except Exception:
                         pass
-                # ──────────────────────────────────────────────────────────
 
                 messages.success(request, "Venta creada exitosamente.")
                 return redirect("ventas:detalle", pk=venta.pk)
             else:
+                # Si el formset falla, revertimos la cabecera creada
                 venta.delete()
         else:
             formset = VentaProductoFormSet(data, instance=Venta(), prefix=PREFIX)
@@ -83,9 +100,15 @@ agregar_venta = crear_venta  # alias
 # EDITAR
 # ─────────────────────────────────────────────────────────────────────────────
 @login_required
+@permission_required("ventas.change_venta", raise_exception=True)
 @transaction.atomic
 def editar_venta(request, pk):
     venta = get_object_or_404(Venta, pk=pk)
+
+    # MODO CLIENTE: sólo puede editar sus propias ventas
+    if _es_cliente(request.user) and getattr(venta, "cliente_id", None) != request.user.pk:
+        raise PermissionDenied("No puedes editar ventas de otros usuarios.")
+
     estado_previo = {l.pk: (l.producto_id, l.cantidad) for l in venta.detalles.all()}
 
     if request.method == "POST":
@@ -105,14 +128,13 @@ def editar_venta(request, pk):
                     services_ventas.reconciliar_stock_tras_editar_venta(venta, estado_previo)
                 except Exception:
                     pass
-                # ───── AQUI: calcular tasa e invocar servicio con tasa ─────
+                # Recalcular totales con tasa si viene en el form
                 try:
                     raw = (data.get("impuesto") or "").replace(",", ".")
                     tasa_pct = Decimal(raw or "0") / Decimal("100")
                     services_ventas.calcular_y_guardar_totales_venta(venta, tasa_impuesto_pct=tasa_pct)
                 except Exception:
                     pass
-                # ──────────────────────────────────────────────────────────
 
             messages.success(request, "Venta editada correctamente.")
             return redirect("ventas:detalle", pk=venta.pk)
@@ -126,12 +148,18 @@ def editar_venta(request, pk):
         {"venta": venta, "form": form, "formset": formset, "readonly": False},
     )
 
+
 # ─────────────────────────────────────────────────────────────────────────────
 # LISTAR
 # ─────────────────────────────────────────────────────────────────────────────
 @login_required
+@permission_required("ventas.view_venta", raise_exception=True)
 def ver_ventas(request):
     ventas_qs = Venta.objects.select_related("cliente").order_by("-fecha", "-id")
+
+    # MODO CLIENTE: sólo ve sus ventas
+    if _es_cliente(request.user):
+        ventas_qs = ventas_qs.filter(cliente_id=request.user.pk)
 
     q = request.GET.get("q", "").strip()
     desde = request.GET.get("desde")
@@ -170,8 +198,13 @@ def ver_ventas(request):
 # VER (SOLO LECTURA)
 # ─────────────────────────────────────────────────────────────────────────────
 @login_required
+@permission_required("ventas.view_venta", raise_exception=True)
 def ver_venta(request, pk):
     venta = get_object_or_404(Venta.objects.select_related("cliente"), pk=pk)
+
+    # MODO CLIENTE: sólo puede ver sus propias ventas
+    if _es_cliente(request.user) and getattr(venta, "cliente_id", None) != request.user.pk:
+        raise PermissionDenied("No puedes ver ventas de otros usuarios.")
 
     form = VentaForm(instance=venta)
     for f in form.fields.values():
@@ -189,7 +222,6 @@ def ver_venta(request, pk):
         {"form": form, "formset": formset, "venta": venta, "readonly": True},
     )
 
-
 detalle = ver_venta  # alias
 
 
@@ -197,20 +229,26 @@ detalle = ver_venta  # alias
 # ELIMINAR
 # ─────────────────────────────────────────────────────────────────────────────
 @login_required
+@permission_required("ventas.delete_venta", raise_exception=True)
 @transaction.atomic
 def eliminar_venta(request, pk):
-
     venta = get_object_or_404(Venta, pk=pk)
+
+    # MODO CLIENTE: sólo puede eliminar sus propias ventas (si tu negocio lo permite)
+    if _es_cliente(request.user) and getattr(venta, "cliente_id", None) != request.user.pk:
+        raise PermissionDenied("No puedes eliminar ventas de otros usuarios.")
+
     if request.method == "POST":
         venta.delete()
         messages.success(request, "Venta eliminada.")
         return redirect("ventas:ver_ventas")
+
     return render(request, "ventas/eliminar_confirm_venta.html", {"venta": venta})
 
 
-
-
-
+# ─────────────────────────────────────────────────────────────────────────────
+# Utilidades de totales
+# ─────────────────────────────────────────────────────────────────────────────
 def _round2(x: Decimal) -> Decimal:
     return (x or Decimal("0")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
@@ -230,16 +268,12 @@ def calcular_y_guardar_totales_venta(venta: Venta, tasa_impuesto_pct: Decimal | 
     agg = VentaProducto.objects.filter(venta=venta).aggregate(subtotal=Sum(total_linea))
     subtotal_calc = agg["subtotal"] or Decimal("0")
 
-    # Subtotal (guardado)
     venta.subtotal = _round2(subtotal_calc)
 
-    # Impuesto (importe)
     if tasa_impuesto_pct is not None:
         base = max(Decimal("0"), venta.subtotal - (venta.descuento_total or Decimal("0")))
         venta.impuesto = _round2(base * Decimal(str(tasa_impuesto_pct)))
 
-    # Total
     venta.total = _round2(venta.subtotal - (venta.descuento_total or Decimal("0")) + (venta.impuesto or Decimal("0")))
-
     venta.save(update_fields=["subtotal", "impuesto", "total"])
     return venta

@@ -1,11 +1,33 @@
+"""
+Formularios de Inventario (ModelForms para Proveedor y Producto).
+
+Responsabilidades:
+- Exponer formularios basados en modelos para CRUD en vistas/templates.
+- Incluir widgets mínimos y validaciones de integridad en `ProductoForm.clean()`.
+
+Diseño:
+- Mantener `fields="__all__"` mientras el modelo esté estable (rápida iteración).
+- No tocar nombres de campos no existentes (evita KeyError en widgets/labels).
+"""
+
 from django import forms
 from .models import Proveedor, Producto
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# FORM: ProveedorForm
+# Propósito: CRUD de Proveedor sin personalizaciones extra.
+# ─────────────────────────────────────────────────────────────────────────────
 class ProveedorForm(forms.ModelForm):
     class Meta:
         model = Proveedor
         fields = "__all__"
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# FORM: ProductoForm
+# Propósito: CRUD de Producto con widgets básicos y validación defensiva.
+# ─────────────────────────────────────────────────────────────────────────────
 class ProductoForm(forms.ModelForm):
     class Meta:
         model = Producto
@@ -19,6 +41,17 @@ class ProductoForm(forms.ModelForm):
 
     # Valida solo nombres que EXISTAN realmente en tu modelo:
     def clean(self):
+        """
+        Validación defensiva de precio y stock.
+
+        Reglas:
+        - `precio_compra` (o `precio`) no puede ser negativo.
+        - `stock` (o `stock_inicial`) no puede ser negativo.
+
+        Notas:
+        - Se toleran alias históricos (`precio`, `stock_inicial`) para compatibilidad.
+        - Si cambias nombres en el modelo, ajusta aquí las claves de `add_error`.
+        """
         cleaned = super().clean()
         # Ajusta estos nombres a los reales de tu modelo:
         precio = cleaned.get("precio_compra") or cleaned.get("precio")

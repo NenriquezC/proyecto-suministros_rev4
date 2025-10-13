@@ -1,3 +1,16 @@
+"""
+Vistas del panel (dashboard) e índice simple.
+
+Responsabilidades:
+- Calcular KPIs rápidas (hoy/mes), series temporales y tablas auxiliares.
+- Preparar payloads listos para templates (incl. json_script para charts).
+- Mantener consultas eficientes y legibles con anotaciones/aggregates.
+
+Diseño:
+- Sin cambiar lógica de negocio: sólo documentación y organización.
+- Usar `timezone` para fechas seguras y `Coalesce` para valores nulos.
+"""
+
 # dashboard/views.py
 from datetime import timedelta
 from decimal import Decimal
@@ -13,8 +26,36 @@ from ventas.models import Venta, VentaProducto
 from inventario.models import Producto
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# VISTA: panel
+# Propósito: Renderizar el dashboard principal con KPIs, top vendidos, low stock
+#            y series de los últimos 14 días (compras/ventas).
+# ─────────────────────────────────────────────────────────────────────────────
 @login_required
 def panel(request):
+    """
+    Calcula y entrega datos para el dashboard (/dashboard/panel).
+
+    Flujo:
+    1) Fechas de referencia: hoy, inicio de mes, y rango de 14 días.
+    2) KPIs rápidas: totales de hoy y del mes (compras/ventas), contadores.
+    3) Top productos vendidos (cantidad).
+    4) Low stock: productos con stock ≤ stock_minimo.
+    5) Series 14 días: compras (TruncDate) y ventas.
+    6) Prepara payload `chart` para `json_script` en el template.
+
+    Parámetros:
+    request (HttpRequest)
+
+    Retorna:
+    HttpResponse: render("dashboard/panel.html", contexto)
+
+    Notas:
+    - Se respeta tu distinción Compra.fecha (DateTime) vs Venta.fecha (Date).
+    - `Decimal("0")` previene `None` en agregaciones.
+    - `labels`, `data_compras`, `data_ventas` se conservan también por separado
+        aunque el template consuma `chart`.
+    """
     tznow = timezone.now()
     hoy = tznow.date()
     inicio_mes = hoy.replace(day=1)
@@ -111,9 +152,31 @@ def panel(request):
     return render(request, "dashboard/panel.html", contexto)
 
 
-# ======== INDEX SIMPLE (solo totales) – SIN "contactar proveedor" ========
-# dashboard/views.py  -> solo la función index
+# ─────────────────────────────────────────────────────────────────────────────
+# VISTA: index
+# Propósito: Página de inicio simple con totales del día/mes y low stock (stock ≤ mínimo).
+#            No incluye “contactar proveedor” en esta versión.
+# ─────────────────────────────────────────────────────────────────────────────
 def index(request):
+    """
+    Renderiza el índice simple (/) con totales y lista resumida de low stock.
+
+    Flujo:
+    1) Cálculo de hoy e inicio de mes (y primer día del mes siguiente).
+    2) Totales HOY/MES para comprasy ventas (con Coalesce a 0).
+    3) Low stock: productos con stock ≤ stock_minimo (incluye igualdad).
+    4) Render de `index.html` con el contexto.
+
+    Parámetros:
+    request (HttpRequest)
+
+    Retorna:
+    HttpResponse: render("index.html", contexto)
+
+    Notas:
+    - Venta.fecha se asume Date; Compra.fecha se filtra por `fecha__date`.
+    - Se prioriza claridad: `Coalesce(Sum(...), Value(0))` con DecimalField.
+    """
     from django.db.models import F, Sum, Case, When, Value, IntegerField, DecimalField
     from django.db.models.functions import Coalesce
 

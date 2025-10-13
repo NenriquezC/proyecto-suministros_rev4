@@ -6,105 +6,149 @@
 <div class="container py-3 text-start">
   <h2 class="mb-3">INICIO</h2>
 
-  <!-- Accesos rápidos -->
-  <div class="d-flex flex-wrap gap-2 mb-4">
-    <a href="{% url 'dashboard:panel' %}" class="btn btn-primary btn-sm">📊 Dashboard</a>
-    <a href="{% url 'compras:ver_compras' %}" class="btn btn-primary btn-sm">📦 Compras</a>
-    <a href="{% url 'ventas:ver_ventas' %}" class="btn btn-primary btn-sm">🧾 Ventas</a>
-    <a href="{% url 'inventario:listar_productos' %}" class="btn btn-primary btn-sm">🗂️ Inventario</a>
-  </div>
+  {% if es_cliente %}
+    {# ======================= MODO CLIENTE ======================= #}
 
-  <!-- KPIs HOY -->
-  <div class="row g-3 mb-3">
-    <div class="col-12 col-md-6">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body">
-          <div class="fw-bold text-muted">Compras (hoy)</div>
-          <div class="h4 mb-0">${{ compras_hoy|floatformat:2 }}</div>
-        </div>
-      </div>
+    <!-- Bienvenida -->
+    <div class="mb-3">
+      <h3 class="mb-1">Hola, {{ nombre_cliente|default:user.get_full_name|default:user.username }} 👋</h3>
+      <p class="text-muted mb-0">Aquí tienes el resumen de tus compras de los últimos 30 días.</p>
     </div>
-    <div class="col-12 col-md-6">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body">
-          <div class="fw-bold text-muted">Ventas (hoy)</div>
-          <div class="h4 mb-0">${{ ventas_hoy|floatformat:2 }}</div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- KPIs MES -->
-  <div class="row g-3 mb-4">
-    <div class="col-12 col-md-6">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body">
-          <div class="fw-bold text-muted">Compras (mes)</div>
-          <div class="h4 mb-0">${{ compras_mes|floatformat:2 }}</div>
-        </div>
+    <!-- Gráfica única -->
+    <div class="card shadow-sm">
+      <div class="card-body" style="height: 380px;">
+        <div class="fw-bold mb-2">Tus compras · últimos 30 días</div>
+        <canvas id="chartComprasCliente" style="width:100%; height:300px;"></canvas>
       </div>
     </div>
-    <div class="col-12 col-md-6">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body">
-          <div class="fw-bold text-muted">Ventas (mes)</div>
-          <div class="h4 mb-0">${{ ventas_mes|floatformat:2 }}</div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Productos a contactar proveedor (stock ≤ mínimo) -->
-  <div class="card shadow-sm">
-    <div class="card-body">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <div class="fw-bold">Productos para reponer (stock ≤ mínimo)</div>
-        <small class="text-muted">Top 20 por urgencia</small>
+  {% else %}
+    {# ======================= MODO NORMAL (STAFF/SUPERUSER) ======================= #}
+
+    <!-- Accesos rápidos -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+      <a href="{% url 'dashboard:panel' %}" class="btn btn-primary btn-sm">📊 Dashboard</a>
+      <a href="{% url 'compras:ver_compras' %}" class="btn btn-primary btn-sm">📦 Compras</a>
+      <a href="{% url 'ventas:ver_ventas' %}" class="btn btn-primary btn-sm">🧾 Ventas</a>
+      <a href="{% url 'inventario:listar_productos' %}" class="btn btn-primary btn-sm">🗂️ Inventario</a>
+    </div>
+
+    <!-- KPIs HOY -->
+    <div class="row g-3 mb-3">
+      <div class="col-12 col-md-6">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <div class="fw-bold text-muted">Compras (hoy)</div>
+            <div class="h4 mb-0">${{ compras_hoy|floatformat:2 }}</div>
+          </div>
+        </div>
       </div>
-      <div class="table-responsive">
-        <table class="table table-sm align-middle">
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Proveedor</th>
-              <th class="text-end">Stock</th>
-              <th class="text-end">Mínimo</th>
-              <th class="text-end">Déficit</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for p in low_stock_contact %}
+      <div class="col-12 col-md-6">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <div class="fw-bold text-muted">Ventas (hoy)</div>
+            <div class="h4 mb-0">${{ ventas_hoy|floatformat:2 }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPIs MES -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-md-6">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <div class="fw-bold text-muted">Compras (mes)</div>
+            <div class="h4 mb-0">${{ compras_mes|floatformat:2 }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <div class="fw-bold text-muted">Ventas (mes)</div>
+            <div class="h4 mb-0">${{ ventas_mes|floatformat:2 }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Productos a contactar proveedor (stock ≤ mínimo) -->
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="fw-bold">Productos para reponer (stock ≤ mínimo)</div>
+          <small class="text-muted">Top 20 por urgencia</small>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
               <tr>
-                <td>{{ p.nombre }}</td>
-                <td>
-                  {% if p.proveedor %}
-                    {{ p.proveedor.nombre }}
-                  {% else %}
-                    <span class="text-muted">—</span>
-                  {% endif %}
-                </td>
-                <td class="text-end">{{ p.stock }}</td>
-                <td class="text-end">{{ p.stock_minimo }}</td>
-                <td class="text-end">{{ p.deficit }}</td>
+                <th>Producto</th>
+                <th>Proveedor</th>
+                <th class="text-end">Stock</th>
+                <th class="text-end">Mínimo</th>
+                <th class="text-end">Déficit</th>
               </tr>
-            {% empty %}
-              <tr>
-                <td colspan="5" class="text-center text-muted">
-                  Todo OK ✅ — no hay productos bajo el mínimo.
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {% for p in low_stock_contact %}
+                <tr>
+                  <td>{{ p.nombre }}</td>
+                  <td>
+                    {% if p.proveedor %}
+                      {{ p.proveedor.nombre }}
+                    {% else %}
+                      <span class="text-muted">—</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end">{{ p.stock }}</td>
+                  <td class="text-end">{{ p.stock_minimo }}</td>
+                  <td class="text-end">{{ p.deficit }}</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center text-muted">
+                    Todo OK ✅ — no hay productos bajo el mínimo.
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
 
-      <div class="mt-2 d-flex gap-2">
-        <a href="{% url 'compras:ver_compras' %}" class="btn btn-sm btn-outline-primary">
-          Crear orden de compra
-        </a>
-        
+        {# botón de “Crear orden de compra” eliminado como pediste #}
       </div>
     </div>
-  </div>
+  {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  {% if es_cliente %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {{ chart|json_script:"chart-data" }}
+    <script>
+      const chart = JSON.parse(document.getElementById("chart-data").textContent || "{}");
+      const labels = Array.isArray(chart.labels) ? chart.labels : [];
+      const data   = Array.isArray(chart.ventas) ? chart.ventas : [];
+
+      const ctx = document.getElementById('chartComprasCliente').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{ label: 'Compras', data, tension: 0.3, borderWidth: 2 }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true } },
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+    </script>
+  {% endif %}
 {% endblock %}

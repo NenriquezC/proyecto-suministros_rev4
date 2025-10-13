@@ -1,9 +1,36 @@
+"""
+Modelos de Inventario: Categoria, Proveedor y Producto.
+
+Responsabilidades:
+- Definir entidades base para compras/ventas.
+- Incluir validaciones a nivel de BD (CHECK CONSTRAINTS) y reglas de negocio simples.
+- Ofrecer propiedades derivadas útiles (p. ej., `precio_venta`).
+
+Diseño:
+- Campos mínimos y relaciones PROTECT para evitar borrados cascada peligrosos.
+- Índices en FK para consultas frecuentes.
+- `__str__` legible para admin y selects.
+"""
+
 from decimal import Decimal
 from django.db import models
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
-#============================================================================================================================================
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# MODELO: Categoria
+# ─────────────────────────────────────────────────────────────────────────────
 class Categoria(models.Model):
+    """
+    Categoría de producto (clasificación simple).
+
+    Campos:
+    - nombre (str, único): nombre visible de la categoría.
+
+    Meta:
+    - ordering por nombre para listados alfabéticos.
+    """
     nombre = models.CharField(max_length=100, unique=True)
 
     class Meta:
@@ -12,8 +39,22 @@ class Categoria(models.Model):
     def __str__(self):
         return self.nombre
 
-#============================================================================================================================================
+
+# ─────────────────────────────────────────────────────────────────────────────
+# MODELO: Proveedor
+# ─────────────────────────────────────────────────────────────────────────────
 class Proveedor(models.Model):
+    """
+    Proveedor de productos.
+
+    Campos:
+    - nombre, direccion, telefono, email (opc), tipo_proveedor (empresa/particular)
+    - creado_en (auto_now_add)
+
+    Meta:
+    - ordering por nombre.
+    - (Opcional) UniqueConstraint por (nombre, telefono) para evitar duplicados exactos.
+    """
     nombre = models.CharField(max_length=150)
     direccion = models.CharField(max_length=255)
     telefono = models.CharField(max_length=20)
@@ -35,8 +76,43 @@ class Proveedor(models.Model):
     def __str__(self):
         return self.nombre
 
-#============================================================================================================================================
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# MODELO: Producto
+# ─────────────────────────────────────────────────────────────────────────────
 class Producto(models.Model):
+    """
+    Producto del inventario.
+
+    Campos principales:
+    - nombre, descripcion (opc)
+    - precio_compra (>= 0)
+    - stock (entero, >= 0)
+    - stock_minimo (entero, opcional, >= 0)
+    - proveedor (FK, PROTECT), categoria (FK, PROTECT)
+    - ganancia (0..100, %)
+    - creado_en (auto_now_add)
+
+    Índices:
+    - categoria, proveedor
+
+    Constraints (BD):
+    - precio_compra_gte_0:
+        Exige precio_compra ≥ 0.
+    - producto_stock_gte_0:
+        Exige stock ≥ 0.
+    - producto_stock_minimo_gte_0_or_null:
+        Exige stock_minimo ≥ 0 o NULL.
+    - producto_stock_minimo_lte_stock_or_null:
+        Exige stock_minimo ≤ stock o NULL.
+
+    Reglas de guardado:
+      - Si se crea sin stock_minimo, se fija a floor(0.9 * stock).
+
+    Propiedades:
+      - precio_venta: precio_compra * (1 + ganancia/100), redondeado a 2 decimales.
+    """
     nombre = models.CharField(max_length=150)
     descripcion = models.TextField(blank=True)
     precio_compra = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0'))])

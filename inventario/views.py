@@ -1,3 +1,18 @@
+"""
+Vistas de Inventario: Proveedores y Productos.
+
+Responsabilidades:
+- CRUD de Proveedor y Producto (listar/crear/editar/eliminar/ver).
+- Endpoints auxiliares (precio de producto en JSON).
+- Redirecciones de conveniencia (home de inventario).
+
+Diseño:
+- Mantener permisos por acción con @permission_required.
+- Reutilizar templates de edición en modo readonly cuando aplica.
+- Paginación consistente y filtros básicos para listados.
+- No se altera la lógica: solo documentación estandarizada.
+"""
+
 from django.shortcuts import render, redirect , get_object_or_404        # ✅ Vistas: render templates y redirecciones
 from django.urls import reverse                       # ✅ Útil si construyes URLs en código (p.ej. messages+redirect)
 from django.contrib import messages                   # ✅ Para flash messages en vistas
@@ -37,10 +52,23 @@ def proveedor_crear(request):
         {"form": form},
     )"""
 
-# --- CREAR ---
+# ─────────────────────────────────────────────────────────────────────────────
+# VISTA: agregar_proveedor
+# Propósito: Crear un nuevo proveedor; opcionalmente redirigir a `next`.
+# ─────────────────────────────────────────────────────────────────────────────
 @login_required
 @permission_required("inventario.add_proveedor", raise_exception=True)
 def agregar_proveedor(request):
+    """
+    Crea un proveedor.
+
+    Flujo:
+    - GET: muestra formulario vacío.
+    - POST: valida y guarda; redirige a `next` si existe o al detalle (readonly).
+
+    Contexto:
+    form (ProveedorForm)
+    """
     next_url = request.GET.get("next")
     if request.method == "POST":
         form = ProveedorForm(request.POST)
@@ -61,10 +89,20 @@ def agregar_proveedor(request):
     )
 
 
-# --- EDITAR ---
+# ─────────────────────────────────────────────────────────────────────────────
+# VISTA: editar_proveedor
+# Propósito: Editar un proveedor existente (PRG tras éxito).
+# ─────────────────────────────────────────────────────────────────────────────
 @login_required
 @permission_required("inventario.change_proveedor", raise_exception=True)
 def editar_proveedor(request, pk):
+    """
+    Edita un proveedor existente.
+
+    Flujo:
+    - GET: carga formulario con instancia.
+    - POST: valida, guarda y redirige al detalle readonly (PRG).
+    """
     proveedor = get_object_or_404(Proveedor, pk=pk)
     if request.method == "POST":
         form = ProveedorForm(request.POST, instance=proveedor)
@@ -82,13 +120,18 @@ def editar_proveedor(request, pk):
         {"form": form, "proveedor": proveedor},
     )
 
-# --- ELIMINAR (confirmación en listar_proveedor) ---
+# ─────────────────────────────────────────────────────────────────────────────
+# VISTA: eliminar_proveedor
+# Propósito: Confirmación y eliminación de un proveedor.
+# ─────────────────────────────────────────────────────────────────────────────
 @login_required
 @permission_required("inventario.delete_proveedor", raise_exception=True)
 def eliminar_proveedor(request, pk):
     """
-    Confirmación y borrado.
-    Template (GET): templates/inventario/proveedores/listar_proveedor/eliminar_confirm_proveedor.html
+    Elimina un proveedor previa confirmación.
+
+    Template GET:
+    inventario/proveedores/listar_proveedor/eliminar_confirm_proveedor.html
     """
     proveedor = get_object_or_404(Proveedor, pk=pk)
 
@@ -105,13 +148,21 @@ def eliminar_proveedor(request, pk):
     )
 
 
-# --- LISTAR ---
+# ─────────────────────────────────────────────────────────────────────────────
+# VISTA: listar_proveedores
+# Propósito: Listado paginado de proveedores con filtro `?q=`.
+# ─────────────────────────────────────────────────────────────────────────────
 @login_required
 @permission_required("inventario.view_proveedor", raise_exception=True)
 def listar_proveedores(request):
     """
     Lista paginada de proveedores.
-    Template: templates/inventario/proveedores/listar_proveedor/listar_proveedor.html
+
+    Filtros:
+    - q: búsqueda por nombre/email/teléfono.
+
+    Template:
+    inventario/proveedores/listar_proveedor/listar_proveedor.html
     """
     queryset = Proveedor.objects.all().order_by("-id")
 
@@ -134,9 +185,16 @@ def listar_proveedores(request):
     )
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# VISTA: ver_proveedor
+# Propósito: Ver proveedor en modo solo lectura (reusa template de editar).
+# ─────────────────────────────────────────────────────────────────────────────
 @login_required
 @permission_required("inventario.view_proveedor", raise_exception=True)
 def ver_proveedor(request, pk):
+    """
+    Detalle readonly de Proveedor (reutiliza el template de edición).
+    """
     proveedor = get_object_or_404(Proveedor, pk=pk)
 
     # Reusar el mismo template de EDITAR con el form deshabilitado
@@ -154,9 +212,19 @@ def ver_proveedor(request, pk):
         },
     )
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VISTA: listar_productos (VERSIÓN SIMPLE)
+# Propósito: Listado paginado básico de productos (compatibilidad).
+# NOTA: Esta definición queda sobrescrita por la versión extendida más abajo.
+# ─────────────────────────────────────────────────────────────────────────────
 @login_required
 @permission_required("inventario.view_producto", raise_exception=True)
 def listar_productos(request):
+    """
+    Versión básica de listar productos (compatibilidad con templates antiguos).
+    La versión extendida definida más abajo es la activa en tiempo de ejecución.
+    """
     qs = Producto.objects.select_related("proveedor", "categoria").order_by("nombre")
     paginator = Paginator(qs, 20)
     page_number = request.GET.get("page")
@@ -172,10 +240,20 @@ def listar_productos(request):
     return render(request, "inventario/productos/listar_producto/lista_producto.html", context)
 
 
-#---------------------------------------------------------------------------------------------------------------------------
+# ─────────────────────────────────────────────────────────────────────────────
+# VISTA: agregar_producto
+# Propósito: Crear un nuevo producto; tras guardar redirige a detalle readonly.
+# ─────────────────────────────────────────────────────────────────────────────
 @login_required
 @permission_required("inventario.add_producto", raise_exception=True)
 def agregar_producto(request):
+    """
+    Crea un producto.
+
+    Flujo:
+    - GET: formulario vacío.
+    - POST: valida y guarda; redirige a ver_producto.
+    """
     if request.method == "POST":
         form = ProductoForm(request.POST)
         if form.is_valid():
@@ -192,10 +270,21 @@ def agregar_producto(request):
         "inventario/productos/crear_producto/crear_producto.html",
         {"form": form},
     )
-#------------------------------------------------------------------------------------------------------------------------------
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VISTA: editar_producto
+# Propósito: Editar un producto; PRG y redirección a detalle readonly.
+# ─────────────────────────────────────────────────────────────────────────────
 @login_required
 @permission_required("inventario.change_producto", raise_exception=True)
 def editar_producto(request, pk):
+    """
+    Edita un producto.
+
+    Flujo:
+    - GET: formulario con instancia.
+    - POST: valida/guarda; redirige a ver_producto.
+    """
     prod = get_object_or_404(Producto, pk=pk)
     if request.method == "POST":
         form = ProductoForm(request.POST, instance=prod)
@@ -211,10 +300,21 @@ def editar_producto(request, pk):
         "inventario/productos/editar_producto/editar_producto.html",
         {"form": form, "producto": prod},
     )
-#------------------------------------------------------------------------------------------------------------------------------
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VISTA: eliminar_producto
+# Propósito: Confirmación y eliminación de un producto.
+# ─────────────────────────────────────────────────────────────────────────────
 @login_required
 @permission_required("inventario.delete_producto", raise_exception=True)
 def eliminar_producto(request, pk):
+    """
+    Elimina un producto previa confirmación.
+
+    Template GET:
+    inventario/productos/listar_producto/eliminar_confirm_lista.html
+    """
     prod = get_object_or_404(Producto, pk=pk)
     if request.method == "POST":
         nombre = str(prod)
@@ -228,13 +328,20 @@ def eliminar_producto(request, pk):
         "inventario/productos/listar_producto/eliminar_confirm_lista.html",
         {"producto": prod},
     )
-##------------------------------------------------------------------------------------------------------------------------------
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VISTA: ver_producto
+# Propósito: Detalle readonly del producto (reutiliza template de edición).
+# ─────────────────────────────────────────────────────────────────────────────
 @login_required
 @permission_required("inventario.view_producto", raise_exception=True)
 def ver_producto(request, pk):
     """
-    Detalle SOLO LECTURA del producto.
-    Mantiene el mismo patrón visual que Compras (readonly).
+    Detalle SOLO LECTURA del producto (mismo layout que edición).
+
+    Extras:
+    - Calcula margen = precio_venta - precio_compra (Decimal a 2 decimales).
     """
     producto = get_object_or_404(Producto, pk=pk)
 
@@ -256,18 +363,26 @@ def ver_producto(request, pk):
             "margen": margen,
         },
     )
-#------------------------------------------------------------------------------------------------------------------------------
-#Qué cambié y por qué (rápido)
-#Filtros: añadí q, categoria, estado para replicar el UX de compras.
-#Contexto: agregué productos, pagina_actual, hay_paginacion, lista_categorias, etc., que son los que usan los partials.
-#Template: ahora renderiza a inventario/productos/listar_producto.html (el nombre que dijiste).
-#Compatibilidad: dejé page_obj, object_list, paginator por si algún template antiguo los usa.
-#Con esto, tus partials funcionan tal cual y el badge de reposición aparecerá cuando stock <= stock_minimo.
-#En resumen: q = “query” (lo que escribe el usuario para buscar). Es el mismo patrón que usa media internet desde 1998, incluidos buscadores y nuestras tablas 😄.
-#------------------------------------------------------------------------------------------------------------------------------
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VISTA: listar_productos (VERSIÓN EXTENDIDA / ACTIVA)
+# Propósito: Listado con filtros (q, categoria, estado) y paginación.
+# ─────────────────────────────────────────────────────────────────────────────
 @login_required
 @permission_required("inventario.view_producto", raise_exception=True)
 def listar_productos(request):
+    """
+    Lista de productos con filtros y paginación.
+
+    Filtros:
+    - q: texto en nombre o proveedor.
+    - categoria: ID exacto.
+    - estado: 'activos' | 'inactivos' | 'reposicion' (stock <= stock_minimo y stock_minimo > 0).
+
+    Contexto adicional:
+    - lista_categorias, estado_seleccionado, etc. para partials.
+    """
     # Base query
     productos_qs = (
         Producto.objects
@@ -322,15 +437,23 @@ def listar_productos(request):
 
     # Usa el template acordado (no la ruta antigua)
     return render(request, "inventario/productos/listar_producto/lista_producto.html", context)
-#------------------------------------------------------------------------------------------------------------------------------
-#inventario/views.py----------------------------------------------------------------------------
-#Qué: crear una vista GET que responda {"id":…, "nombre":…, "precio_unitario": …}.
-#Por qué: el front pedirá “¿cuál es el precio del producto X?” y rellenará el input.
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# API: producto_precio_api (GET)
+# Propósito: Devolver precio unitario e info mínima de un producto.
+# ─────────────────────────────────────────────────────────────────────────────
 @require_GET
 def producto_precio_api(request, pk):
     """
     Devuelve info mínima del producto en JSON.
-    Respuesta: {id, nombre, precio_unitario}
+
+    Respuesta:
+    { "id": int, "nombre": str, "precio_unitario": float }
+
+    Notas:
+    - Ajusta el atributo de precio según tu modelo (precio_compra/precio_unitario/costo).
+    - Devuelve 404 si el producto no existe.
     """
 
     try:
@@ -351,17 +474,31 @@ def producto_precio_api(request, pk):
     })
 
 
-
+# ─────────────────────────────────────────────────────────────────────────────
+# VISTA: inventario (home)
+# Propósito: Redirigir al listado de proveedores (o productos si lo prefieres).
+# ─────────────────────────────────────────────────────────────────────────────
 @login_required
 def inventario(request):
+    """
+    Home de inventario: redirige a una vista existente (por defecto, proveedores).
+    """
     # Redirige al listado que SÍ existe (Proveedores, ya lo dejamos OK)
     return redirect("inventario:listar_proveedores")
     # Si prefieres ir a productos, cambia por:
     # return redirect("inventario:listar_productos")
 
     # Alias para compatibilidad con tu URL/plantillas antiguas
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ALIAS: proveedor_crear
+# Propósito: Mantener compatibilidad con rutas antiguas reusando agregar_proveedor.
+# ─────────────────────────────────────────────────────────────────────────────    
 @login_required
 @permission_required("inventario.add_proveedor", raise_exception=True)
 def proveedor_crear(request):
+    """
+    Alias de `agregar_proveedor` para compatibilidad con rutas/plantillas antiguas.
+    """
     # Reusa la lógica de agregar_proveedor para no duplicar código
     return agregar_proveedor(request)
