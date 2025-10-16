@@ -1,9 +1,10 @@
 {% if readonly %}
   <div class="d-flex gap-2 justify-content-center">
-    <a href="{% url 'inventario:listar_proveedores' %}" class="btn btn-outline">Volver a la lista</a>
     {% if perms.inventario.change_proveedor %}
       <a href="{% url 'inventario:editar_proveedor' proveedor.id %}" class="btn btn-main">Editar</a>
     {% endif %}
+    <a href="{% url 'inventario:listar_proveedores' %}" class="btn btn-outline">Volver a la lista</a>
+    
   </div>
 {% else %}
   <div class="d-flex gap-2 justify-content-center">

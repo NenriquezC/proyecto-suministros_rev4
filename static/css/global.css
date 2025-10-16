@@ -114,3 +114,4 @@ main {
 .form-rows-2col label[for="id_proveedor"] + .form-field select {
   margin-left: -8px !important;  /* prueba con -10px, luego ajusta a gusto */
 }
+

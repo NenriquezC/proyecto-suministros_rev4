@@ -7,13 +7,13 @@ Modo normal (staff/superuser):
 
 Modo cliente:
 - Muestra saludo + gráfica de SUS compras (en realidad sus "ventas" registradas),
-  y oculta los KPIs y la tabla.
+y oculta los KPIs y la tabla.
 """
 
 from datetime import timedelta
 from django.shortcuts import render
 from django.utils import timezone
-from django.db.models import Sum, F
+from django.db.models import Sum, F, Case, When, Value, IntegerField
 
 from compras.models import Compra
 from inventario.models import Producto, Proveedor
@@ -79,8 +79,21 @@ def index(request):
             "chart": chart,
         }
         return render(request, "index.html", contexto)
-
-    # ------- Modo normal (lo que ya tenías) -------
+    
+    low_stock_contact = (
+    Producto.objects.select_related("proveedor")
+    .filter(stock_minimo__isnull=False)
+    .filter(stock__lte=F("stock_minimo"))  # <= incluye iguales (los 2 que viste)
+    .annotate(
+        deficit=Case(
+            When(stock__lt=F("stock_minimo"), then=F("stock_minimo") - F("stock")),
+            default=Value(0),
+            output_field=IntegerField(),
+        )
+    )
+    .order_by((F("stock") - F("stock_minimo")).asc(), "nombre")[:20]
+)
+    # ------- Modo normal -------
     contexto = {
         "compras_count": Compra.objects.count(),
         "productos_count": Producto.objects.count(),
@@ -91,5 +104,6 @@ def index(request):
         "compras_mes": Compra.objects.filter(fecha__date__gte=timezone.localdate().replace(day=1)).aggregate(s=Sum("total"))["s"] or 0,
         "ventas_mes":  Venta.objects.filter(fecha__gte=timezone.localdate().replace(day=1)).aggregate(s=Sum("total"))["s"] or 0,
         "es_cliente": False,
+        "low_stock_contact": low_stock_contact,  # ← AQUI EL FIX
     }
     return render(request, "index.html", contexto)

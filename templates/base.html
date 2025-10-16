@@ -82,7 +82,8 @@
             .topbar-title { font-size:1.05rem; }
             .menubar .home-link { font-size:.98rem; }
         }
-
+        
+.btn-outline:hover{ background: #f8fafc; }
         /* Deshabilitar enlaces de menú cuando el usuario no tiene permiso */
         .disabled-link { opacity:.45; pointer-events:none; cursor:not-allowed; }
     </style>
@@ -126,16 +127,16 @@
             {# ───────────────────────── COMPRAS (proveedores) ───────────────────────── #}
             <li>
                 <a href="#"
-                   class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
+                    class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
                     <i class="fas fa-cash-register"></i> Compras <i class="fa fa-caret-down"></i>
                 </a>
                 <div class="submenu">
                     <a href="{% url 'compras:agregar_compra' %}"
-                       class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
+                        class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
                         <i class="fa fa-plus"></i> Ingresar Compra
                     </a>
                     <a href="{% url 'compras:ver_compras' %}"
-                       class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
+                        class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
                         <i class="fa fa-edit"></i> Administrar Compra
                     </a>
                 </div>
@@ -162,16 +163,16 @@
             {# ───────────────────────── PRODUCTOS ───────────────────────── #}
             <li>
                 <a href="#"
-                   class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
+                    class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
                     <i class="fas fa-box"></i> Productos <i class="fa fa-caret-down"></i>
                 </a>
                 <div class="submenu">
                     <a href="{% url 'inventario:agregar_producto' %}"
-                       class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
+                        class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
                         <i class="fa fa-plus"></i> Ingresar Producto
                     </a>
                     <a href="{% url 'inventario:listar_productos' %}"
-                       class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
+                        class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
                         <i class="fa fa-edit"></i> Administrar Producto
                     </a>
                 </div>
@@ -180,16 +181,16 @@
             {# ───────────────────────── PROVEEDORES ───────────────────────── #}
             <li>
                 <a href="#"
-                   class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
+                    class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
                     <i class="fas fa-truck"></i> Proveedores <i class="fa fa-caret-down"></i>
                 </a>
                 <div class="submenu">
                     <a href="{% url 'inventario:proveedor_crear' %}"
-                       class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
+                        class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
                         <i class="fa fa-plus"></i> Ingresar Proveedor
                     </a>
                     <a href="{% url 'inventario:listar_proveedores' %}"
-                       class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
+                        class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
                         <i class="fa fa-edit"></i> Administrar Proveedor
                     </a>
                 </div>
@@ -198,7 +199,7 @@
             {# ───────────────────────── DASHBOARD ───────────────────────── #}
             <li>
                 <a href="{% url 'dashboard:panel' %}"
-                   class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
+                    class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
                     <i class="fas fa-chart-bar"></i> Dashboard
                 </a>
             </li>
@@ -206,7 +207,7 @@
             {# ───────────────────────── ADMIN ───────────────────────── #}
             <li>
                 <a href="/admin/"
-                   class="{% if not user.is_staff %}disabled-link{% endif %}">
+                    class="{% if not user.is_staff %}disabled-link{% endif %}">
                     <i class="fas fa-user-shield"></i> Administración
                 </a>
             </li>
@@ -227,7 +228,7 @@
         <main>
             <h1 class="h3" style="color:var(--headline);">Autenticación requerida</h1>
             <p><strong>Bienvenidos a la Web de gestión de productos y proveedores de Tecknosfera</strong></p>
-            <p><strong>Si eres Administrativo o Cliente ingresa aquí</strong></p>
+            <p><strong> Administrativo o Cliente </strong></p>
             <p>Usa el botón <strong>Iniciar sesión</strong> de la barra superior.</p>
             <div style="margin-top: 18px; display: flex; justify-content: center;">
                 <img

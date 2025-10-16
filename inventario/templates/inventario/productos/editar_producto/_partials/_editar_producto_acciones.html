@@ -2,10 +2,10 @@
 <div class="acciones-form" style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
   {% if readonly %}
     <a href="{% url 'inventario:editar_producto' producto.pk %}" class="btn btn-main">Editar</a>
-    <a href="{% url 'inventario:listar_productos' %}" class="btn btn-sec">Volver a la lista</a>
+    <a href="{% url 'inventario:listar_productos' %}" class="btn btn-outline">Volver a la lista</a>
   {% else %}
     <button type="submit" class="btn btn-main">Guardar cambios</button>
-    <a href="{% url 'inventario:ver_producto' producto.pk %}" class="btn btn-sec">Ver (solo lectura)</a>
-    <a href="{% url 'inventario:listar_productos' %}" class="btn btn-sec">Volver a la lista</a>
+    <a href="{% url 'inventario:ver_producto' producto.pk %}" class="btn btn-outline">Ver (solo lectura)</a>
+    <a href="{% url 'inventario:listar_productos' %}" class="btn btn-outline">Volver a la lista</a>
   {% endif %}
 </div>
