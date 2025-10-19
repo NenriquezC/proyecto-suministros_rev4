@@ -72,7 +72,7 @@
     {% if readonly %}<fieldset disabled>{% endif %}
 
     {# ======= DATOS DE LA VENTA ======= #}
-    {% include "ventas/agregar_venta/partials/_agregar_venta_cabecera.html" with form=form %}
+    {% include "ventas/agregar_venta/partials/_agregar_venta_cabecera.html" with form=form venta=venta readonly=readonly %}
 
     {# ======= PRODUCTOS + TOTALES ======= #}
     <div class="card mb-3">

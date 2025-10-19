@@ -31,6 +31,9 @@ from .models import Compra
 from . import services  # para reconciliar stock y calcular totales
 from inventario.models import Proveedor
 
+from django.db.models import ProtectedError
+from django.db import IntegrityError
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CREAR
@@ -329,11 +332,12 @@ def eliminar_compra(request, pk):
     """
     compra = get_object_or_404(Compra, pk=pk)
     if request.method == "POST":
-        # Si manejas inventario, considera reconciliar stock previo al delete:
-        # services.revertir_stock_por_eliminacion(compra)
-        compra.delete()
-        messages.success(request, "Compra eliminada.")
-        return redirect("compras:ver_compras")
+        try:
+            compra.delete()
+            messages.success(request, "Compra eliminada correctamente.")
+        except (ProtectedError, IntegrityError):
+            messages.error(request, "No se puede eliminar: existen referencias asociadas.")
+        return redirect("compras:ver_compras")  # <- lista de compras
     return render(request, "compras/eliminar_confirm.html", {"compra": compra})
 
 

@@ -16,6 +16,8 @@ from decimal import Decimal
 from django import forms
 from django.forms import inlineformset_factory
 from .models import Compra, CompraProducto
+from django.utils import timezone
+from datetime import datetime, time
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Formulario de cabecera
@@ -23,32 +25,47 @@ from .models import Compra, CompraProducto
 class CompraForm(forms.ModelForm):
     """
     Form de cabecera para 'Compra'.
-
-    Expone los campos visibles en UI y aplica validaciones mínimas de entrada.
-    Notas:
-        - El cálculo de subtotal/impuestos/total NO se hace aquí (ver services).
-        - Si quieres permitir que 'descuento_total' quede vacío y se trate como 0,
-        es mejor marcarlo como no requerido en el form en lugar de normalizar en la vista.
     """
+
+    # ✅ Forzamos solo FECHA en el form
+    fecha = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        input_formats=['%Y-%m-%d'],
+        required=True,
+        label='Fecha'
+    )
 
     class Meta:
         model = Compra
-        # Solo los campos acordados en cabecera
         fields = ['proveedor', 'fecha', 'descuento_porcentaje', 'descuento_total', 'impuesto_total']
-        #codigo para personalizar el error al no llenar los campos--------------------------------
-        """error_messages = {
-            "proveedor": {
-                "required": "Campo obligatorio"
-            },
-            "fecha": {
-                "required": "Campo obligatorio"
-            },
-            "descuento_porcentaje": {
-                "required": "Escribe el % de descuento (0 si no aplica)."
-            },
-        }"""
-        #-------------------------------------------------------------------------------------------
-        widgets = {'fecha': forms.DateTimeInput(attrs={'type': 'datetime-local'})}
+        # (Opcional) puedes omitir widgets aquí; ya definimos el de 'fecha' arriba.
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # ✅ En EDITAR, precarga el input <type="date"> con la fecha guardada
+        if not self.is_bound:
+            inst = getattr(self, "instance", None)
+            if inst and getattr(inst, "fecha", None):
+                try:
+                    self.initial["fecha"] = inst.fecha.date()
+                except Exception:
+                    pass
+
+    def save(self, commit=True):
+        """
+        Convierte date -> datetime 00:00 (tz local) para el DateTimeField del modelo.
+        """
+        instance = super().save(commit=False)
+        d = self.cleaned_data.get("fecha")
+        if d:
+            dt = datetime.combine(d, time(0, 0))
+            instance.fecha = timezone.make_aware(dt, timezone.get_current_timezone())
+        if commit:
+            instance.save()
+            self.save_m2m()
+        return instance
+
+
 
     def clean(self):
         """

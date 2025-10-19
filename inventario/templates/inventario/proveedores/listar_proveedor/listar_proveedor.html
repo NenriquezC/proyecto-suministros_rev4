@@ -13,6 +13,23 @@
     <a class="btn-main" href="{% url 'inventario:proveedor_crear' %}">➕ Nuevo Proveedor</a>
   {% endif %}
 
+
+    {# --- Mensajes flash (éxito / error) --- #}
+  {% if messages %}
+  <div class="my-2">
+    {% for message in messages %}
+      {% with tag=message.tags %}
+        <div class="alert alert-{% if 'error' in tag %}danger{% elif tag %}{{ tag }}{% else %}info{% endif %} mb-2" role="alert">
+          {{ message }}
+        </div>
+      {% endwith %}
+    {% endfor %}
+  </div>
+{% endif %}
+
+
+
+
   {# Filtros y buscador (mismo patrón que productos) #}
   {% include "inventario/proveedores/listar_proveedor/_partials/_listar_proveedor_filtros.html" %}
 

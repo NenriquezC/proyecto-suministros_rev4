@@ -17,6 +17,23 @@ min-width: 1600px; /* prueba 1200–1600px hasta que te guste */
 
 {% block content %}
     <h1>COMPRAS</h1>
+
+  {# Mensajes flash aquí #}
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert
+          {% if 'error' in message.tags %}alert-danger
+          {% elif 'success' in message.tags %}alert-success
+          {% else %}alert-info{% endif %}" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+
+
     <a class="btn-main" href="{% url 'compras:agregar_compra' %}">➕ Nueva Compra</a>
 
     {# Filtros y buscador #}

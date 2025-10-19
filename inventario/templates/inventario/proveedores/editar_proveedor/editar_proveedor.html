@@ -24,12 +24,32 @@
 {% block content %}
 <div class="container">
 
+
 {% if readonly %}
   {# ================== READONLY (ESPEJO DE PRODUCTOS) ================== #}
   <div class="page-header">
     <h1 class="page-title">PROVEEDOR INGRESADO N°:{{ proveedor.pk }}</h1>
     <p class="page-subtitle">Visualización del proveedor (solo lectura)</p>
   </div>
+
+ {# Mensajes justo debajo del título #}
+  {% if messages %}
+    <div class="mb-3" style="max-width: 980px; margin: 0 auto;">
+      {% for message in messages %}
+        <div class="alert
+                    {% if message.tags == 'error' %}alert-danger
+                    {% elif message.tags == 'success' %}alert-success
+                    {% elif message.tags %}alert-{{ message.tags }}
+                    {% else %}alert-info{% endif %}" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+
+
+
 
   {# Deja los mensajes SOLO en base.html si no quieres duplicados #}
 
@@ -68,6 +88,35 @@
     <p class="page-subtitle">Modifica los datos del proveedor</p>
   </div>
 
+
+
+
+    {# Mensajes y errores de formulario bajo el título #}
+  {% if messages %}
+    <div class="mb-3" style="max-width: 980px; margin: 0 auto;">
+      {% for message in messages %}
+        <div class="alert
+                    {% if message.tags == 'error' %}alert-danger
+                    {% elif message.tags == 'success' %}alert-success
+                    {% elif message.tags %}alert-{{ message.tags }}
+                    {% else %}alert-info{% endif %}" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger mb-3" style="max-width: 980px; margin: 0 auto;">
+      {{ form.non_field_errors }}
+    </div>
+  {% endif %}
+
+
+
+
+
+
   <form method="post" novalidate>
     {% csrf_token %}
 
@@ -85,6 +134,7 @@
               <tr><th>Teléfono</th>                <td class="text-end">{{ form.telefono }}</td></tr>
               {# Ajusta/añade campos reales de tu modelo Proveedor #}
               {% if form.direccion %}<tr><th>Dirección</th><td class="text-end">{{ form.direccion }}</td></tr>{% endif %}
+              <tr><th class="w-25">Tipo de proveedor</th><td class="text-end">{{ form.tipo_proveedor }}</td></tr>
               {% if form.rut %}<tr><th>RUT</th><td class="text-end">{{ form.rut }}</td></tr>{% endif %}
             </tbody>
           </table>

@@ -8,12 +8,28 @@
     {{ formulario_venta.cliente }}
   </div>
 
-  <!-- Fecha -->
-  <div class="col-3" style="grid-column: span 3;">
-    <label for="{{ formulario_venta.fecha.id_for_label }}">Fecha</label>
-    {{ formulario_venta.fecha.errors }}
-    {{ formulario_venta.fecha }}
-  </div>
+  
+<!-- Fecha -->
+<div class="col-3" style="grid-column: span 3;">
+  {% with f=formulario_venta|default:form %}
+    {% if f.fecha %}
+      <label for="{{ f.fecha.id_for_label }}">Fecha <span class="req">*</span></label>
+      <div class="form-field">
+        {# Tomamos el valor desde la instancia del form; si no hay, usamos 'venta' si existe #}
+        {% with val=f.instance.fecha|default:venta.fecha %}
+          {% if readonly %}
+            <input type="date" value="{{ val|date:'Y-m-d' }}" disabled>
+          {% else %}
+            {{ f.fecha }}
+            {% for error in f.fecha.errors %}
+              <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+      </div>
+    {% endif %}
+  {% endwith %}
+</div>
 
   {# Totales se calculan; no se editan aquí. Si en tu form vienen como read-only, puedes mostrarlos: #}
   {# 

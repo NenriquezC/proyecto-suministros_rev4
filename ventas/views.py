@@ -11,6 +11,9 @@ from .forms import VentaForm, VentaProductoFormSet
 from .models import Venta, VentaProducto
 from decimal import ROUND_HALF_UP, Decimal
 
+from django.db.models import ProtectedError
+from django.db import IntegrityError
+
 try:
     from . import services as services_ventas
 except Exception:
@@ -239,10 +242,14 @@ def eliminar_venta(request, pk):
         raise PermissionDenied("No puedes eliminar ventas de otros usuarios.")
 
     if request.method == "POST":
-        venta.delete()
-        messages.success(request, "Venta eliminada.")
+        try:
+            venta.delete()
+            messages.success(request, "Venta eliminada correctamente.")
+        except (ProtectedError, IntegrityError):
+            messages.error(request, "No se puede eliminar: la venta está referenciada por otros registros.")
         return redirect("ventas:ver_ventas")
 
+    # confirma en esta plantilla
     return render(request, "ventas/eliminar_confirm_venta.html", {"venta": venta})
 
 

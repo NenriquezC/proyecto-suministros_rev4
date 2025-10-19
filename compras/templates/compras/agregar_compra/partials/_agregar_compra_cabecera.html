@@ -40,16 +40,21 @@
 
     {# --------------------------------------------- Fecha *-------------------------------------------------------------- #}
     {% if form.fecha %}
-        <label for="{{ form.fecha.id_for_label }}" class="form-label-left">
-        Fecha <span class="req"></span>
-        </label>
-        <div class="form-field">
-        {{ form.fecha }}
-        {% for error in form.fecha.errors %}
-            <div class="invalid-feedback d-block">{{ error }}</div>
-        {% endfor %}
-        </div>
+  <label for="{{ form.fecha.id_for_label }}" class="form-label-left">
+    Fecha <span class="req"></span>
+  </label>
+  <div class="form-field">
+    {% if readonly %}
+      <!-- Mostrar como input deshabilitado para mantener la misma visual -->
+      <input type="date" value="{{ compra.fecha|date:'Y-m-d' }}" disabled>
+    {% else %}
+      {{ form.fecha }}
+      {% for error in form.fecha.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+      {% endfor %}
     {% endif %}
+  </div>
+{% endif %}
 
     {# -------------------------------------- Descuento porcentaje *  --------------------------------------------------------#}
     {% if form.descuento_porcentaje %}

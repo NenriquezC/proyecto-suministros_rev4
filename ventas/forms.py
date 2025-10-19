@@ -9,9 +9,7 @@ class VentaForm(forms.ModelForm):
         model = Venta
         # SOLO los campos que el usuario rellena
         fields = ["cliente", "fecha", "descuento_total", "impuesto"]
-        widgets = {
-            "fecha": forms.DateInput(attrs={"type": "date"}),
-        }
+        widgets = {"fecha": forms.DateInput(attrs={"type": "date"}),}
 
     def clean_descuento_total(self):
         v = self.cleaned_data.get("descuento_total")

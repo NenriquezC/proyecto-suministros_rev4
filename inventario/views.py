@@ -30,6 +30,10 @@ from django.core.paginator import Paginator           # ✅ Listados con paginac
 from django.db.models import Q, F                     # ✅ Filtros de búsqueda y comparaciones (stock <= stock_minimo)
 from decimal import Decimal
 
+from django.db.models.deletion import ProtectedError
+from django.db import IntegrityError
+from django.contrib import messages
+
 """@login_required
 @permission_required("inventario.add_proveedor", raise_exception=True)
 def proveedor_crear(request):
@@ -74,13 +78,19 @@ def agregar_proveedor(request):
         form = ProveedorForm(request.POST)
         if form.is_valid():
             proveedor = form.save()
-            messages.success(request, "Proveedor creado correctamente.")
+            #messages.success(request, "Proveedor creado correctamente.")
             if next_url:
+                for _ in messages.get_messages(request):
+                    pass
                 return redirect(next_url)
+            messages.success(request, "Proveedor creado correctamente.")
             # PARIDAD CON PRODUCTOS: ir a editar
             return redirect("inventario:ver_proveedor", pk=proveedor.pk)
         messages.error(request, "Revisa los errores del formulario.")
     else:
+        #👇 Evita que “éxitos” viejos exploten en la pantalla de NUEVO proveedor
+        for _ in messages.get_messages(request):
+            pass
         form = ProveedorForm()
     return render(
         request,
@@ -136,8 +146,19 @@ def eliminar_proveedor(request, pk):
     proveedor = get_object_or_404(Proveedor, pk=pk)
 
     if request.method == "POST":
-        proveedor.delete()
-        messages.success(request, "Proveedor eliminado correctamente.")
+        #proveedor.delete()
+        # Vacía cualquier mensaje previo para evitar duplicados
+        for _ in messages.get_messages(request):
+            pass
+        try:
+            proveedor.delete()
+            messages.success(request, "Proveedor eliminado correctamente.")
+        except (ProtectedError, IntegrityError):
+            messages.error(
+                request,
+                "No se puede eliminar: hay Productos y/o Compras que lo referencian."
+            )
+        #messages.success(request, "Proveedor eliminado correctamente.")
         return redirect("inventario:listar_proveedores")
 
     # ⬇️ Ruta EXACTA según tu estructura actual
@@ -316,19 +337,31 @@ def eliminar_producto(request, pk):
     inventario/productos/listar_producto/eliminar_confirm_lista.html
     """
     prod = get_object_or_404(Producto, pk=pk)
-    if request.method == "POST":
-        nombre = str(prod)
-        prod.delete()
-        messages.success(request, f'Producto "{nombre}" eliminado.')
-        return redirect(reverse("inventario:listar_productos"))
+    prod = get_object_or_404(Producto, pk=pk)
 
-    # Confirmación (según tu árbol: eliminar_confirm_lista.html)
+    if request.method == "POST":
+        # Evitar mensajes duplicados en la cola
+        for _ in messages.get_messages(request):
+            pass
+
+        try:
+            nombre = str(prod)
+            prod.delete()
+        except (ProtectedError, IntegrityError):
+            messages.error(
+                request,
+                "No se puede eliminar: el producto tiene movimientos (compras/ventas) asociados."
+            )
+        else:
+            messages.success(request, f'Producto  eliminado correctamente.')
+
+        return redirect("inventario:listar_productos")
+
     return render(
         request,
         "inventario/productos/listar_producto/eliminar_confirm_lista.html",
         {"producto": prod},
     )
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # VISTA: ver_producto

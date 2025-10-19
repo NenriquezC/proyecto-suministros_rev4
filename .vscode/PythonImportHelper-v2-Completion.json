@@ -66,6 +66,14 @@
         "documentation": {}
     },
     {
+        "label": "ProtectedError",
+        "importPath": "django.db.models.deletion",
+        "description": "django.db.models.deletion",
+        "isExtraImport": true,
+        "detail": "django.db.models.deletion",
+        "documentation": {}
+    },
+    {
         "label": "django.utils.timezone",
         "kind": 6,
         "isExtraImport": true,
@@ -283,15 +291,7 @@
         "documentation": {}
     },
     {
-        "label": "models",
-        "importPath": "django.db",
-        "description": "django.db",
-        "isExtraImport": true,
-        "detail": "django.db",
-        "documentation": {}
-    },
-    {
-        "label": "migrations",
+        "label": "IntegrityError",
         "importPath": "django.db",
         "description": "django.db",
         "isExtraImport": true,
@@ -323,7 +323,31 @@
         "documentation": {}
     },
     {
+        "label": "migrations",
+        "importPath": "django.db",
+        "description": "django.db",
+        "isExtraImport": true,
+        "detail": "django.db",
+        "documentation": {}
+    },
+    {
         "label": "models",
+        "importPath": "django.db",
+        "description": "django.db",
+        "isExtraImport": true,
+        "detail": "django.db",
+        "documentation": {}
+    },
+    {
+        "label": "models",
+        "importPath": "django.db",
+        "description": "django.db",
+        "isExtraImport": true,
+        "detail": "django.db",
+        "documentation": {}
+    },
+    {
+        "label": "IntegrityError",
         "importPath": "django.db",
         "description": "django.db",
         "isExtraImport": true,
@@ -364,6 +388,14 @@
     },
     {
         "label": "transaction",
+        "importPath": "django.db",
+        "description": "django.db",
+        "isExtraImport": true,
+        "detail": "django.db",
+        "documentation": {}
+    },
+    {
+        "label": "IntegrityError",
         "importPath": "django.db",
         "description": "django.db",
         "isExtraImport": true,
@@ -396,6 +428,14 @@
     },
     {
         "label": "admin",
+        "importPath": "django.contrib",
+        "description": "django.contrib",
+        "isExtraImport": true,
+        "detail": "django.contrib",
+        "documentation": {}
+    },
+    {
+        "label": "messages",
         "importPath": "django.contrib",
         "description": "django.contrib",
         "isExtraImport": true,
@@ -544,6 +584,46 @@
         "description": "django.utils",
         "isExtraImport": true,
         "detail": "django.utils",
+        "documentation": {}
+    },
+    {
+        "label": "timezone",
+        "importPath": "django.utils",
+        "description": "django.utils",
+        "isExtraImport": true,
+        "detail": "django.utils",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "time",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "timedelta",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "timedelta",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
         "documentation": {}
     },
     {
@@ -652,6 +732,14 @@
     },
     {
         "label": "Q",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "ProtectedError",
         "importPath": "django.db.models",
         "description": "django.db.models",
         "isExtraImport": true,
@@ -804,6 +892,14 @@
     },
     {
         "label": "ExpressionWrapper",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "ProtectedError",
         "importPath": "django.db.models",
         "description": "django.db.models",
         "isExtraImport": true,
@@ -1131,22 +1227,6 @@
         "documentation": {}
     },
     {
-        "label": "timedelta",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "timedelta",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
         "label": "TruncDate",
         "importPath": "django.db.models.functions",
         "description": "django.db.models.functions",
@@ -1369,7 +1449,7 @@
         "kind": 6,
         "importPath": "compras.forms",
         "description": "compras.forms",
-        "peekOfCode": "class CompraForm(forms.ModelForm):\n    \"\"\"\n    Form de cabecera para 'Compra'.\n    Expone los campos visibles en UI y aplica validaciones mínimas de entrada.\n    Notas:\n        - El cálculo de subtotal/impuestos/total NO se hace aquí (ver services).\n        - Si quieres permitir que 'descuento_total' quede vacío y se trate como 0,\n        es mejor marcarlo como no requerido en el form en lugar de normalizar en la vista.\n    \"\"\"\n    class Meta:",
+        "peekOfCode": "class CompraForm(forms.ModelForm):\n    \"\"\"\n    Form de cabecera para 'Compra'.\n    \"\"\"\n    # ✅ Forzamos solo FECHA en el form\n    fecha = forms.DateField(\n        widget=forms.DateInput(attrs={'type': 'date'}),\n        input_formats=['%Y-%m-%d'],\n        required=True,\n        label='Fecha'",
         "detail": "compras.forms",
         "documentation": {}
     },
@@ -1729,7 +1809,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def eliminar_proveedor(request, pk):\n    \"\"\"\n    Elimina un proveedor previa confirmación.\n    Template GET:\n    inventario/proveedores/listar_proveedor/eliminar_confirm_proveedor.html\n    \"\"\"\n    proveedor = get_object_or_404(Proveedor, pk=pk)\n    if request.method == \"POST\":\n        proveedor.delete()\n        messages.success(request, \"Proveedor eliminado correctamente.\")",
+        "peekOfCode": "def eliminar_proveedor(request, pk):\n    \"\"\"\n    Elimina un proveedor previa confirmación.\n    Template GET:\n    inventario/proveedores/listar_proveedor/eliminar_confirm_proveedor.html\n    \"\"\"\n    proveedor = get_object_or_404(Proveedor, pk=pk)\n    if request.method == \"POST\":\n        #proveedor.delete()\n        # Vacía cualquier mensaje previo para evitar duplicados",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1783,7 +1863,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def eliminar_producto(request, pk):\n    \"\"\"\n    Elimina un producto previa confirmación.\n    Template GET:\n    inventario/productos/listar_producto/eliminar_confirm_lista.html\n    \"\"\"\n    prod = get_object_or_404(Producto, pk=pk)\n    if request.method == \"POST\":\n        nombre = str(prod)\n        prod.delete()",
+        "peekOfCode": "def eliminar_producto(request, pk):\n    \"\"\"\n    Elimina un producto previa confirmación.\n    Template GET:\n    inventario/productos/listar_producto/eliminar_confirm_lista.html\n    \"\"\"\n    prod = get_object_or_404(Producto, pk=pk)\n    prod = get_object_or_404(Producto, pk=pk)\n    if request.method == \"POST\":\n        # Evitar mensajes duplicados en la cola",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -2098,7 +2178,7 @@
         "kind": 6,
         "importPath": "ventas.forms",
         "description": "ventas.forms",
-        "peekOfCode": "class VentaForm(forms.ModelForm):\n    class Meta:\n        model = Venta\n        # SOLO los campos que el usuario rellena\n        fields = [\"cliente\", \"fecha\", \"descuento_total\", \"impuesto\"]\n        widgets = {\n            \"fecha\": forms.DateInput(attrs={\"type\": \"date\"}),\n        }\n    def clean_descuento_total(self):\n        v = self.cleaned_data.get(\"descuento_total\")",
+        "peekOfCode": "class VentaForm(forms.ModelForm):\n    class Meta:\n        model = Venta\n        # SOLO los campos que el usuario rellena\n        fields = [\"cliente\", \"fecha\", \"descuento_total\", \"impuesto\"]\n        widgets = {\"fecha\": forms.DateInput(attrs={\"type\": \"date\"}),}\n    def clean_descuento_total(self):\n        v = self.cleaned_data.get(\"descuento_total\")\n        return v or Decimal(\"0.00\")\n    def clean_impuesto(self):",
         "detail": "ventas.forms",
         "documentation": {}
     },
@@ -2242,7 +2322,7 @@
         "kind": 2,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "def eliminar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    # MODO CLIENTE: sólo puede eliminar sus propias ventas (si tu negocio lo permite)\n    if _es_cliente(request.user) and getattr(venta, \"cliente_id\", None) != request.user.pk:\n        raise PermissionDenied(\"No puedes eliminar ventas de otros usuarios.\")\n    if request.method == \"POST\":\n        venta.delete()\n        messages.success(request, \"Venta eliminada.\")\n        return redirect(\"ventas:ver_ventas\")\n    return render(request, \"ventas/eliminar_confirm_venta.html\", {\"venta\": venta})",
+        "peekOfCode": "def eliminar_venta(request, pk):\n    venta = get_object_or_404(Venta, pk=pk)\n    # MODO CLIENTE: sólo puede eliminar sus propias ventas (si tu negocio lo permite)\n    if _es_cliente(request.user) and getattr(venta, \"cliente_id\", None) != request.user.pk:\n        raise PermissionDenied(\"No puedes eliminar ventas de otros usuarios.\")\n    if request.method == \"POST\":\n        try:\n            venta.delete()\n            messages.success(request, \"Venta eliminada correctamente.\")\n        except (ProtectedError, IntegrityError):",
         "detail": "ventas.views",
         "documentation": {}
     },

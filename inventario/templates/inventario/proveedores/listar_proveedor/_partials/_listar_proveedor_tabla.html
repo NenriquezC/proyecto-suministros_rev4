@@ -6,6 +6,7 @@
         <th scope="col">Nombre</th>
         <th scope="col">Email</th>
         <th scope="col">Teléfono</th>
+        <th scope="col">Dirección</th>
         <th scope="col" class="text-end">Acciones</th>
       </tr>
     </thead>
@@ -18,6 +19,9 @@
             {% endif %}
             {% if not p.telefono %}
               <span class="badge bg-warning text-dark ms-2">Falta teléfono</span>
+            {% endif %}
+            {% if not p.direccion %}
+              <span class="badge bg-warning text-dark ms-2">Falta dirección</span>
             {% endif %}
           </td>
 
@@ -33,13 +37,17 @@
             {{ p.telefono|default:"—" }}
           </td>
 
+          <td class="text-break">
+            {{ p.direccion|default:"—" }}
+          </td>
+
           <td class="text-end text-nowrap">
             {% include "inventario/proveedores/listar_proveedor/_partials/_listar_proveedor_acciones_fila.html" with proveedor=p %}
           </td>
         </tr>
       {% empty %}
         <tr>
-          <td colspan="5" class="text-center text-muted">Sin resultados</td>
+          <td colspan="6" class="text-center text-muted">Sin resultados</td>
         </tr>
       {% endfor %}
     </tbody>
