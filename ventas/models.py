@@ -11,6 +11,9 @@ class Venta(models.Model):
     fecha = models.DateField(default=timezone.localdate)  # editable por el usuario si hace falta
     subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
     impuesto = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
+    impuesto_porcentaje = models.DecimalField(max_digits=5,decimal_places=2,default=Decimal('0.00'),
+    validators=[MinValueValidator(Decimal('0')), MaxValueValidator(Decimal('100'))]
+)
     descuento_total = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
     total = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
 

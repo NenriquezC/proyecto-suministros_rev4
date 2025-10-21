@@ -98,8 +98,9 @@
     </div>
   </div>
 
-  <!-- Tablas -->
+  <!-- TABLAS FILA 1 -->
   <div class="row g-3">
+    <!-- Top vendidos -->
     <div class="col-12 col-lg-6">
       <div class="card h-100 shadow-sm">
         <div class="card-body">
@@ -125,6 +126,62 @@
       </div>
     </div>
 
+    <!-- Proveedores que más nos venden -->
+    <div class="col-12 col-lg-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="fw-bold mb-2">Proveedores que más nos venden (Compras €)</div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead>
+                <tr><th>Proveedor</th><th class="text-end">Compras (€)</th></tr>
+              </thead>
+              <tbody>
+                {% for it in top_proveedores_compras %}
+                  <tr>
+                    <td>{{ it.nombre }}</td>
+                    <td class="text-end">{{ it.total|floatformat:2 }}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="2" class="text-center text-muted">Sin datos</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLAS FILA 2 -->
+  <div class="row g-3 mt-0">
+    <!-- Proveedores con mayor descuento -->
+    <div class="col-12 col-lg-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="fw-bold mb-2">Proveedores con mayor descuento (%)</div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead>
+                <tr><th>Proveedor</th><th class="text-end">Desc. medio (%)</th></tr>
+              </thead>
+              <tbody>
+                {% for it in top_proveedores_descuento %}
+                  <tr>
+                    <td>{{ it.nombre }}</td>
+                    <td class="text-end">{{ it.descuento_pct|floatformat:2 }}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="2" class="text-center text-muted">Sin datos</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stock bajo -->
     <div class="col-12 col-lg-6">
       <div class="card h-100 shadow-sm">
         <div class="card-body">
@@ -150,7 +207,6 @@
         </div>
       </div>
     </div>
-
   </div>
 </div>
 {% endblock %}
@@ -159,34 +215,23 @@
   {{ block.super }}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-
-  {# JSON seguro embebido (evita errores de sintaxis y comas) #}
-  {# La vista debe pasar un dict "chart" con:
-      chart = {
-        "labels": labels,             # lista de strings/fechas
-        "compras": data_compras,      # lista de números
-        "ventas": data_ventas,        # lista de números
-        "top_labels": top_labels,     # lista de strings
-        "top_data": top_data          # lista de números
-      }
-#}
   {{ chart|json_script:"chart-data" }}
 
   <script>
     const chart = JSON.parse(document.getElementById("chart-data").textContent);
 
-    const labels      = Array.isArray(chart.labels) ? chart.labels : [];
-    const dataCompras = Array.isArray(chart.compras) ? chart.compras : [];
-    const dataVentas  = Array.isArray(chart.ventas)  ? chart.ventas  : [];
-    const topLabels   = Array.isArray(chart.top_labels) ? chart.top_labels : [];
-    const topData     = Array.isArray(chart.top_data)   ? chart.top_data   : [];
+    const labels      = chart.labels || [];
+    const dataCompras = chart.compras || [];
+    const dataVentas  = chart.ventas || [];
+    const topLabels   = chart.top_labels || [];
+    const topData     = chart.top_data || [];
 
-    // Line chart
+    // Línea: Compras vs Ventas
     const ctxLine = document.getElementById('chartLine').getContext('2d');
     new Chart(ctxLine, {
       type: 'line',
       data: {
-        labels: labels,
+        labels,
         datasets: [
           { label: 'Compras', data: dataCompras, tension: 0.3, borderWidth: 2 },
           { label: 'Ventas',  data: dataVentas,  tension: 0.3, borderWidth: 2 }
@@ -195,17 +240,14 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        scales: { y: { beginAtZero: true } },
-        plugins: { legend: { position: 'bottom' } }
+        plugins: { legend: { position: 'bottom' } },
+        scales: { y: { beginAtZero: true } }
       }
     });
 
-    // Bar chart Top vendidos
+    // Barras: Top vendidos
     const ctxBar = document.getElementById('chartBar').getContext('2d');
-
-    // Paleta de colores (se cicla si hay más barras que colores)
     const palette = ['#3da9fc', '#ef4565', '#94a1b2', '#0ea5e9', '#f59e0b'];
-
     new Chart(ctxBar, {
       type: 'bar',
       data: {
@@ -213,16 +255,16 @@
         datasets: [{
           label: 'Unidades',
           data: topData,
-          backgroundColor: topLabels.map((_, i) => palette[i % palette.length] + '33'), // ~20% opacidad
-          borderColor: topLabels.map((_, i) => palette[i % palette.length]),
+          backgroundColor: palette.map(c => c + '33'),
+          borderColor: palette,
           borderWidth: 1
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
-        plugins: { legend: { display: false } }
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
       }
     });
   </script>

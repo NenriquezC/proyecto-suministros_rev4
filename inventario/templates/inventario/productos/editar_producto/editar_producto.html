@@ -18,6 +18,13 @@
 .totals-row { display:flex; justify-content: space-between; }
 .totals-row--strong { font-weight: 700; font-size: 1.05rem; }
 .card-header--flex { display:flex; justify-content: space-between; align-items:center; }
+
+
+/* === Uniformar layout y tamaño de inputs en readonly como en "ingresar producto" === */
+.form-rows-2col { display:grid; grid-template-columns: 240px 1fr; column-gap:16px; row-gap:12px; align-items:center; }
+.form-label-left { font-weight:600; text-align:left; color:#094067; }
+.form-field { display:flex; align-items:center; gap:8px; }
+.form-field input, .form-field select, .form-field textarea { width:100%; max-width:420px; text-align:left; }
 </style>
 {% endblock %}
 
@@ -40,36 +47,47 @@
             </div>
         {% endif %}
 
-        <div class="card mb-3">
-            <div class="card-header card-header--flex">
-            <h2 class="card-title">Datos del producto</h2>
-            
-            </div>
+  <div class="card mb-3">
+    <div class="card-header card-header--flex" style="background:#3a5068;color:#fff;">
+      <h2 class="card-title" style="color:#fff;">Datos del proveedor</h2>
+    </div>
+      <div class="card-body">
+              <form onsubmit="return false">
+                <fieldset disabled>
+                  <div class="form-rows-2col" style="display:grid;grid-template-columns:240px 1fr;column-gap:16px;row-gap:12px;align-items:center;">
+                    <label class="form-label-left">Nombre</label>
+                    <div class="form-field">{{ form.nombre }}</div>
 
-            <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-striped align-middle">
-                <tbody>
-                    <tr><th class="w-25">Nombre</th>            <td class="text-break">{{ producto.nombre }}</td></tr>
-                    {% if producto.descripcion %}<tr><th>Descripción</th><td class="text-break">{{ producto.descripcion }}</td></tr>{% endif %}
-                    <tr><th>Categoría</th>                      <td>{{ producto.categoria }}</td></tr>
-                    <tr><th>Proveedor</th>                      <td>{{ producto.proveedor }}</td></tr>
-                    <tr><th>Precio compra (p. unit.)</th>       <td class="text-end">{{ producto.precio_compra }}</td></tr>
-                    <tr><th>Ganancia (%)</th>                   <td class="text-end">{{ producto.ganancia }}</td></tr>
-                    <tr><th>Precio venta</th>                   <td class="text-end"><strong>{{ producto.precio_venta }}</strong></td></tr>
-                    <tr><th>Stock</th>                          <td class="text-end">{{ producto.stock }}</td></tr>
-                    <tr><th>Stock mínimo</th>                   <td class="text-end">{{ producto.stock_minimo }}</td></tr>
-                    <tr><th>Creado en</th>                      <td>{{ producto.creado_en }}</td></tr>
-                </tbody>
-                </table>
-            </div>
-            {# === Totales centrado === #}
-            <div class="d-flex justify-content-center mt-3">
-                <div class="card totals-card mb-0 mx-auto">
+                    <label class="form-label-left">Descripción</label>
+                    <div class="form-field">{{ form.descripcion }}</div>
+
+                    <label class="form-label-left">Categoría</label>
+                    <div class="form-field">{{ form.categoria }}</div>
+
+                    <label class="form-label-left">Proveedor</label>
+                    <div class="form-field">{{ form.proveedor }}</div>
+
+                    <label class="form-label-left">Precio compra (p. unit.)</label>
+                    <div class="form-field">{{ form.precio_compra }}</div>
+
+                    <label class="form-label-left">Ganancia (%)</label>
+                    <div class="form-field">{{ form.ganancia }}</div>
+
+                    <label class="form-label-left">Stock</label>
+                    <div class="form-field">{{ form.stock }}</div>
+
+                    <label class="form-label-left">Stock mínimo</label>
+                    <div class="form-field">{{ form.stock_minimo }}</div>
+                  </div>
+                </fieldset>
+              </form>
+            {# === Totales a la derecha === #}
+            <div class="d-flex justify-content-end mt-3">
+                <div class="card totals-card mb-0 ms-auto">
                     <div class="card-body p-3">
                     <h6 class="mb-3 text-center">Totales</h6>
-                    <div class="totals-row"><span>Precio venta</span> <strong>{{ producto.precio_venta }}</strong></div>
-                    <div class="totals-row"><span>Margen estimado(€)</span> <strong>{{ margen }}</strong></div>
+                    <div class="totals-row"><span>Precio venta (€):</span> <strong>{{ producto.precio_venta }}</strong></div>
+                    <div class="totals-row"><span>Margen estimado (€):</span> <strong>{{ margen }}</strong></div>
                 </div>
             </div>
         </div>
@@ -108,7 +126,7 @@
 
       <div class="card-body">
         <div class="table-responsive">
-          <table class="table table-striped align-middle">
+          <table class="table table-borderless align-middle">
             <tbody>
               <tr>
                 <th class="w-25">Nombre</th>
@@ -153,13 +171,13 @@
           </table>
         </div>
 
-        {# Totales centrado, luego botones debajo #}
-        <div class="d-flex justify-content-center mt-2">
-          <div class="card totals-card mb-0" style="margin-left:0;">
+        {# Totales a la derecha, luego botones debajo #}
+        <div class="d-flex justify-content-end mt-2">
+          <div class="card totals-card mb-0 ms-auto">
             <div class="card-body p-3">
               <h6 class="mb-3 text-center">Totales</h6>
-              <div class="totals-row"><span>Precio venta</span> <strong>{{ producto.precio_venta }}</strong></div>
-              <div class="totals-row"><span>Margen estimado(€)</span> <strong>{{ margen }}</strong></div>
+              <div class="totals-row"><span>Precio venta (€):</span> <strong>{{ producto.precio_venta }}</strong></div>
+              <div class="totals-row"><span>Margen estimado (€):</span> <strong>{{ margen }}</strong></div>
             </div>
           </div>
         </div>

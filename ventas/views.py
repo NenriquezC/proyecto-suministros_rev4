@@ -67,15 +67,27 @@ def crear_venta(request):
             if formset.is_valid():
                 formset.save()
 
+                # 🟢 Guardar el porcentaje original que el usuario escribió (23, 22, etc.)
+                try:
+                    raw = (data.get("impuesto") or "").replace(",", ".")
+                    venta.impuesto_porcentaje = Decimal(raw or "0")
+                    venta.save(update_fields=["impuesto_porcentaje"])
+                except Exception:
+                    venta.impuesto_porcentaje = Decimal("0")
+                    venta.save(update_fields=["impuesto_porcentaje"])
+
+                # Aplicar cambios de stock
                 if services_ventas:
                     services_ventas.aplicar_stock_despues_de_crear_venta(venta)
 
-                # Calcular totales con tasa (si viene)
+                # Calcular totales en base al porcentaje (para guardar el importe correcto)
                 if services_ventas:
                     try:
                         raw = (data.get("impuesto") or "").replace(",", ".")
                         tasa_pct = Decimal(raw or "0") / Decimal("100")
-                        services_ventas.calcular_y_guardar_totales_venta(venta, tasa_impuesto_pct=tasa_pct)
+                        services_ventas.calcular_y_guardar_totales_venta(
+                            venta, tasa_impuesto_pct=tasa_pct
+                        )
                     except Exception:
                         pass
 
@@ -219,10 +231,24 @@ def ver_venta(request, pk):
             f.disabled = True
     formset.can_delete = False
 
+    # 🔹 Aseguramos que el valor esté disponible
+    impuesto_porcentaje = getattr(venta, "impuesto_porcentaje", Decimal("0"))
+
+    # 🔹 Ganancia (fija) calculada sobre el SUBTOTAL (mismo criterio que en "agregar")
+    ganancia_pct_fija = Decimal("50")  # ← mismo valor que el input ganancia_pct del formulario de agregar
+    ganancia = _round2((venta.subtotal or Decimal("0")) * ganancia_pct_fija / Decimal("100"))
+
     return render(
         request,
         "ventas/editar_venta/editar_venta.html",
-        {"form": form, "formset": formset, "venta": venta, "readonly": True},
+        {
+            "form": form,
+            "formset": formset,
+            "venta": venta,
+            "readonly": True,
+            "impuesto_porcentaje": impuesto_porcentaje,  # 🔹 se envía directo al template
+            "ganancia": ganancia,
+        },
     )
 
 detalle = ver_venta  # alias

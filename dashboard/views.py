@@ -24,7 +24,8 @@ from django.utils import timezone
 from compras.models import Compra
 from ventas.models import Venta, VentaProducto
 from inventario.models import Producto
-
+from django.db.models import Avg, Case, When, DecimalField, ExpressionWrapper
+from django.db.models.functions import TruncDate
 
 # ─────────────────────────────────────────────────────────────────────────────
 # VISTA: panel
@@ -43,18 +44,8 @@ def panel(request):
     4) Low stock: productos con stock ≤ stock_minimo.
     5) Series 14 días: compras (TruncDate) y ventas.
     6) Prepara payload `chart` para `json_script` en el template.
-
-    Parámetros:
-    request (HttpRequest)
-
-    Retorna:
-    HttpResponse: render("dashboard/panel.html", contexto)
-
-    Notas:
-    - Se respeta tu distinción Compra.fecha (DateTime) vs Venta.fecha (Date).
-    - `Decimal("0")` previene `None` en agregaciones.
-    - `labels`, `data_compras`, `data_ventas` se conservan también por separado
-        aunque el template consuma `chart`.
+    7) **NUEVO**: Top proveedores por monto comprado (€) y por descuento medio (%),
+       y se agregan arrays `supp_labels`, `supp_amounts`, `supp_discounts` al `chart`.
     """
     tznow = timezone.now()
     hoy = tznow.date()
@@ -119,6 +110,49 @@ def panel(request):
     data_ventas  = [float(idx_v.get(d, 0) or 0) for d in dias]
     labels = [d.strftime("%d-%m") for d in dias]
 
+    # ──────────────── NUEVO: Top proveedores ────────────────
+    # Top por monto comprado (€)
+    top_proveedores_compras_qs = (
+        Compra.objects
+        .select_related("proveedor")
+        .values("proveedor", "proveedor__nombre")
+        .annotate(total=Sum("total"))
+        .order_by("-total")[:5]
+    )
+    top_proveedores_compras = [
+        {"nombre": it["proveedor__nombre"], "total": it["total"] or Decimal("0")}
+        for it in top_proveedores_compras_qs
+        if it["proveedor__nombre"] is not None
+    ]
+
+    # Top por descuento medio (%) = AVG( (descuento_total / subtotal) * 100 ) por proveedor
+    descuento_pct_expr = ExpressionWrapper(
+        Case(
+            When(subtotal__gt=0, then=(F("descuento_total") / F("subtotal")) * Decimal("100")),
+            default=Decimal("0"),
+            output_field=DecimalField(max_digits=12, decimal_places=4),
+        ),
+        output_field=DecimalField(max_digits=12, decimal_places=4),
+    )
+
+    top_proveedores_descuento_qs = (
+        Compra.objects
+        .select_related("proveedor")
+        .values("proveedor", "proveedor__nombre")
+        .annotate(descuento_pct=Avg(descuento_pct_expr))
+        .order_by("-descuento_pct")[:5]
+    )
+    top_proveedores_descuento = [
+        {"nombre": it["proveedor__nombre"], "descuento_pct": it["descuento_pct"] or Decimal("0")}
+        for it in top_proveedores_descuento_qs
+        if it["proveedor__nombre"] is not None
+    ]
+
+    # Arrays para una posible gráfica de proveedores (opcional; el template los usará si existen)
+    supp_labels    = [it["nombre"] for it in top_proveedores_compras]
+    supp_amounts   = [float(it["total"]) for it in top_proveedores_compras]
+    supp_discounts = [float(it["descuento_pct"]) for it in top_proveedores_descuento]
+
     # Payload para el json_script del template
     chart = {
         "labels": labels,
@@ -126,6 +160,10 @@ def panel(request):
         "ventas": data_ventas,
         "top_labels": top_labels,
         "top_data": top_data,
+        # opcional (para gráfica de proveedores)
+        "supp_labels": supp_labels,
+        "supp_amounts": supp_amounts,
+        "supp_discounts": supp_discounts,
     }
 
     contexto = {
@@ -142,12 +180,14 @@ def panel(request):
         # tablas
         "top_vendidos": _top_vendidos_list,
         "low_stock": list(low_stock),
+        "top_proveedores_compras": top_proveedores_compras,         # NUEVO
+        "top_proveedores_descuento": top_proveedores_descuento,     # NUEVO
 
         # charts
         "labels": labels,             # opcional si solo usas 'chart' en el template
         "data_compras": data_compras, # opcional
         "data_ventas": data_ventas,   # opcional
-        "chart": chart,               # <-- lo que consume {{ chart|json_script:"chart-data" }}
+        "chart": chart,               # lo que consume {{ chart|json_script:"chart-data" }}
     }
     return render(request, "dashboard/panel.html", contexto)
 

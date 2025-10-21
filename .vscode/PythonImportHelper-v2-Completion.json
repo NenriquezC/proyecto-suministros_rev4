@@ -107,6 +107,22 @@
         "documentation": {}
     },
     {
+        "label": "ROUND_HALF_UP",
+        "importPath": "decimal",
+        "description": "decimal",
+        "isExtraImport": true,
+        "detail": "decimal",
+        "documentation": {}
+    },
+    {
+        "label": "Decimal",
+        "importPath": "decimal",
+        "description": "decimal",
+        "isExtraImport": true,
+        "detail": "decimal",
+        "documentation": {}
+    },
+    {
         "label": "Decimal",
         "importPath": "decimal",
         "description": "decimal",
@@ -124,6 +140,22 @@
     },
     {
         "label": "ROUND_HALF_UP",
+        "importPath": "decimal",
+        "description": "decimal",
+        "isExtraImport": true,
+        "detail": "decimal",
+        "documentation": {}
+    },
+    {
+        "label": "Decimal",
+        "importPath": "decimal",
+        "description": "decimal",
+        "isExtraImport": true,
+        "detail": "decimal",
+        "documentation": {}
+    },
+    {
+        "label": "Decimal",
         "importPath": "decimal",
         "description": "decimal",
         "isExtraImport": true,
@@ -348,6 +380,22 @@
     },
     {
         "label": "IntegrityError",
+        "importPath": "django.db",
+        "description": "django.db",
+        "isExtraImport": true,
+        "detail": "django.db",
+        "documentation": {}
+    },
+    {
+        "label": "migrations",
+        "importPath": "django.db",
+        "description": "django.db",
+        "isExtraImport": true,
+        "detail": "django.db",
+        "documentation": {}
+    },
+    {
+        "label": "models",
         "importPath": "django.db",
         "description": "django.db",
         "isExtraImport": true,
@@ -756,6 +804,46 @@
     },
     {
         "label": "F",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "Avg",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "Case",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "When",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "DecimalField",
+        "importPath": "django.db.models",
+        "description": "django.db.models",
+        "isExtraImport": true,
+        "detail": "django.db.models",
+        "documentation": {}
+    },
+    {
+        "label": "ExpressionWrapper",
         "importPath": "django.db.models",
         "description": "django.db.models",
         "isExtraImport": true,
@@ -1235,6 +1323,14 @@
         "documentation": {}
     },
     {
+        "label": "TruncDate",
+        "importPath": "django.db.models.functions",
+        "description": "django.db.models.functions",
+        "isExtraImport": true,
+        "detail": "django.db.models.functions",
+        "documentation": {}
+    },
+    {
         "label": "Least",
         "importPath": "django.db.models.functions",
         "description": "django.db.models.functions",
@@ -1449,7 +1545,7 @@
         "kind": 6,
         "importPath": "compras.forms",
         "description": "compras.forms",
-        "peekOfCode": "class CompraForm(forms.ModelForm):\n    \"\"\"\n    Form de cabecera para 'Compra'.\n    \"\"\"\n    # ✅ Forzamos solo FECHA en el form\n    fecha = forms.DateField(\n        widget=forms.DateInput(attrs={'type': 'date'}),\n        input_formats=['%Y-%m-%d'],\n        required=True,\n        label='Fecha'",
+        "peekOfCode": "class CompraForm(forms.ModelForm):\n    \"\"\"\n    Form de cabecera para 'Compra'.\n    - Campo 'fecha' se maneja como <input type=\"date\">.\n    - Campo 'impuesto_total' en la UI se usa como PORCENTAJE (ej. 23),\n      pero NO se guarda directamente; el monto final lo calcula services.\n    - En edición, se muestra el PORCENTAJE calculado desde los importes guardados.\n    \"\"\"\n    fecha = forms.DateField(\n        widget=forms.DateInput(attrs={'type': 'date'}),",
         "detail": "compras.forms",
         "documentation": {}
     },
@@ -1512,7 +1608,16 @@
         "kind": 2,
         "importPath": "compras.services",
         "description": "compras.services",
-        "peekOfCode": "def calcular_y_guardar_totales_compra(compra: Compra,tasa_impuesto_pct: Decimal | None = None,) -> Compra:\n    \"\"\"\n    Calcula subtotal, impuesto_total (opcional) y total de una compra y los persiste.\n    Reglas:\n    - subtotal = Σ(cantidad * precio_unitario) de las líneas (con precisión intermedia).\n    - impuesto_total:\n        * Si 'tasa_impuesto_pct' es un número (p.ej. 0.19 para 19%), se recalcula como:\n            impuesto_total = redondear(subtotal * tasa_impuesto_pct)\n        * Si es None, NO se recalcula (se respeta lo que venga de UI o estado previo).\n    - total = redondear(subtotal - descuento_total + impuesto_total)",
+        "peekOfCode": "def calcular_y_guardar_totales_compra(compra: Compra,tasa_impuesto_pct: Decimal | None = None,) -> Compra:\n    Calcula subtotal, impuesto_total (opcional) y total de una compra y los persiste.\n    Reglas:\n    - subtotal = Σ(cantidad * precio_unitario) de las líneas (con precisión intermedia).\n    - impuesto_total:\n        * Si 'tasa_impuesto_pct' es un número (p.ej. 0.19 para 19%), se recalcula como:\n            impuesto_total = redondear(subtotal * tasa_impuesto_pct)\n        * Si es None, NO se recalcula (se respeta lo que venga de UI o estado previo).\n    - total = redondear(subtotal - descuento_total + impuesto_total)\n    - Todo se guarda con 2 decimales (redondeo HALF_UP).",
+        "detail": "compras.services",
+        "documentation": {}
+    },
+    {
+        "label": "calcular_y_guardar_totales_compra",
+        "kind": 2,
+        "importPath": "compras.services",
+        "description": "compras.services",
+        "peekOfCode": "def calcular_y_guardar_totales_compra(\n    compra: Compra,\n    tasa_impuesto_pct: Decimal | None = None,\n) -> Compra:\n    \"\"\"\n    Calcula y persiste: subtotal, descuento_total (desde %), impuesto_total y total.\n    Impuesto se calcula sobre (subtotal - descuento).\n    \"\"\"\n    from decimal import Decimal\n    from django.db.models import F, Sum, DecimalField, ExpressionWrapper",
         "detail": "compras.services",
         "documentation": {}
     },
@@ -1557,7 +1662,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def crear_compra(request):\n    \"\"\"\n    Crea una Compra y sus líneas (formset).\n    POST:\n    - Normaliza entrada (p. ej. descuento_total vacío → \"0\")\n    - Valida cabecera (CompraForm) y líneas (CompraProductoFormSet)\n    - Si ok: guarda, ajusta stock y recalcula totales en `services`\n    - Mensaje de éxito y redirect a detalle\n    GET:\n    - Renderiza formulario vacío (1 formset según configuración)",
+        "peekOfCode": "def crear_compra(request):\n    FORMS_PREFIX = \"lineas\"\n    if request.method == \"POST\":\n        data = request.POST.copy()\n        if data.get(\"descuento_total\") in (None, \"\"):\n            data[\"descuento_total\"] = \"0\"\n        form = CompraForm(data)\n        if form.is_valid():\n            compra = form.save(commit=False)\n            compra.usuario_id = request.user.pk",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -1566,7 +1671,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def editar_compra(request, pk):\n    \"\"\"\n    Edita una Compra existente (cabecera + líneas).\n    Flujo:\n    - Captura estado previo de líneas para reconciliar stock luego de guardar\n    - Valida cabecera y formset\n    - Guarda cambios\n    - Reconciliar stock (deltas) y recalcular totales\n    - Éxito → redirect a detalle\n    Seguridad:",
+        "peekOfCode": "def editar_compra(request, pk):\n    compra = get_object_or_404(Compra, pk=pk)\n    estado_previo_lineas = {l.pk: (l.producto_id, l.cantidad) for l in compra.lineas.all()}\n    if request.method == \"POST\":\n        data = request.POST.copy()\n        if data.get(\"descuento_total\") in (None, \"\"):\n            data[\"descuento_total\"] = \"0\"\n        form = CompraForm(data, instance=compra)\n        formset = CompraProductoFormSet(data, instance=compra, prefix=\"lineas\")\n        if form.is_valid() and formset.is_valid():",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -1845,7 +1950,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def agregar_producto(request):\n    \"\"\"\n    Crea un producto.\n    Flujo:\n    - GET: formulario vacío.\n    - POST: valida y guarda; redirige a ver_producto.\n    \"\"\"\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST)\n        if form.is_valid():",
+        "peekOfCode": "def agregar_producto(request):\n    \"\"\"\n    Crea un producto.\n    Flujo:\n    - GET: formulario vacío.\n    - POST: valida y guarda; redirige a ver_producto.\n    \"\"\"\n    if request.method == \"POST\":\n        data = request.POST.copy()\n        data[\"ganancia\"] = \"50\"  # fijo 50%",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -1854,7 +1959,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def editar_producto(request, pk):\n    \"\"\"\n    Edita un producto.\n    Flujo:\n    - GET: formulario con instancia.\n    - POST: valida/guarda; redirige a ver_producto.\n    \"\"\"\n    prod = get_object_or_404(Producto, pk=pk)\n    if request.method == \"POST\":\n        form = ProductoForm(request.POST, instance=prod)",
+        "peekOfCode": "def editar_producto(request, pk):\n    \"\"\"\n    Edita un producto.\n    Flujo:\n    - GET: formulario con instancia.\n    - POST: valida/guarda; redirige a ver_producto.\n    \"\"\"\n    prod = get_object_or_404(Producto, pk=pk)\n    if request.method == \"POST\":\n        data = request.POST.copy()",
         "detail": "inventario.views",
         "documentation": {}
     },
@@ -2147,6 +2252,15 @@
         "documentation": {}
     },
     {
+        "label": "Migration",
+        "kind": 6,
+        "importPath": "ventas.migrations.0002_venta_impuesto_porcentaje",
+        "description": "ventas.migrations.0002_venta_impuesto_porcentaje",
+        "peekOfCode": "class Migration(migrations.Migration):\n    dependencies = [\n        ('ventas', '0001_initial'),\n    ]\n    operations = [\n        migrations.AddField(\n            model_name='venta',\n            name='impuesto_porcentaje',\n            field=models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=5, validators=[django.core.validators.MinValueValidator(Decimal('0')), django.core.validators.MaxValueValidator(Decimal('100'))]),\n        ),",
+        "detail": "ventas.migrations.0002_venta_impuesto_porcentaje",
+        "documentation": {}
+    },
+    {
         "label": "VentaAdmin",
         "kind": 6,
         "importPath": "ventas.admin",
@@ -2205,7 +2319,7 @@
         "kind": 6,
         "importPath": "ventas.models",
         "description": "ventas.models",
-        "peekOfCode": "class Venta(models.Model):\n    cliente = models.ForeignKey(User, on_delete=models.PROTECT, related_name='ventas')\n    fecha = models.DateField(default=timezone.localdate)  # editable por el usuario si hace falta\n    subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))\n    impuesto = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))\n    descuento_total = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))\n    total = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))\n    creado_en = models.DateTimeField(auto_now_add=True)\n    actualizado_en = models.DateTimeField(auto_now=True)\n    class Meta:",
+        "peekOfCode": "class Venta(models.Model):\n    cliente = models.ForeignKey(User, on_delete=models.PROTECT, related_name='ventas')\n    fecha = models.DateField(default=timezone.localdate)  # editable por el usuario si hace falta\n    subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))\n    impuesto = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))\n    impuesto_porcentaje = models.DecimalField(max_digits=5,decimal_places=2,default=Decimal('0.00'),\n    validators=[MinValueValidator(Decimal('0')), MaxValueValidator(Decimal('100'))]\n)\n    descuento_total = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))\n    total = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))",
         "detail": "ventas.models",
         "documentation": {}
     },
@@ -2223,7 +2337,7 @@
         "kind": 5,
         "importPath": "ventas.models",
         "description": "ventas.models",
-        "peekOfCode": "User = get_user_model()\nclass Venta(models.Model):\n    cliente = models.ForeignKey(User, on_delete=models.PROTECT, related_name='ventas')\n    fecha = models.DateField(default=timezone.localdate)  # editable por el usuario si hace falta\n    subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))\n    impuesto = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))\n    descuento_total = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))\n    total = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))\n    creado_en = models.DateTimeField(auto_now_add=True)\n    actualizado_en = models.DateTimeField(auto_now=True)",
+        "peekOfCode": "User = get_user_model()\nclass Venta(models.Model):\n    cliente = models.ForeignKey(User, on_delete=models.PROTECT, related_name='ventas')\n    fecha = models.DateField(default=timezone.localdate)  # editable por el usuario si hace falta\n    subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))\n    impuesto = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))\n    impuesto_porcentaje = models.DecimalField(max_digits=5,decimal_places=2,default=Decimal('0.00'),\n    validators=[MinValueValidator(Decimal('0')), MaxValueValidator(Decimal('100'))]\n)\n    descuento_total = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))",
         "detail": "ventas.models",
         "documentation": {}
     },

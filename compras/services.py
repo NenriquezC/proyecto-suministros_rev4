@@ -70,9 +70,9 @@ def _aplicar_delta_stock_seguro(producto_id: int, delta_unidades):
 # ─────────────────────────────────────────────────────────────────────────────
 # Totales de la compra
 # ─────────────────────────────────────────────────────────────────────────────
-@transaction.atomic
+"""@transaction.atomic
 def calcular_y_guardar_totales_compra(compra: Compra,tasa_impuesto_pct: Decimal | None = None,) -> Compra:
-    """
+    
     Calcula subtotal, impuesto_total (opcional) y total de una compra y los persiste.
     Reglas:
     - subtotal = Σ(cantidad * precio_unitario) de las líneas (con precisión intermedia).
@@ -87,7 +87,7 @@ def calcular_y_guardar_totales_compra(compra: Compra,tasa_impuesto_pct: Decimal 
     tasa_impuesto_pct: Decimal o None. Si se pasa, se fuerza el recálculo del impuesto.
     Returns:
     La misma instancia 'compra' con campos 'subtotal', 'impuesto_total' (si corresponde) y 'total' actualizados.
-    """
+    
     total_linea_expr = ExpressionWrapper(
         F("cantidad") * F("precio_unitario"),
         output_field=DecimalField(max_digits=16, decimal_places=6),
@@ -104,8 +104,48 @@ def calcular_y_guardar_totales_compra(compra: Compra,tasa_impuesto_pct: Decimal 
     compra.total = redondear_moneda(compra.subtotal - importe_descuento + importe_impuesto)
 
     compra.save(update_fields=["subtotal", "impuesto_total", "total"])
-    return compra
+    return compra"""
+@transaction.atomic
+def calcular_y_guardar_totales_compra(
+    compra: Compra,
+    tasa_impuesto_pct: Decimal | None = None,
+) -> Compra:
+    """
+    Calcula y persiste: subtotal, descuento_total (desde %), impuesto_total y total.
+    Impuesto se calcula sobre (subtotal - descuento).
+    """
+    from decimal import Decimal
+    from django.db.models import F, Sum, DecimalField, ExpressionWrapper
 
+    # Subtotal desde líneas
+    total_linea_expr = ExpressionWrapper(
+        F("cantidad") * F("precio_unitario"),
+        output_field=DecimalField(max_digits=16, decimal_places=6),
+    )
+    agregados = CompraProducto.objects.filter(compra=compra).aggregate(subtotal=Sum(total_linea_expr))
+    subtotal_calculado = agregados["subtotal"] or Decimal("0")
+
+    # Descuento: DERIVAR SIEMPRE desde porcentaje
+    pct = Decimal(compra.descuento_porcentaje or 0) / Decimal("100")
+    descuento_total = redondear_moneda(subtotal_calculado * pct)
+
+    # Base imponible
+    base = subtotal_calculado - descuento_total
+    if base < 0:
+        base = Decimal("0.00")
+
+    # Impuesto: si recibimos tasa (0.23) lo recalculamos sobre la base
+    if tasa_impuesto_pct is not None:
+        compra.impuesto_total = redondear_moneda(base * Decimal(str(tasa_impuesto_pct)))
+
+    # Totales
+    compra.subtotal = redondear_moneda(subtotal_calculado)
+    compra.descuento_total = descuento_total
+    importe_impuesto = compra.impuesto_total or Decimal("0.00")
+    compra.total = redondear_moneda(base + importe_impuesto)
+
+    compra.save(update_fields=["subtotal", "descuento_total", "impuesto_total", "total"])
+    return compra
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stock en creación de compra

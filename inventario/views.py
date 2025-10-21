@@ -276,7 +276,9 @@ def agregar_producto(request):
     - POST: valida y guarda; redirige a ver_producto.
     """
     if request.method == "POST":
-        form = ProductoForm(request.POST)
+        data = request.POST.copy()
+        data["ganancia"] = "50"  # fijo 50%
+        form = ProductoForm(data)
         if form.is_valid():
             prod = form.save()
             messages.success(request, f'Producto "{prod}" creado correctamente.')
@@ -284,7 +286,7 @@ def agregar_producto(request):
             #return redirect(reverse("inventario:listar_productos"))
             return redirect("inventario:ver_producto", pk=prod.pk)  # ← ver detalle readonly
     else:
-        form = ProductoForm()
+            form = ProductoForm()
 
     return render(
         request,
@@ -308,7 +310,8 @@ def editar_producto(request, pk):
     """
     prod = get_object_or_404(Producto, pk=pk)
     if request.method == "POST":
-        form = ProductoForm(request.POST, instance=prod)
+        data = request.POST.copy()
+        data["ganancia"] = "50"  # fijo 50%+        form = ProductoForm(data, instance=prod)
         if form.is_valid():
             prod = form.save()
             messages.success(request, f'Producto "{prod}" Editado exitosamente') #mensaje de edicion exitosa
@@ -316,10 +319,17 @@ def editar_producto(request, pk):
     else:
         form = ProductoForm(instance=prod)
 
+
+    # margen para totales en editar (precio_venta - precio_compra)
+    try:
+        margen = (prod.precio_venta - prod.precio_compra).quantize(Decimal("0.01"))
+    except Exception:
+        margen = Decimal("0.00")
+
     return render(
         request,
         "inventario/productos/editar_producto/editar_producto.html",
-        {"form": form, "producto": prod},
+        {"form": form, "producto": prod, "margen": margen},
     )
 
 

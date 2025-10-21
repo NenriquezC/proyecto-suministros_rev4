@@ -13,7 +13,7 @@
       {# Cliente * (User) #}
       {% if form.cliente %}
         <label for="{{ form.cliente.id_for_label }}" class="form-label-left">
-          Cliente <span class="req">*</span>
+          Cliente <span class="req"></span>
         </label>
         <div class="form-field">
           {{ form.cliente }}
@@ -26,7 +26,7 @@
 {# ===== Fecha (funciona en agregar, editar y readonly) ===== #}
 {% if form.fecha %}
   <label for="{{ form.fecha.id_for_label }}" class="form-label-left">
-    Fecha <span class="req">*</span>
+    Fecha <span class="req"></span>
   </label>
   <div class="form-field">
     {% if readonly %}
@@ -51,7 +51,7 @@
       {# Descuento total (Decimal) #}
       {% if form.descuento_total %}
         <label for="{{ form.descuento_total.id_for_label }}" class="form-label-left">
-          Descuento total
+          Descuento (%)
         </label>
         <div class="form-field">
           {{ form.descuento_total }}
@@ -61,18 +61,52 @@
         </div>
       {% endif %}
 
-      {# Impuesto (Decimal) #}
+
+
+
+
+      {# Impuesto (%) — en readonly mostrar como porcentaje (ej. 23.00 %), no como dinero #}
       {% if form.impuesto %}
-        <label for="{{ form.impuesto.id_for_label }}" class="form-label-left">
-          Impuesto
-        </label>
+        <label for="{{ form.impuesto.id_for_label }}" class="form-label-left">Impuesto (%)</label>
         <div class="form-field">
-          {{ form.impuesto }}
-          {% for error in form.impuesto.errors %}
-            <div class="invalid-feedback d-block">{{ error }}</div>
-          {% endfor %}
+          {% if readonly %}
+            <input type="text"
+                  class="form-control"
+                  value="{{ impuesto_porcentaje|default:venta.impuesto_porcentaje|floatformat:2 }}"
+                  disabled>
+
+          {% else %}
+            {{ form.impuesto }}
+            {% for error in form.impuesto.errors %}
+              <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+          {% endif %}
         </div>
       {% endif %}
+
+
+
+
+
+
+
+
+
+{# Ganancia fija (50) — idéntica a Impuesto #}
+<label for="id_ganancia_pct" class="form-label-left">Ganancia (%)</label>
+<div class="form-field">
+  <input
+    type="number"
+    name="ganancia_pct"
+    id="id_ganancia_pct"
+    class="form-control"
+    value="50"
+    step="0.01" min="0" max="100"
+    readonly
+  >
+</div>
+
+
     </div>
   </div>
 </div>

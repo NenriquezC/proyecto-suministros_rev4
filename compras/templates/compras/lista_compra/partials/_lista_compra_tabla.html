@@ -8,17 +8,17 @@
         <th scope="col">Fecha</th>
         <th scope="col">Proveedor</th>
         <th scope="col" class="text-end">Subtotal</th>
-        <th scope="col" class="text-end">Desc.</th>
-        <th scope="col" class="text-end">Imp.</th>
+        <th scope="col" class="text-end">Descuento</th>
+        <th scope="col" class="text-end">IVA</th>
         <th scope="col" class="text-end">Total</th>
-        <th scope="col" class="text-end"></th>
+        <th scope="col" class="text-end">Acciones</th>
         </tr>
     </thead>
     <tbody>
         {% for c in compras %}
         <tr>
             <td class="text-center">{{ c.id }}</td>
-            <td>{{ c.fecha|date:"d/m/Y H:i" }}</td>
+            <td>{{ c.fecha|date:"SHORT_DATE_FORMAT" }}</td>
             <td class="text-break">{{ c.proveedor }}</td>
             <td class="text-end">{{ c.subtotal }}</td>
             <td class="text-end">{{ c.descuento_total }}</td>

@@ -46,11 +46,13 @@
   // Inputs de cabecera relevantes
   const inDescGlobal = qs('input[name="descuento_total"]', form); // € absoluto
   const inImpuesto   = qs('input[name="impuesto"]', form);        // % (23 -> 23%)
+  const inGanancia   = qs('input[name="ganancia_pct"]', form);    // % (ej. 50 -> 50%)
 
   // IDs de totales UI (panel lateral)
   const ui = {
     subtotal:  qs('#subtotal-general'),
     descuento: qs('#descuento-general'),
+    ganancia:  qs('#ganancia-general'),
     impuestos: qs('#impuestos-general'),
     total:     qs('#total-general'),
   };
@@ -87,10 +89,15 @@
     const ivaPct = Math.max(0, toNumber(inImpuesto?.value));
     const impuestos = base * (ivaPct / 100);
 
+    // Ganancia en €: se calcula SOBRE EL SUBTOTAL (antes de impuestos), SIN IVA
+  const gananciaPct = Math.max(0, toNumber(inGanancia?.value));
+  const ganancia = subtotal * (gananciaPct / 100);
+
     const total = base + impuestos;
 
     if (ui.subtotal)  ui.subtotal.textContent  = fmt(subtotal).replace('.', ',');
     if (ui.descuento) ui.descuento.textContent = fmt(descGlobal).replace('.', ',');
+    if (ui.ganancia)  ui.ganancia.textContent  = fmt(ganancia).replace('.', ',');
     if (ui.impuestos) ui.impuestos.textContent = fmt(impuestos).replace('.', ',');
     if (ui.total)     ui.total.textContent     = fmt(total).replace('.', ',');
   }
@@ -197,7 +204,7 @@
       });
     });
   }
-
+  
   // Botón agregar
   btnAdd.addEventListener('click', (ev) => { ev.preventDefault(); addRow(); });
 
@@ -207,6 +214,7 @@
   // Cabecera: cambios en descuento_total (€) o impuesto (%)
   inDescGlobal && inDescGlobal.addEventListener('input', updateTotals);
   inImpuesto   && inImpuesto.addEventListener('input', updateTotals);
+  inGanancia && inGanancia.addEventListener('input', updateTotals);
 
   // Init
   // Asegurar TOTAL_FORMS correcto al cargar:

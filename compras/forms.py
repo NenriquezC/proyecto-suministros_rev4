@@ -12,6 +12,7 @@ Diseño:
 - Lógica de negocio pesada (cálculo de totales/stock) vive en services/modelos.
 - Widgets acordes a la UI (datetime-local) y mensajes de error personalizables.
 """
+from decimal import Decimal, ROUND_HALF_UP
 from decimal import Decimal
 from django import forms
 from django.forms import inlineformset_factory
@@ -25,9 +26,13 @@ from datetime import datetime, time
 class CompraForm(forms.ModelForm):
     """
     Form de cabecera para 'Compra'.
+
+    - Campo 'fecha' se maneja como <input type="date">.
+    - Campo 'impuesto_total' en la UI se usa como PORCENTAJE (ej. 23),
+      pero NO se guarda directamente; el monto final lo calcula services.
+    - En edición, se muestra el PORCENTAJE calculado desde los importes guardados.
     """
 
-    # ✅ Forzamos solo FECHA en el form
     fecha = forms.DateField(
         widget=forms.DateInput(attrs={'type': 'date'}),
         input_formats=['%Y-%m-%d'],
@@ -38,11 +43,12 @@ class CompraForm(forms.ModelForm):
     class Meta:
         model = Compra
         fields = ['proveedor', 'fecha', 'descuento_porcentaje', 'descuento_total', 'impuesto_total']
-        # (Opcional) puedes omitir widgets aquí; ya definimos el de 'fecha' arriba.
+        # Nota: 'impuesto_total' se usa como % en la UI.
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # ✅ En EDITAR, precarga el input <type="date"> con la fecha guardada
+
+        # En EDITAR (no bound): precargar fecha y porcentaje de impuesto
         if not self.is_bound:
             inst = getattr(self, "instance", None)
             if inst and getattr(inst, "fecha", None):
@@ -51,42 +57,54 @@ class CompraForm(forms.ModelForm):
                 except Exception:
                     pass
 
+            # Mostrar porcentaje de impuesto (no el dinero) si hay datos
+            if inst and inst.pk:
+                try:
+                    subtotal = Decimal(inst.subtotal or 0)
+                    desc = Decimal(inst.descuento_total or 0)
+                    base = subtotal - desc
+                    imp = Decimal(inst.impuesto_total or 0)
+                    if base > 0:
+                        pct = (imp / base) * Decimal('100')
+                        # Redondeo visual a 2 decimales
+                        pct = pct.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+                        self.initial["impuesto_total"] = pct
+                except Exception:
+                    pass
+
+        # Opcional UX: aclarar que es porcentaje
+        self.fields["impuesto_total"].label = "Impuesto total (%)"
+
     def save(self, commit=True):
         """
-        Convierte date -> datetime 00:00 (tz local) para el DateTimeField del modelo.
+        - Convierte date -> datetime 00:00 con tz.
+        - **No** guarda el valor ingresado en 'impuesto_total' (porcentaje);
+        lo pone a 0.00 porque el cálculo real lo hará 'services'.
         """
         instance = super().save(commit=False)
+
+        # Fecha → datetime aware
         d = self.cleaned_data.get("fecha")
         if d:
             dt = datetime.combine(d, time(0, 0))
             instance.fecha = timezone.make_aware(dt, timezone.get_current_timezone())
+
+        # No persistir el porcentaje como dinero:
+        instance.impuesto_total = Decimal('0.00')
+
         if commit:
             instance.save()
             self.save_m2m()
         return instance
 
-
-
     def clean(self):
-        """
-        Validación a nivel formulario (cruzada opcional y reglas genéricas).
-
-        Reglas actuales:
-            - No negatividad en campos numéricos de entrada.
-        Notas:
-            - 'descuento_porcentaje' también está acotado por el modelo (0..100);
-            este chequeo mantiene feedback inmediato a nivel de form.
-            - Si centralizas min_value en el modelo (validators), puedes limitarte
-            a delegar y solo personalizar mensajes vía Meta.error_messages.
-        """
         data = super().clean()
-        # Reglas generales: nada negativo
+        # No negativos
         for f in ('descuento_porcentaje', 'descuento_total', 'impuesto_total'):
             v = data.get(f)
             if v is not None and v < 0:
                 self.add_error(f, 'No puede ser negativo.')
         return data
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Formulario de línea (detalle)
 # ─────────────────────────────────────────────────────────────────────────────

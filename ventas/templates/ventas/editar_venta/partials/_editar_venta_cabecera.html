@@ -31,6 +31,29 @@
   {% endwith %}
 </div>
 
+
+{# Impuesto (%) — en readonly mostrar como porcentaje, no como dinero #}
+<div class="col-3" style="grid-column: span 3;">
+  {% with f=formulario_venta|default:form %}
+    {% if f.impuesto %}
+      <label for="{{ f.impuesto.id_for_label }}">Impuesto (%)</label>
+      <div class="form-field">
+        {% if readonly %}
+          <input type="text"
+                value="{{ impuesto_porcentaje|default:venta.impuesto_porcentaje|floatformat:2 }} %"
+                class="form-control" disabled>
+        {% else %}
+          {{ f.impuesto }}
+          {% for error in f.impuesto.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    {% endif %}
+  {% endwith %}
+</div>
+
+
   {# Totales se calculan; no se editan aquí. Si en tu form vienen como read-only, puedes mostrarlos: #}
   {# 
   <div class="col-3" style="grid-column: span 3;">

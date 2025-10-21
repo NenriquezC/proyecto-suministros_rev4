@@ -14,7 +14,7 @@
             target="_blank" rel="noopener"
             >+ Nuevo proveedor</a>
             <div>
-            <small class="text-muted ms- d-inline-block">Ingresar Nuevo Poveedor si no existe.</small>
+            <small class="text-muted ms- d-inline-block">Si proveedor no existe ingrese aquí.</small>
             </div>
         </div>
 
@@ -28,7 +28,7 @@
     {# ----------------------------------------------- Proveedor -----------------------------------------------------------  #}
         {% if form.proveedor %}
             <label for="{{ form.proveedor.id_for_label }}" class="form-label-left">
-                Proveedor <span class="req">*</span>
+                Proveedor <span class="req"></span>
             </label>
     <div class="form-field">
         {{ form.proveedor }}
@@ -59,7 +59,7 @@
     {# -------------------------------------- Descuento porcentaje *  --------------------------------------------------------#}
     {% if form.descuento_porcentaje %}
         <label for="{{ form.descuento_porcentaje.id_for_label }}" class="form-label-left">
-        Descuento porcentaje <span class="req">*</span>
+        Descuento (%)<span class="req"></span>
         </label>
         <div class="form-field">
         {{ form.descuento_porcentaje }}
@@ -85,7 +85,7 @@
 
     {# ------------------------------------------ Impuesto total  ----------------------------------------------------------------#}
     {% if form.impuesto_total %}
-        <label for="{{ form.impuesto_total.id_for_label }}" class="form-label-left">Impuesto total</label>
+        <label for="{{ form.impuesto_total.id_for_label }}" class="form-label-left">Impuesto total (%)</label>
         <div class="form-field">
         {{ form.impuesto_total }}
         {% for error in form.impuesto_total.errors %}

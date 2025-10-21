@@ -32,7 +32,7 @@
     <p class="page-subtitle">Visualización del proveedor (solo lectura)</p>
   </div>
 
- {# Mensajes justo debajo del título #}
+{# Mensajes justo debajo del título #}
   {% if messages %}
     <div class="mb-3" style="max-width: 980px; margin: 0 auto;">
       {% for message in messages %}
@@ -54,26 +54,38 @@
   {# Deja los mensajes SOLO en base.html si no quieres duplicados #}
 
   <div class="card mb-3">
-    <div class="card-header card-header--flex">
-      <h2 class="card-title">Datos del proveedor</h2>
+    <div class="card-header card-header--flex" style="background:#3a5068;color:#fff;">
+      <h2 class="card-title" style="color:#fff;">Datos del proveedor</h2>
     </div>
 
     <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-striped align-middle">
-          <tbody>
-            <tr><th class="w-25">Nombre</th>     <td class="text-break">{{ proveedor.nombre }}</td></tr>
-            {% if proveedor.email %}<tr><th>Email</th><td class="text-break">{{ proveedor.email }}</td></tr>{% endif %}
-            {% if proveedor.telefono %}<tr><th>Teléfono</th><td class="text-break">{{ proveedor.telefono }}</td></tr>{% endif %}
-            {% if proveedor.direccion %}<tr><th>Dirección</th><td class="text-break">{{ proveedor.direccion }}</td></tr>{% endif %}
-            {% if proveedor.rut %}<tr><th>RUT</th><td class="text-break">{{ proveedor.rut }}</td></tr>{% endif %}
-            {% if proveedor.creado_en %}<tr><th>Creado en</th><td>{{ proveedor.creado_en }}</td></tr>{% endif %}
-          </tbody>
-        </table>
-      </div>
+      <form onsubmit="return false">
+        <fieldset disabled>
+          <div class="form-rows-2col" style="display:grid;grid-template-columns:240px 1fr;column-gap:16px;row-gap:12px;align-items:center;">
+            <label class="form-label-left">Nombre</label>
+            <div class="form-field">{{ form.nombre }}</div>
 
-      {# Si necesitas un bloque de "totales" u otra info, ponlo aquí (paridad visual) #}
-      {# <div class="d-flex justify-content-center mt-3"> ... </div> #}
+            <label class="form-label-left">Email</label>
+            <div class="form-field">{{ form.email }}</div>
+
+            <label class="form-label-left">Teléfono</label>
+            <div class="form-field">{{ form.telefono }}</div>
+
+            {% if form.direccion %}
+              <label class="form-label-left">Dirección</label>
+              <div class="form-field">{{ form.direccion }}</div>
+            {% endif %}
+
+            <label class="form-label-left">Tipo de proveedor</label>
+            <div class="form-field">{{ form.tipo_proveedor }}</div>
+
+            {% if form.rut %}
+              <label class="form-label-left">RUT</label>
+              <div class="form-field">{{ form.rut }}</div>
+            {% endif %}
+          </div>
+        </fieldset>
+      </form>
 
       <div class="mt-3">
         {% include "inventario/proveedores/editar_proveedor/_partials/_editar_proveedor_acciones.html" with proveedor=proveedor readonly=True %}
@@ -127,7 +139,7 @@
 
       <div class="card-body">
         <div class="table-responsive">
-          <table class="table table-striped align-middle">
+          <table class="table table-borderless align-middle">
             <tbody>
               <tr><th class="w-25">Nombre</th>     <td class="text-end">{{ form.nombre }}</td></tr>
               <tr><th>Email</th>                   <td class="text-end">{{ form.email }}</td></tr>

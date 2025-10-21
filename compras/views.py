@@ -34,30 +34,13 @@ from inventario.models import Proveedor
 from django.db.models import ProtectedError
 from django.db import IntegrityError
 
-
+from decimal import Decimal
 # ─────────────────────────────────────────────────────────────────────────────
 # CREAR
 # ─────────────────────────────────────────────────────────────────────────────
-@login_required 
-@transaction.atomic 
+@login_required
+@transaction.atomic
 def crear_compra(request):
-
-    """
-    Crea una Compra y sus líneas (formset).
-
-    POST:
-    - Normaliza entrada (p. ej. descuento_total vacío → "0")
-    - Valida cabecera (CompraForm) y líneas (CompraProductoFormSet)
-    - Si ok: guarda, ajusta stock y recalcula totales en `services`
-    - Mensaje de éxito y redirect a detalle
-
-    GET:
-    - Renderiza formulario vacío (1 formset según configuración)
-
-    Seguridad/Consistencia:
-    - Transacción atómica para no dejar cabeceras huérfanas ni stock inconsistente.
-    """
-
     FORMS_PREFIX = "lineas"
 
     if request.method == "POST":
@@ -68,8 +51,6 @@ def crear_compra(request):
         form = CompraForm(data)
         if form.is_valid():
             compra = form.save(commit=False)
-
-            # usuario es NOT NULL → set explícito antes del save
             compra.usuario_id = request.user.pk
             compra.save()
 
@@ -77,20 +58,21 @@ def crear_compra(request):
             if formset.is_valid():
                 formset.save()
 
-                # ⬇️⬇️⬇️ ESTA LÍNEA ES LA CLAVE ⬇️⬇️⬇️
+                # Stock tras crear (una sola vez)
                 services.aplicar_stock_despues_de_crear_compra(compra)
-                # ⬆️⬆️⬆️ --------------------------- ⬆️⬆️⬆️
 
-
-
-                # DEBUG: cuántas líneas quedaron realmente
-                print("DEBUG >>> líneas guardadas:", compra.lineas.count())
-                print("DEBUG >>> detalle:", list(compra.lineas.values_list("producto_id","cantidad","precio_unitario")))
-
+                # Tomar el porcentaje escrito en el form y convertirlo a tasa (23 -> 0.23)
+                raw = form.cleaned_data.get("impuesto_total")
+                tasa = None
                 try:
-                    services.calcular_y_guardar_totales_compra(compra)
+                    val = Decimal(str(raw))
+                    if val <= 100:
+                        tasa = (val / Decimal("100"))
                 except Exception:
-                    pass
+                    tasa = None
+
+                # Recalcular y persistir totales (impuesto sobre base = subtotal - descuento)
+                services.calcular_y_guardar_totales_compra(compra, tasa_impuesto_pct=tasa)
 
                 messages.success(request, "Compra creada correctamente.")
                 return redirect("compras:detalle", pk=compra.pk)
@@ -114,23 +96,6 @@ def crear_compra(request):
 # ─────────────────────────────────────────────────────────────────────────────
 @transaction.atomic
 def editar_compra(request, pk):
-    """
-    Edita una Compra existente (cabecera + líneas).
-
-    Flujo:
-    - Captura estado previo de líneas para reconciliar stock luego de guardar
-    - Valida cabecera y formset
-    - Guarda cambios
-    - Reconciliar stock (deltas) y recalcular totales
-    - Éxito → redirect a detalle
-
-    Seguridad:
-    - Transacción atómica para garantizar consistencia.
-
-    Observación:
-    - Los except amplios se silencian; en producción usar logging y/o feedback controlado.
-    """
-
     compra = get_object_or_404(Compra, pk=pk)
     estado_previo_lineas = {l.pk: (l.producto_id, l.cantidad) for l in compra.lineas.all()}
 
@@ -143,22 +108,32 @@ def editar_compra(request, pk):
         formset = CompraProductoFormSet(data, instance=compra, prefix="lineas")
 
         if form.is_valid() and formset.is_valid():
-            form.save()
+            form.save()        # deja impuesto_total=0.00; fecha normalizada
             formset.save()
 
+            # Stock: reconciliar diferencias
             try:
                 services.reconciliar_stock_tras_editar_compra(compra, estado_previo_lineas)
             except Exception:
                 pass
+
+            # Leer el % desde el form y convertir a tasa
+            raw = form.cleaned_data.get("impuesto_total")
+            tasa = None
             try:
-                services.calcular_y_guardar_totales_compra(compra, tasa_impuesto_pct=None)
+                val = Decimal(str(raw))
+                if val <= 100:
+                    tasa = (val / Decimal("100"))
             except Exception:
-                pass
+                tasa = None
+
+            # Recalcular y persistir totales
+            services.calcular_y_guardar_totales_compra(compra, tasa_impuesto_pct=tasa)
 
             messages.success(request, "Compra actualizada correctamente.")
             return redirect("compras:detalle", pk=compra.pk)
 
-        # DEBUG por si algo persiste
+        # Debug opcional
         print("EDIT DEBUG form.errors:", form.errors)
         print("EDIT DEBUG formset non-form:", formset.non_form_errors())
         print("EDIT DEBUG formset per-form:", [f.errors for f in formset.forms])
@@ -172,13 +147,6 @@ def editar_compra(request, pk):
         "compras/editar_compra/editar_compra.html",
         {"compra": compra, "form": form, "formset": formset, "readonly": False},
     )
-    # NUEVA plantilla en carpeta editar_compra/ (usa 'form' y 'formset')
-    #return render(
-    #    request,
-    #    "compras/editar_compra/editar_compra.html",
-    #    {"form": form, "formset": formset, "compra": compra},
-    #)
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # LISTAR / GESTIÓN
