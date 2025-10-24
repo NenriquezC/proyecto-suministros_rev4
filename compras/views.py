@@ -1,4 +1,5 @@
 # compras/views.py
+# compras/views.py
 """
 Vistas de la app 'compras'.
 
@@ -41,6 +42,28 @@ from decimal import Decimal
 @login_required
 @transaction.atomic
 def crear_compra(request):
+    """
+    Crea una compra con sus líneas, en una única transacción.
+
+    Flujo:
+        1) Normaliza POST (descuento_total vacío → "0").
+        2) Valida y guarda cabecera (CompraForm) con usuario actual.
+        3) Valida y guarda líneas (CompraProductoFormSet).
+        4) Ajusta stock por cada línea recién creada.
+        5) Lee el % de impuesto desde el form, lo convierte a tasa (0.23) y
+        recalcula totales en `services.calcular_y_guardar_totales_compra`.
+        6) Mensaje de éxito y redirección al detalle (readonly).
+
+    GET:
+        - Devuelve el form vacío y un formset con `prefix="lineas"`.
+
+    Render:
+        templates/compras/agregar_compra/agregar_compra.html
+
+    Notas:
+        - Mantiene `prefix` explícito para evitar choques de nombres en formsets.
+        - El impuesto se interpreta como porcentaje de UI; el monto se calcula en services.
+    """
     FORMS_PREFIX = "lineas"
 
     if request.method == "POST":
@@ -96,6 +119,26 @@ def crear_compra(request):
 # ─────────────────────────────────────────────────────────────────────────────
 @transaction.atomic
 def editar_compra(request, pk):
+    """
+    Edita cabecera y líneas de una compra existente, reconciliando el stock.
+
+    Flujo:
+        1) Snapshot previo de líneas: {pk_linea: (producto_id, cantidad)}.
+        2) POST:
+            - Normaliza descuento_total.
+            - Valida y guarda cabecera + formset.
+            - Reconciliación de stock (sumas/restas según cambios).
+            - Convierte % de impuesto a tasa y recalcula totales.
+            - Mensaje de éxito y redirección a detalle.
+        3) GET: muestra formulario con instancia.
+
+    Render:
+        templates/compras/editar_compra/editar_compra.html
+
+    Notas:
+        - Cualquier excepción en reconciliación se deja pasar (capturada y silenciada)
+        para no bloquear la edición; el helper ya hace rollback si hay negativo.
+    """
     compra = get_object_or_404(Compra, pk=pk)
     estado_previo_lineas = {l.pk: (l.producto_id, l.cantidad) for l in compra.lineas.all()}
 
@@ -156,14 +199,21 @@ def ver_compras(request):
     Lista paginada de compras con filtros básicos.
 
     GET params:
-    - q:        texto libre (id icontains o proveedor.nombre icontains)
-    - desde:    fecha mínima (YYYY-MM-DD)
-    - hasta:    fecha máxima (YYYY-MM-DD)
-    - proveedor: id de proveedor
+        q:        texto libre (id icontains o proveedor.nombre icontains)
+        desde:    fecha mínima (YYYY-MM-DD)
+        hasta:    fecha máxima (YYYY-MM-DD)
+        proveedor: id de proveedor
 
     Optimización:
-    - select_related("proveedor") evita N+1 en la tabla.
-    - Orden por fecha DESC e id DESC para estabilidad en resultados recientes.
+        - select_related("proveedor") evita N+1 en la tabla.
+        - Orden por fecha DESC e id DESC para estabilidad en resultados recientes.
+
+    Render:
+        templates/compras/lista_compra/lista.html
+
+    Contexto:
+        compras, pagina_actual, hay_paginacion, lista_proveedores,
+        texto_busqueda, fecha_desde, fecha_hasta, proveedor_id_seleccionado
     """
     compras_queryset = Compra.objects.select_related("proveedor").order_by("-fecha", "-id")
 
@@ -213,8 +263,14 @@ def ver_compra(request, pk):
     """
     Modo solo-lectura reutilizando la plantilla de edición.
 
-    - Deshabilita todos los campos del form y del formset.
-    - Bandera `readonly=True` para que la plantilla oculte botones/JS de edición.
+    Qué hace:
+        - Carga la compra (404 si no existe).
+        - Construye CompraForm y formset de líneas con instance=compra.
+        - Deshabilita todos los campos (form + formset).
+        - Señaliza `readonly=True` para que la plantilla oculte acciones/JS de edición.
+
+    Render:
+        templates/compras/editar_compra/editar_compra.html
     """
     # NADA de POST acá: esta vista es solo lectura
     compra = get_object_or_404(Compra.objects.select_related("proveedor"), pk=pk)
@@ -239,14 +295,15 @@ def ver_compra(request, pk):
 # ─────────────────────────────────────────────────────────────────────────────
 # DETALLE (SOLO LECTURA, MISMA PLANTILLA)
 # ─────────────────────────────────────────────────────────────────────────────
-#ESTE ES EL DETALLE COMPRA QUE ESTABA ANTES DEL READONLY PARA EL CODIGO DEL OJO(VER)
-#def detalle_compra(request, pk):
-#    compra = get_object_or_404(Compra.objects.select_related("proveedor"), pk=pk)
-#    return render(request, "compras/detalle.html", {"compra": compra})
+
 def detalle_compra(request, pk): #recibe request y la clave primario PK de la compra que quiero mostrar
     """
     Detalle de compra en solo-lectura.
+
     Alias semántico de `ver_compra`, conservado por compatibilidad de URLs.
+
+    Render:
+        templates/compras/editar_compra/editar_compra.html
     """
     #Busca la instancia de Compra con esa pk.
     #Si no existe, lanza 404 automáticamente (no hay que escribir try/except).
@@ -290,13 +347,15 @@ def eliminar_compra(request, pk):
     """
     Elimina una compra previa confirmación.
 
-    POST:
-    - Borra la compra
-    - Envía mensaje de éxito
-    - Redirige al listado
-
     GET:
-    - Muestra plantilla de confirmación
+        - Muestra plantilla de confirmación (sin efectos).
+    POST:
+        - Intenta eliminar la compra.
+        - Muestra mensaje de éxito o error (si hay referencias protegidas).
+        - Redirige al listado.
+
+    Render:
+        templates/compras/eliminar_confirm.html
     """
     compra = get_object_or_404(Compra, pk=pk)
     if request.method == "POST":

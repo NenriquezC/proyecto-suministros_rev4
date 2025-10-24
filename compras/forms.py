@@ -2,15 +2,30 @@
 """
 Formularios de la app 'compras'.
 
-Responsabilidades:
-- CompraForm: formulario de cabecera (proveedor, fecha, descuentos, impuestos).
-- CompraProductoForm: formulario de línea (producto, cantidad, precio_unitario).
-- CompraProductoFormSet: formset inline para gestionar N líneas por compra.
+Propósito:
+    Definir los formularios y formsets necesarios para crear/editar una Compra y
+    sus líneas (CompraProducto), manteniendo las validaciones de UI y delegando
+    la lógica de negocio pesada (cálculos/stock) a models/services.
 
-Diseño:
-- Validaciones ligeras y explícitas en el form (p. ej., no negatividad por campo).
-- Lógica de negocio pesada (cálculo de totales/stock) vive en services/modelos.
-- Widgets acordes a la UI (datetime-local) y mensajes de error personalizables.
+Responsabilidades:
+    - CompraForm: cabecera de la compra (proveedor, fecha, descuentos, impuesto % en UI).
+    - CompraProductoForm: línea de detalle (producto, cantidad, precio_unitario).
+    - CompraProductoFormSet: conjunto inline para N líneas asociado a una Compra.
+
+Dependencias/Assume:
+    - Los modelos Compra y CompraProducto están definidos y con validadores básicos.
+    - El cálculo de totales/impuestos/stock se realizará en services/models (no aquí).
+    - La UI espera que `impuesto_total` se interprete como PORCENTAJE al editar/crear.
+
+Diseño/UX:
+    - Widgets acordes (fecha con <input type="date">).
+    - Errores de validación con mensajes claros y orientados a la acción.
+    - Se muestra el impuesto como % para edición (derivado de montos guardados).
+
+Notas:
+    - Este módulo no persiste el valor de impuesto como dinero en save(); lo fija a 0
+    porque el cálculo real se hace aguas abajo (services). Así se evita doble cómputo.
+    - Se preserva el comportamiento existente. Solo se agregan docstrings y comentarios.
 """
 from decimal import Decimal, ROUND_HALF_UP
 from decimal import Decimal
@@ -27,10 +42,22 @@ class CompraForm(forms.ModelForm):
     """
     Form de cabecera para 'Compra'.
 
-    - Campo 'fecha' se maneja como <input type="date">.
-    - Campo 'impuesto_total' en la UI se usa como PORCENTAJE (ej. 23),
-      pero NO se guarda directamente; el monto final lo calcula services.
-    - En edición, se muestra el PORCENTAJE calculado desde los importes guardados.
+    Qué hace:
+        - Provee campos de cabecera: proveedor, fecha (date), descuento %, descuento €,
+        e "impuesto_total" entendido como PORCENTAJE en la UI.
+        - En edición (no bound), precarga:
+            * fecha = instance.fecha.date()
+            * impuesto_total (%) derivado de los montos guardados (imp/(subtotal-descuento)*100)
+
+    Por qué así:
+        - La fecha se trata como `date` para UX más limpia y luego se convierte a
+        datetime aware (00:00) en save(), respetando la TZ del proyecto.
+        - El impuesto como % en UI evita confusión al editar (los montos reales
+            os recalcula la capa de negocio).
+
+    Notas:
+        - No persiste el valor de 'impuesto_total' (porcentaje) como dinero al guardar:
+        se fija a Decimal('0.00') intencionalmente (services hará el cálculo real).
     """
 
     fecha = forms.DateField(
@@ -46,6 +73,16 @@ class CompraForm(forms.ModelForm):
         # Nota: 'impuesto_total' se usa como % en la UI.
 
     def __init__(self, *args, **kwargs):
+        """
+        Inicializa el form.
+
+        Comportamiento:
+            - Si el form NO está "bound" (GET / edición), precarga la fecha con instance.fecha.date().
+            - Si existe instance con montos, computa un porcentaje de impuesto visual (2 decimales)
+            a partir de subtotal, descuento_total e impuesto_total almacenados.
+
+        No cambia estado persistente; solo prepara valores iniciales para la UI.
+        """
         super().__init__(*args, **kwargs)
 
         # En EDITAR (no bound): precargar fecha y porcentaje de impuesto
@@ -77,9 +114,15 @@ class CompraForm(forms.ModelForm):
 
     def save(self, commit=True):
         """
-        - Convierte date -> datetime 00:00 con tz.
-        - **No** guarda el valor ingresado en 'impuesto_total' (porcentaje);
-        lo pone a 0.00 porque el cálculo real lo hará 'services'.
+        Guarda la instancia sin romper la responsabilidad de cálculo en services.
+
+        Flujo:
+            1) Convierte la 'fecha' (date) a datetime aware 00:00 en TZ actual.
+            2) Fuerza `impuesto_total = Decimal('0.00')` porque el monto real lo calculará services.
+            3) Persiste si commit=True y ejecuta save_m2m().
+
+        Returns:
+            Compra: instancia persistida (o sin persistir si commit=False).
         """
         instance = super().save(commit=False)
 
@@ -112,11 +155,13 @@ class CompraProductoForm(forms.ModelForm):
     """
     Form de línea para 'CompraProducto'.
 
-    Validaciones:
+    Qué valida:
         - cantidad > 0
         - precio_unitario ≥ 0
 
-    Mensajes de error personalizados para mejorar feedback en UI.
+    Por qué así:
+        - Reforzamos con mensajes claros lo que ya suelen cubrir validadores del modelo,
+        dando feedback inmediato en la interfaz.
     """
     class Meta:
         model = CompraProducto
@@ -125,7 +170,13 @@ class CompraProductoForm(forms.ModelForm):
     # Validaciones por campo (claras y suficientes)
     def clean_cantidad(self):
         """
-        cantidad debe ser > 0 (refuerza el validator del modelo con mensaje claro).
+        Valida que 'cantidad' sea > 0.
+
+        Returns:
+            Decimal|int: cantidad válida (> 0).
+
+        Raises:
+            forms.ValidationError: si cantidad es None o <= 0.
         """
         cantidad = self.cleaned_data.get('cantidad')
         if cantidad is None or cantidad <= 0:
@@ -134,7 +185,13 @@ class CompraProductoForm(forms.ModelForm):
 
     def clean_precio_unitario(self):
         """
-        precio_unitario debe ser ≥ 0 (refuerza el validator del modelo con mensaje claro).
+        Valida que 'precio_unitario' sea ≥ 0.
+
+        Returns:
+            Decimal: precio_unitario válido (≥ 0).
+
+        Raises:
+            forms.ValidationError: si es None o negativo.
         """
         pu = self.cleaned_data.get('precio_unitario')
         if pu is None or pu < Decimal('0'):

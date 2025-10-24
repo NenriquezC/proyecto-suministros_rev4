@@ -1,15 +1,20 @@
 """
 Modelos de Inventario: Categoria, Proveedor y Producto.
 
-Responsabilidades:
-- Definir entidades base para compras/ventas.
-- Incluir validaciones a nivel de BD (CHECK CONSTRAINTS) y reglas de negocio simples.
-- Ofrecer propiedades derivadas útiles (p. ej., `precio_venta`).
+Propósito:
+    Definir entidades base de inventario usadas por compras/ventas y exponer
+    propiedades derivadas útiles (p. ej., `precio_venta`).
 
-Diseño:
-- Campos mínimos y relaciones PROTECT para evitar borrados cascada peligrosos.
-- Índices en FK para consultas frecuentes.
-- `__str__` legible para admin y selects.
+Responsabilidades:
+    - Categoria: clasificación simple para productos.
+    - Proveedor: datos del proveedor (contacto, tipo).
+    - Producto: datos operativos (precio, stock, mínimos, relaciones).
+
+Diseño/Notas:
+    - Relaciones con on_delete=PROTECT para evitar borrados cascada peligrosos.
+    - Índices en FKs (categoria, proveedor) para acelerar consultas.
+    - Validaciones a nivel BD (CHECK CONSTRAINTS) para impedir estados inválidos.
+    - `__str__` legible para admin y selects.
 """
 
 from decimal import Decimal
@@ -26,10 +31,10 @@ class Categoria(models.Model):
     Categoría de producto (clasificación simple).
 
     Campos:
-    - nombre (str, único): nombre visible de la categoría.
+        nombre (str, único): nombre visible de la categoría.
 
     Meta:
-    - ordering por nombre para listados alfabéticos.
+        - ordering por nombre para listados alfabéticos.
     """
     nombre = models.CharField(max_length=100, unique=True)
 
@@ -86,32 +91,30 @@ class Producto(models.Model):
     Producto del inventario.
 
     Campos principales:
-    - nombre, descripcion (opc)
-    - precio_compra (>= 0)
-    - stock (entero, >= 0)
-    - stock_minimo (entero, opcional, >= 0)
-    - proveedor (FK, PROTECT), categoria (FK, PROTECT)
-    - ganancia (0..100, %)
-    - creado_en (auto_now_add)
+        - nombre, descripcion (opc)
+        - precio_compra (Decimal, ≥ 0)
+        - stock (entero, ≥ 0)
+        - stock_minimo (entero, opcional, ≥ 0)
+        - proveedor (FK, PROTECT), categoria (FK, PROTECT)
+        - ganancia (0..100, %)
+        - creado_en (auto_now_add)
 
     Índices:
-    - categoria, proveedor
+        - categoria, proveedor
 
     Constraints (BD):
-    - precio_compra_gte_0:
-        Exige precio_compra ≥ 0.
-    - producto_stock_gte_0:
-        Exige stock ≥ 0.
-    - producto_stock_minimo_gte_0_or_null:
-        Exige stock_minimo ≥ 0 o NULL.
-    - producto_stock_minimo_lte_stock_or_null:
-        Exige stock_minimo ≤ stock o NULL.
+        - precio_compra_gte_0:             exige precio_compra ≥ 0.
+        - producto_stock_gte_0:            exige stock ≥ 0.
+        - producto_stock_minimo_gte_0_or_null:
+            exige stock_minimo ≥ 0 o NULL.
+        - producto_stock_minimo_lte_stock_or_null:
+            exige stock_minimo ≤ stock o NULL.
 
     Reglas de guardado:
-      - Si se crea sin stock_minimo, se fija a floor(0.9 * stock).
+        - Al crear y si no se especifica stock_minimo, fijarlo a floor(0.9 * stock).
 
     Propiedades:
-      - precio_venta: precio_compra * (1 + ganancia/100), redondeado a 2 decimales.
+        - precio_venta: precio_compra * (1 + ganancia/100), con 2 decimales.
     """
     nombre = models.CharField(max_length=150)
     descripcion = models.TextField(blank=True)
@@ -130,6 +133,12 @@ class Producto(models.Model):
     creado_en = models.DateTimeField(auto_now_add=True)
     #---------------------------------------------------------------------------------------------------------------------------------------------
     class Meta:
+        """
+        Metadatos de la tabla:
+            - ordering por nombre para listados alfabéticos.
+            - índices en categoria y proveedor (FKs).
+            - constraints de integridad a nivel BD (CHECK).
+        """
         ordering = ['nombre']
         indexes = [
             models.Index(fields=['categoria']),
@@ -171,19 +180,29 @@ class Producto(models.Model):
     #---------------------------------------------------------------------------------------------------------------------------------------------
     def save(self, *args, **kwargs):
         """
-    Al crear el producto, si no se especifica stock_minimo,
-    fijarlo como floor(0.9 * stock).
-    """
-        if not self.pk and self.stock is not None and self.stock_minimo is None:
+        Al crear el producto, si no se especifica `stock_minimo`, fijarlo como floor(0.9 * stock).
+
+        Notas:
+            - Se usa aritmética entera (`int(stock * 9) // 10`) para emular floor(0.9 * stock).
+            - No se modifica el comportamiento existente; solo se documenta.
+        """
+        if self.stock is not None:
             # floor(0.9 * stock) con aritmética entera
             self.stock_minimo = int(self.stock * 9) // 10 # = floor(0.9 * stock)
         super().save(*args, **kwargs) #Llama a super().save(*args, **kwargs) para ejecutar el método save original de Django y guardar el objeto en la base de datos.
     #---------------------------------------------------------------------------------------------------------------------------------------------
     @property
     def precio_venta(self):
+        """
+        Precio de venta sugerido (2 decimales).
+
+        Fórmula:
+            precio_compra * (1 + ganancia/100)
+        """
         # precio_compra * (1 + ganancia/100)
         return (self.precio_compra * (Decimal('1') + (self.ganancia / Decimal('100')))).quantize(Decimal('0.01'))
 
     def __str__(self):
+        """Representación legible del producto."""
         return self.nombre
 #============================================================================================================================================

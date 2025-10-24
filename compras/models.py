@@ -2,15 +2,31 @@
 """
 Modelos de la app 'compras'.
 
-Responsabilidades:
-- Representar la cabecera de una compra (Compra) y sus líneas (CompraProducto).
-- Mantener restricciones de dominio a nivel de modelo/DB (validadores y constraints).
-- Calcular total_linea en cada línea al guardar (persistencia de denormalizado útil).
+Propósito:
+    Representar la cabecera de una compra (Compra) y sus líneas (CompraProducto),
+    reforzando reglas de dominio a nivel de modelo y base de datos (validadores,
+    constraints e índices) y conservando un denormalizado útil (total_linea).
 
-Diseño:
-- FK protegida a Proveedor y Usuario (no se pueden borrar si hay compras).
-- Campos monetarios con Decimal y validadores >= 0 (consistencia de datos).
-- Índices en campos de filtro frecuente (fecha, proveedor, usuario, compra, producto).
+Responsabilidades:
+    - Compra: datos de cabecera (proveedor, usuario, fecha y totales).
+    - CompraProducto: líneas de detalle con cantidad, precio y total_linea.
+    - Persistencia de reglas mínimas: no negativos, porcentajes 0..100, etc.
+    - Índices en campos de consulta frecuente.
+
+Dependencias/Assume:
+    - inventario.Proveedor y inventario.Producto existen y están íntegros.
+    - El cálculo de subtotal/impuestos/total se realiza en services/modelos
+    (fuente de la verdad), no en estos modelos.
+    - Django usa Decimal para importes monetarios.
+
+Diseño/UX/Datos:
+    - on_delete=PROTECT en proveedor/usuario: evita borrar maestros con compras.
+    - Campos monetarios como Decimal (max_digits=12, decimal_places=2).
+    - Índices en fecha/proveedor/usuario/compra/producto para acelerar listados.
+    - total_linea se guarda (denormalizado) para ordenar/filtrar rápido.
+
+Notas:
+    - No se cambia comportamiento ni nombres. Solo documentación y comentarios.
 """
 from decimal import Decimal
 from django.db import models
@@ -28,20 +44,23 @@ class Compra(models.Model):
     Cabecera de una compra.
 
     Campos:
-        proveedor            FK → inventario.Proveedor (PROTECT)
-        usuario              FK → auth.User (o custom), registra quién creó la compra
-        fecha                Fecha/hora de la compra (default=timezone.now)
-        subtotal             Suma de líneas (≥ 0)
-        descuento_porcentaje Porcentaje 0..100 (entero pequeño)
-        impuesto_total       Monto total de impuestos (≥ 0)
-        descuento_total      Monto de descuentos (≥ 0)
-        total                Total final (≥ 0)
-        creado_en            Timestamp de creación (auto)
-        actualizado_en       Timestamp de actualización (auto)
+        proveedor (FK, PROTECT): no permite borrar proveedor con compras asociadas.
+        usuario   (FK, PROTECT): quién registró la compra; evita borrado si hay trazas.
+        fecha     (DateTime): cuándo ocurrió la compra (default=timezone.now).
+        subtotal  (Decimal ≥ 0): suma de líneas antes de descuentos/impuestos.
+        descuento_porcentaje (0..100): porcentaje global aplicado a la base.
+        impuesto_total (Decimal ≥ 0): monto de impuestos (no el %).
+        descuento_total (Decimal ≥ 0): monto total descontado en dinero.
+        total     (Decimal ≥ 0): importe final (base - descuento + impuesto).
+        creado_en / actualizado_en: auditoría temporal.
+
+    Invariantes:
+        - Todos los importes monetarios son no negativos.
+        - descuento_porcentaje ∈ [0, 100].
 
     Notas:
-        - Los cálculos de subtotal/impuesto/total se hacen en services (fuente de verdad).
-        - Aquí reforzamos límites mínimos para que la BD nunca reciba valores negativos.
+        - El cálculo de la aritmética (subtotal, descuento_total, impuesto_total y total)
+        se delega a services/modelos, para mantener una única fuente de verdad.
     """
 
     proveedor = models.ForeignKey('inventario.Proveedor', on_delete=models.PROTECT, related_name='compras')
@@ -59,8 +78,8 @@ class Compra(models.Model):
     class Meta: 
         """
         Metadatos de la tabla:
-        - ordering: resultados recientes primero (fecha DESC, id DESC).
-        - indexes: aceleran búsquedas por fecha, proveedor y usuario.
+            - ordering: resultados recientes primero (fecha DESC, id DESC).
+            - indexes: aceleran búsquedas por fecha, proveedor y usuario.
         """
         ordering = ['-fecha', '-id']
         indexes = [
@@ -70,6 +89,7 @@ class Compra(models.Model):
         ]
 
     def __str__(self):
+        """Representación legible: 'Compra <id> - <proveedor>'."""
         return f"Compra {self.id} - {self.proveedor.nombre}"
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -80,17 +100,26 @@ class CompraProducto(models.Model):
     Línea de una compra (detalle por producto).
 
     Campos:
-        compra          FK → Compra (CASCADE)
-        producto        FK → inventario.Producto (PROTECT)
-        cantidad        > 0 (entero positivo)
-        precio_unitario ≥ 0
-        total_linea     cantidad * precio_unitario (2 decimales, se recalcula en save)
-        creado_en       Timestamp de creación
+        compra          (FK, CASCADE): si se borra la compra, caen sus líneas.
+        producto        (FK, PROTECT): no se permite borrar productos con compras.
+        cantidad        (int > 0): unidades compradas.
+        precio_unitario (Decimal ≥ 0): precio por unidad en el momento de la compra.
+        total_linea     (Decimal ≥ 0): cantidad * precio_unitario (denormalizado).
+        creado_en       (auto): timestamp de creación de la línea.
+
+    Reglas/Constraints:
+        - cantidad > 0 (CheckConstraint DB) y validator de campo.
+        - precio_unitario ≥ 0 (CheckConstraint DB) y validator de campo.
+
+    Rendimiento:
+        - Índices en compra y producto para joins/listados frecuentes.
+        - Guardar total_linea acelera ordenamiento/filtrado y reportes.
 
     Notas:
-        - Se incluyen constraints DB para reforzar reglas (>0 y ≥0).
-        - total_linea se denormaliza para consultas/ordenaciones más rápidas.
+        - El redondeo a 2 decimales se mantiene al guardar, usando Decimal.quantize()
+        con el contexto por defecto de Decimal (sin alterar tu comportamiento actual).
     """
+
     compra = models.ForeignKey(Compra, on_delete=models.CASCADE, related_name='lineas')
     producto = models.ForeignKey('inventario.Producto', on_delete=models.PROTECT, related_name='compras')
     cantidad = models.PositiveIntegerField(validators=[MinValueValidator(1)])
@@ -103,10 +132,12 @@ class CompraProducto(models.Model):
     class Meta:
         """
         Metadatos de la tabla:
-        - ordering: orden natural por id ascendente.
-        - indexes: por compra y producto para listados/joins.
-        - constraints: reglas a nivel DB (cantidad > 0, precio_unitario ≥ 0).
-        - Ejemplo opcional (comentado) para evitar repetidos por compra+producto.
+            - ordering: orden natural por id ascendente (mantiene inserción).
+            - indexes: por compra y producto para listados/joins.
+            - constraints:
+                * cantidad > 0
+                * precio_unitario ≥ 0
+            - (Opcional) UniqueConstraint compra+producto si se quisiera evitar duplicados.
         """
         
         ordering = ['id']
@@ -124,10 +155,23 @@ class CompraProducto(models.Model):
         ]
         
     def save(self, *args, **kwargs):
+        """
+        Calcula y persiste total_linea como cantidad * precio_unitario (2 decimales).
+
+        Notas:
+            - Se mantiene el contexto/rounding por defecto de Decimal.quantize()
+            (no se cambia comportamiento). Si en el futuro necesitas un modo
+            de redondeo específico (p.ej., ROUND_HALF_UP), defínelo en services
+            para aplicar coherencia global.
+
+        Side-effects:
+            - Actualiza total_linea antes de guardar.
+        """
         self.total_linea = (self.cantidad * self.precio_unitario).quantize(Decimal('0.01'))
         super().save(*args, **kwargs)
 
 
 
     def __str__(self):
+        """Representación legible: '<producto> x <cantidad> en compra #<id>'."""
         return f"{self.producto.nombre} x {self.cantidad} en compra #{self.compra.id}"

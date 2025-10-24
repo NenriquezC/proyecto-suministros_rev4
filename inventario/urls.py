@@ -1,16 +1,23 @@
 """
 URLs del módulo Inventario.
 
+Propósito:
+    Exponer rutas legibles y con namespace propio para CRUD de Productos y
+    Proveedores, más un endpoint JSON para obtener el precio de un producto.
+
 Responsabilidades:
-- Exponer rutas para Productos y Proveedores (CRUD, ver/detalle).
-- Publicar endpoint JSON para precio de producto.
+    - Productos: listar, agregar, editar, eliminar, ver/detalle.
+    - Proveedores: listar, crear, editar, eliminar, ver.
+    - API JSON: `/api/producto/<pk>/precio/` (para auto-rellenar precios en UI).
 
-Diseño:
-- Namespace propio (`app_name = "inventario"`) para evitar colisiones.
-- Agrupar por recurso y usar paths legibles.
-- Mantener alias de compatibilidad donde aplica (detalle_producto → ver_producto).
+Diseño/Notas:
+    - `app_name = "inventario"` evita colisiones en {% url %}/reverse().
+    - Agrupación por recurso y alias semánticos para detalle (`detalle_producto` → `ver_producto`).
+    - Se mantienen todas las rutas existentes sin cambios.
+    - ATENCIÓN: hay dos rutas idénticas `proveedores/nuevo/` con vistas diferentes
+      (`agregar_proveedor` y `proveedor_crear`). Django usará la **segunda** que se
+    declare para `reverse()` con el mismo path; lo dejo documentado, sin alterar comportamiento.
 """
-
 from django.urls import path
 from . import views
 

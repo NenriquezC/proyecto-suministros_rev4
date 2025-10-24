@@ -311,10 +311,11 @@ def editar_producto(request, pk):
     prod = get_object_or_404(Producto, pk=pk)
     if request.method == "POST":
         data = request.POST.copy()
-        data["ganancia"] = "50"  # fijo 50%+        form = ProductoForm(data, instance=prod)
+        data["ganancia"] = "50"  # fijo 50%+        
+        form = ProductoForm(data, instance=prod)
         if form.is_valid():
             prod = form.save()
-            messages.success(request, f'Producto "{prod}" Editado exitosamente') #mensaje de edicion exitosa
+            messages.success(request, f'Producto Editado exitosamente') #mensaje de edicion exitosa
             return redirect("inventario:ver_producto", pk = prod.pk)
     else:
         form = ProductoForm(instance=prod)

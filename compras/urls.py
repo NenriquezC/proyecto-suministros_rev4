@@ -1,19 +1,30 @@
-
 # compras/urls.py
 """
 Rutas de la app 'compras'.
 
-Mapa URL → Vista → Template (resumen)
-- Listado: /compras/ver/                      → views.ver_compras → templates/compras/lista_compra/lista.html
-- Detalle (solo lectura): /compras/detalle/<pk>/       → views.detalle_compra → templates/compras/editar_compra/editar_compra.html
-- Ver (alias de detalle): /compras/ver/<pk>/           → views.ver_compra     → templates/compras/editar_compra/editar_compra.html
-- Editar: /compras/editar/<pk>/                        → views.editar_compra  → templates/compras/editar_compra/editar_compra.html
-- Eliminar: /compras/eliminar/<pk>/                    → views.eliminar_compra→ templates/compras/eliminar_confirm.html
-- Agregar (crear): /compras/agregar/                   → views.crear_compra   → templates/compras/agregar_compra/agregar_compra.html
+Propósito:
+    Mapear endpoints HTTP a vistas de la app, manteniendo nombres (name=...) estables
+    para el uso en {% url %} dentro de templates y para reverse() en Python.
 
-Nota:
-- Si quieres exponer también /compras/crear/ y /compras/<pk>/ver/ (mencionadas en documentación previa),
-puedes habilitarlas en la sección “Aliases opcionales” de abajo para mantener compatibilidad de URLs.
+Mapa URL → Vista → Template (resumen):
+    - Listado:                 /compras/ver/                 → views.ver_compras
+                            → templates/compras/lista_compra/lista.html
+    - Detalle (solo lectura):  /compras/detalle/<pk>/        → views.detalle_compra
+                            → templates/compras/editar_compra/editar_compra.html (readonly)
+    - Ver (alias semántico):   /compras/ver/<pk>/            → views.ver_compra
+                            → templates/compras/editar_compra/editar_compra.html (readonly)
+    - Editar:                  /compras/editar/<pk>/         → views.editar_compra
+                            → templates/compras/editar_compra/editar_compra.html
+    - Eliminar:                /compras/eliminar/<pk>/       → views.eliminar_compra
+                            → templates/compras/eliminar_confirm.html
+    - Agregar (crear):         /compras/agregar/             → views.crear_compra
+                            → templates/compras/agregar_compra/agregar_compra.html
+
+Convenciones/Notas:
+    - Mantener los `name=` estables evita romper `reverse()` y `{% url %}`.
+    - Reutilizamos la plantilla de edición para el modo readonly (detalle/ver) por consistencia visual.
+    - Los paths siguen el patrón español del proyecto (agregar/editar/ver/detalle/eliminar).
+    - Si necesitas compatibilidad con URLs antiguas, revisa la sección "Aliases opcionales" abajo.
 """
 
 from django.urls import path

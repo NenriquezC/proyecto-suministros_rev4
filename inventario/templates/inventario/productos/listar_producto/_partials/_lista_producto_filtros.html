@@ -15,14 +15,7 @@
         </select>
     </div>
 
-    <div class="col-md-3">
-        <select name="estado" class="form-select">
-        <option value="">Todos</option>
-        <option value="activos"   {% if estado_seleccionado == "activos" %}selected{% endif %}>Activos</option>
-        <option value="inactivos" {% if estado_seleccionado == "inactivos" %}selected{% endif %}>Inactivos</option>
-        <option value="reposicion" {% if estado_seleccionado == "reposicion" %}selected{% endif %}>Con reposición</option>
-        </select>
-    </div>
+    
 
     <div class="col-md-2 d-grid">
         <button class="btn-main" type="submit">Filtrar</button>

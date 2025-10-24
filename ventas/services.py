@@ -1,4 +1,25 @@
 # ventas/services.py
+"""
+Servicios (reglas de negocio) para la app 'ventas'.
+
+Propósito:
+    Centralizar la lógica crítica de VENTAS: cálculo de totales y ajustes de stock
+    (creación/edición), manteniendo views/forms como orquestadores finos.
+
+Responsabilidades:
+    - Cálculo y persistencia de subtotal, impuesto y total de una venta.
+    - Ajustes de stock tras crear/editar ventas (sumas/restas y reconciliaciones).
+    - Redondeo financiero consistente (HALF_UP).
+
+Diseño/Notas:
+    - Todas las operaciones con efectos en stock/valores están dentro de transacciones.
+    - Anti-negativos: nunca permitir stock < 0; política configurable para stock_mínimo.
+    - Fórmulas:
+        * subtotal := Σ cantidad * precio_unitario * (1 - descuento%/100) (por línea).
+        * impuesto := base * tasa (si se provee tasa).
+        * total    := subtotal - descuento_total + impuesto.
+    - Este módulo es la “fuente de verdad” para importes/stock en Ventas.
+"""
 from __future__ import annotations
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, Tuple
@@ -13,26 +34,47 @@ from inventario.models import Producto
 from django.db.models.functions import Least
 
 
-# ==== Utilidades ====
-
+# ─────────────────────────────────────────────────────────────────────────────
+# Utilidades
+# ─────────────────────────────────────────────────────────────────────────────
 def _round2(v: Decimal) -> Decimal:
+    """
+    Redondeo financiero a 2 decimales con HALF_UP.
+
+    Args:
+        v (Decimal): valor a redondear (permite None).
+
+    Returns:
+        Decimal: valor con exactamente 2 decimales.
+    """
     return Decimal(v or 0).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
-# ==== Helper: ajuste de stock seguro (atómico + anti-negativos) ====
+# ─────────────────────────────────────────────────────────────────────────────
+# Helper: ajuste de stock seguro (atómico + anti-negativos)
+# ─────────────────────────────────────────────────────────────────────────────
 
 ALLOW_SOFT_MINIMO_EN_VENTA = True  # política blanda en ventas
 
 def _aplicar_delta_stock_seguro(producto_id: int, delta_unidades):
     """
-    Ajusta el stock de forma atómica.
+    Aplica un delta al stock de Producto de forma SEGURA y transaccional.
 
     Reglas:
-    - Nunca permite stock negativo (bloquea).
-    - Si delta < 0 (venta) y el nuevo stock quedaría por debajo del stock_minimo:
-        * Con política BLANDA (ALLOW_SOFT_MINIMO_EN_VENTA=True): baja automáticamente
-        stock_minimo al nuevo stock en la MISMA UPDATE (LEAST) para no violar el CHECK.
-        * Con política DURA: lanza ValidationError.
+        - Nunca permite stock negativo (ValidationError).
+        - Si delta < 0 (venta) y el nuevo stock rompe el mínimo:
+            * Política BLANDA (ALLOW_SOFT_MINIMO_EN_VENTA=True):
+                - Ajusta stock y reduce stock_minimo en la MISMA UPDATE
+                con LEAST(stock_minimo, nuevo_stock) para no violar el CHECK.
+            * Política DURA (False):
+                - Lanza ValidationError si quedaría por debajo del mínimo.
+
+    Args:
+        producto_id (int): PK del producto a ajustar.
+        delta_unidades (int | Decimal): suma/resta a aplicar (0/None → no-op).
+
+    Raises:
+        ValidationError: si el producto no existe, o el stock resultante es inválido.
     """
     if not delta_unidades:
         return
@@ -72,13 +114,27 @@ def _aplicar_delta_stock_seguro(producto_id: int, delta_unidades):
         if filas == 0:
             raise ValidationError(f"No existe Producto id={producto_id}.")
 
-# ==== Totales de la venta ====
-
+# ─────────────────────────────────────────────────────────────────────────────
+# Totales de la venta
+# ─────────────────────────────────────────────────────────────────────────────
 @transaction.atomic
-def calcular_y_guardar_totales_venta(
-    venta: Venta,
-    tasa_impuesto_pct: Decimal | None = None
-) -> Venta:
+def calcular_y_guardar_totales_venta(venta: Venta, tasa_impuesto_pct: Decimal | None = None) -> Venta:
+    """
+    Calcula y persiste `subtotal`, `impuesto` y `total` de una venta.
+
+    Fórmulas:
+        - subtotal := Σ (cantidad * precio_unitario * (1 - descuento%/100)).
+        - impuesto := base * tasa, si `tasa_impuesto_pct` no es None.
+            * base := subtotal (en esta versión), pues el descuento por línea ya está aplicado.
+        - total := subtotal - descuento_total + impuesto.
+
+    Args:
+        venta (Venta): instancia existente con sus líneas.
+        tasa_impuesto_pct (Decimal | None): tasa fraccional (0.23 para 23%), o None para preservar impuesto.
+
+    Returns:
+        Venta: instancia con campos actualizados y guardados.
+    """
     total_linea_expr = ExpressionWrapper(
         F("cantidad") * F("precio_unitario") * (1 - (F("descuento") / 100.0)),
         output_field=DecimalField(max_digits=16, decimal_places=6),
@@ -99,28 +155,46 @@ def calcular_y_guardar_totales_venta(
     return venta
 
 
-# ==== Stock en creación de venta (no depende de related_name) ====
-
+# ─────────────────────────────────────────────────────────────────────────────
+# Stock en creación de venta (no depende de related_name)
+# ─────────────────────────────────────────────────────────────────────────────
 @transaction.atomic
 def aplicar_stock_despues_de_crear_venta(venta: Venta) -> None:
     """
-    Resta del stock la cantidad de cada línea de venta.
+    Ajusta stock tras crear una venta.
+
+    Efectos:
+        - Por cada línea: resta `cantidad` al stock del producto asociado.
+
+    Args:
+        venta (Venta): venta recién creada (líneas ya persistidas).
     """
     for linea in VentaProducto.objects.select_related("producto").filter(venta=venta).order_by("id"):
         _aplicar_delta_stock_seguro(linea.producto_id, -linea.cantidad)  # resta
 
 
-# ==== Stock en edición de venta (no depende de related_name) ====
-
+# ─────────────────────────────────────────────────────────────────────────────
+# Stock en edición de venta (no depende de related_name)
+# ─────────────────────────────────────────────────────────────────────────────
 @transaction.atomic
-def reconciliar_stock_tras_editar_venta(
-    venta: Venta,
-    lineas_previas: Dict[int, Tuple[int, Decimal]],
-) -> None:
+def reconciliar_stock_tras_editar_venta(venta: Venta, lineas_previas: Dict[int, Tuple[int, Decimal]],) -> None:
     """
-    - Eliminadas  → devolver al producto viejo (+cantidad_anterior).
-    - Nuevas      → restar del producto nuevo (-cantidad_actual).
-    - Persisten   → si mismo producto: restar delta; si cambió: devolver viejo y restar nuevo.
+    Reconciliación de stock tras editar la venta (agregar/quitar/modificar líneas).
+
+    Estrategia:
+        - Líneas eliminadas  → devolver al producto viejo (+cantidad_anterior).
+        - Líneas nuevas      → restar del producto nuevo (-cantidad_actual).
+        - Líneas persistentes:
+            * Si mismo producto → restar delta (cant_ahora - cant_antes).
+            * Si cambió producto → devolver al anterior y restar del nuevo.
+
+    Args:
+        venta (Venta): venta ya editada (líneas actuales persistidas).
+        lineas_previas (dict[int, tuple[int, Decimal]]):
+            Snapshot previo {pk_linea: (producto_id, cantidad)} tomado antes de guardar.
+
+    Raises:
+        ValidationError: propagada desde el helper si un ajuste deja estado inválido.
     """
     lineas_actuales_qs = VentaProducto.objects.filter(venta=venta)
     lineas_actuales = {l.pk: (l.producto_id, l.cantidad) for l in lineas_actuales_qs}

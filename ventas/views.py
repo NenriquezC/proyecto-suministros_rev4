@@ -28,6 +28,20 @@ User = get_user_model()
 # (Excluye naturalmente a superusuarios, que tienen todo permitido.)
 # ─────────────────────────────────────────────────────────────────────────────
 def _es_cliente(user) -> bool:
+    """
+    Determina si un usuario opera en “modo cliente”.
+
+    Regla:
+        - Debe poder ver y crear ventas.
+        - No debe tener permisos de compras ni inventario.
+        - Superusuarios/staff nunca son “cliente” aquí.
+
+    Args:
+        user (User): usuario autenticado.
+
+    Returns:
+        bool: True si es “cliente” según los permisos, False en caso contrario.
+    """
     if user.is_superuser or user.is_staff:
         return False
     return (
@@ -45,6 +59,26 @@ def _es_cliente(user) -> bool:
 @permission_required("ventas.add_venta", raise_exception=True)
 @transaction.atomic
 def crear_venta(request):
+    """
+    Crea una venta con sus líneas en una única transacción.
+
+    Flujo:
+        1) Normaliza POST: `descuento_total` vacío → "0".
+        2) Valida y guarda cabecera (VentaForm).
+            - Si es “modo cliente”, auto-asigna cliente_id = request.user.pk.
+        3) Valida/guarda detalles (VentaProductoFormSet).
+        4) Persiste `impuesto_porcentaje` tal como lo escribió el usuario (23, 22, etc.).
+        5) Aplica stock (si `services_ventas` está disponible).
+        6) Recalcula totales con tasa (impuesto %) usando services (si disponible).
+        7) Mensaje de éxito y redirect al detalle (readonly).
+
+    Render:
+        templates/ventas/agregar_venta/agregar_venta.html
+
+    Notas:
+        - Se mantiene `prefix="lineas"` para el formset.
+        - Si el formset falla, se revierte la cabecera recién creada.
+    """
     PREFIX = "lineas"
 
     if request.method == "POST":
@@ -118,6 +152,24 @@ agregar_venta = crear_venta  # alias
 @permission_required("ventas.change_venta", raise_exception=True)
 @transaction.atomic
 def editar_venta(request, pk):
+    """
+    Edita cabecera y líneas de una venta existente, reconciliando stock y totales.
+
+    Reglas de acceso:
+        - “Modo cliente” solo puede editar sus propias ventas; de lo contrario PermissionDenied.
+
+    Flujo:
+        1) Snapshot previo de líneas: {pk_linea: (producto_id, cantidad)}.
+        2) POST:
+            - Normaliza `descuento_total`.
+            - Valida y guarda cabecera + formset.
+            - Reconciliación de stock (services_ventas, si existe).
+            - Recalcula totales con tasa del form (si llega y hay services).
+        3) GET: muestra formulario con instance.
+
+    Render:
+        templates/ventas/editar_venta/editar_venta.html
+    """
     venta = get_object_or_404(Venta, pk=pk)
 
     # MODO CLIENTE: sólo puede editar sus propias ventas
@@ -170,6 +222,25 @@ def editar_venta(request, pk):
 @login_required
 @permission_required("ventas.view_venta", raise_exception=True)
 def ver_ventas(request):
+    """
+    Lista de ventas con filtros y paginación.
+
+    Reglas de acceso:
+        - “Modo cliente” solo ve sus propias ventas.
+
+    Filtros (GET):
+        q       → id icontains | cliente.username icontains
+        desde   → fecha mínima (YYYY-MM-DD)
+        hasta   → fecha máxima (YYYY-MM-DD)
+        cliente → id de usuario (cliente)
+
+    Render:
+        templates/ventas/lista_venta/lista_venta.html
+
+    Contexto:
+        ventas, pagina_actual, hay_paginacion, lista_clientes,
+        texto_busqueda, fecha_desde, fecha_hasta, cliente_id_seleccionado
+    """
     ventas_qs = Venta.objects.select_related("cliente").order_by("-fecha", "-id")
 
     # MODO CLIENTE: sólo ve sus ventas
@@ -215,6 +286,21 @@ def ver_ventas(request):
 @login_required
 @permission_required("ventas.view_venta", raise_exception=True)
 def ver_venta(request, pk):
+    """
+    Vista de solo lectura para una venta (reutiliza plantilla de edición).
+
+    Reglas de acceso:
+        - “Modo cliente” solo puede ver sus propias ventas.
+
+    Qué hace:
+        - Deshabilita todos los campos del form y del formset.
+        - Oculta controles de eliminación en el formset.
+        - Calcula `ganancia` fija sobre el `subtotal` (criterio actual).
+        - Expone `impuesto_porcentaje` tal como fue guardado.
+
+    Render:
+        templates/ventas/editar_venta/editar_venta.html
+    """
     venta = get_object_or_404(Venta.objects.select_related("cliente"), pk=pk)
 
     # MODO CLIENTE: sólo puede ver sus propias ventas
@@ -261,6 +347,21 @@ detalle = ver_venta  # alias
 @permission_required("ventas.delete_venta", raise_exception=True)
 @transaction.atomic
 def eliminar_venta(request, pk):
+    """
+    Elimina una venta previa confirmación.
+
+    Reglas de acceso:
+        - “Modo cliente” solo puede eliminar sus propias ventas (si tu negocio lo permite).
+
+    POST:
+        - Intenta eliminar, muestra flash de éxito o error y redirige al listado.
+
+    GET:
+        - Renderiza plantilla de confirmación.
+
+    Render:
+        templates/ventas/eliminar_confirm_venta.html
+    """
     venta = get_object_or_404(Venta, pk=pk)
 
     # MODO CLIENTE: sólo puede eliminar sus propias ventas (si tu negocio lo permite)
@@ -283,16 +384,36 @@ def eliminar_venta(request, pk):
 # Utilidades de totales
 # ─────────────────────────────────────────────────────────────────────────────
 def _round2(x: Decimal) -> Decimal:
+    """
+    Redondeo financiero a 2 decimales (ROUND_HALF_UP).
+
+    Args:
+        x (Decimal): valor a redondear (permite None → 0).
+
+    Returns:
+        Decimal: valor con 2 decimales.
+    """
     return (x or Decimal("0")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 @transaction.atomic
 def calcular_y_guardar_totales_venta(venta: Venta, tasa_impuesto_pct: Decimal | None = None) -> Venta:
     """
     Recalcula subtotal, impuesto (importe) y total de una VENTA, guardándolos en la BD.
-    - Suma en BD: SUM(cantidad * precio_unitario)
-    - Respeta venta.descuento_total (importe absoluto)
-    - Si se pasa `tasa_impuesto_pct` (ej. 0.23), recalcula `venta.impuesto` como base * tasa
-    - total = subtotal - descuento_total + impuesto
+
+    Reglas:
+        - subtotal := SUM(cantidad * precio_unitario) (precisión intermedia 6 decimales).
+        - Respeta `venta.descuento_total` (importe absoluto).
+        - Si `tasa_impuesto_pct` se pasa (ej. 0.23), calcula impuesto = base * tasa, donde
+        base = max(0, subtotal - descuento_total).
+        - total = subtotal - descuento_total + impuesto.
+        - Redondeo financiero a 2 decimales.
+
+    Args:
+        venta (Venta): instancia existente con líneas guardadas.
+        tasa_impuesto_pct (Decimal | None): tasa fraccional (0.23) o None para mantener impuesto actual.
+
+    Returns:
+        Venta: instancia con campos actualizados y persistidos (subtotal, impuesto, total).
     """
     total_linea = ExpressionWrapper(
         F("cantidad") * F("precio_unitario"),

@@ -1,16 +1,26 @@
 """
 Vistas del panel (dashboard) e índice simple.
 
+Propósito:
+    Renderizar el dashboard principal y el índice con KPIs, series y tablas
+    auxiliares, preparando payloads listos para templates (incl. json_script).
+
 Responsabilidades:
-- Calcular KPIs rápidas (hoy/mes), series temporales y tablas auxiliares.
-- Preparar payloads listos para templates (incl. json_script para charts).
-- Mantener consultas eficientes y legibles con anotaciones/aggregates.
+    - Calcular KPIs rápidas (hoy/mes) de compras y ventas.
+    - Armar series temporales (últimos 14 días) para charts.
+    - Proveer tablas auxiliares: top vendidos, low stock, top proveedores.
+    - Empaquetar datos en un 'chart' consumible por el template.
 
-Diseño:
-- Sin cambiar lógica de negocio: sólo documentación y organización.
-- Usar `timezone` para fechas seguras y `Coalesce` para valores nulos.
+Dependencias/Assume:
+    - Modelos: Compra, Venta, VentaProducto, Producto.
+    - Campos: Compra.fecha (DateTime), Venta.fecha (Date), Producto.stock/_minimo.
+    - El template del panel consume {{ chart|json_script:"chart-data" }}.
+
+Diseño/Notas:
+    - No se cambia lógica de negocio; solo documentación y organización.
+    - Uso de timezone/TruncDate para fechas seguras.
+    - Coalesce/Case/When para valores nulos y cálculos robustos.
 """
-
 # dashboard/views.py
 from datetime import timedelta
 from decimal import Decimal
@@ -38,14 +48,27 @@ def panel(request):
     Calcula y entrega datos para el dashboard (/dashboard/panel).
 
     Flujo:
-    1) Fechas de referencia: hoy, inicio de mes, y rango de 14 días.
-    2) KPIs rápidas: totales de hoy y del mes (compras/ventas), contadores.
-    3) Top productos vendidos (cantidad).
-    4) Low stock: productos con stock ≤ stock_minimo.
-    5) Series 14 días: compras (TruncDate) y ventas.
-    6) Prepara payload `chart` para `json_script` en el template.
-    7) **NUEVO**: Top proveedores por monto comprado (€) y por descuento medio (%),
-       y se agregan arrays `supp_labels`, `supp_amounts`, `supp_discounts` al `chart`.
+        1) Fechas de referencia: hoy, inicio de mes, y rango 14 días (incluye hoy).
+        2) KPIs rápidas: totales HOY/MES (compras/ventas) + contadores.
+        3) Top productos vendidos por cantidad.
+        4) Low stock: stock <= stock_minimo (top 10).
+        5) Series 14 días: compras (TruncDate) y ventas (por fecha).
+        6) Construye arrays 'labels', 'compras', 'ventas', 'top_*'.
+        7) NUEVO: top proveedores por monto y descuento medio; añade 'supp_*' al payload.
+
+    Args:
+        request (HttpRequest): solicitud HTTP autenticada.
+
+    Returns:
+        HttpResponse: render("dashboard/panel.html", contexto) con:
+            - KPIs: compras_hoy, ventas_hoy, compras_mes, ventas_mes, etc.
+            - Tablas: top_vendidos, low_stock, top_proveedores_...
+            - Chart payload: dict 'chart' listo para json_script.
+
+    Notas:
+        - Compra.fecha es DateTime -> filtra con fecha__date.
+        - Venta.fecha es Date -> filtra directamente por rango de date.
+        - Los floats en 'chart' facilitan consumo por JS en el template.
     """
     tznow = timezone.now()
     hoy = tznow.date()
@@ -202,20 +225,22 @@ def index(request):
     Renderiza el índice simple (/) con totales y lista resumida de low stock.
 
     Flujo:
-    1) Cálculo de hoy e inicio de mes (y primer día del mes siguiente).
-    2) Totales HOY/MES para comprasy ventas (con Coalesce a 0).
-    3) Low stock: productos con stock ≤ stock_minimo (incluye igualdad).
-    4) Render de `index.html` con el contexto.
+        1) Fechas de hoy, inicio de mes y primer día del mes siguiente.
+        2) Totales HOY/MES para compras y ventas (Coalesce a 0).
+        3) Low stock: productos con stock <= stock_minimo (incluye igualdad).
+        4) Render de "index.html" con el contexto.
 
-    Parámetros:
-    request (HttpRequest)
+    Args:
+        request (HttpRequest): solicitud HTTP.
 
-    Retorna:
-    HttpResponse: render("index.html", contexto)
+    Returns:
+        HttpResponse: render("index.html", contexto) con:
+            - compras_hoy, ventas_hoy, compras_mes, ventas_mes
+            - low_stock_contact (productos con déficit calculado)
 
     Notas:
-    - Venta.fecha se asume Date; Compra.fecha se filtra por `fecha__date`.
-    - Se prioriza claridad: `Coalesce(Sum(...), Value(0))` con DecimalField.
+        - Venta.fecha se asume Date; Compra.fecha se filtra por fecha__date.
+        - Case/When produce 'deficit' entero para ordenación y visualización.
     """
     from django.db.models import F, Sum, Case, When, Value, IntegerField, DecimalField
     from django.db.models.functions import Coalesce
