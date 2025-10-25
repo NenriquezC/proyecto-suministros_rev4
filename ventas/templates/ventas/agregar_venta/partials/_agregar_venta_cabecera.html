@@ -23,58 +23,61 @@
         </div>
       {% endif %}
 
-{# ===== Fecha (funciona en agregar, editar y readonly) ===== #}
-{% if form.fecha %}
-  <label for="{{ form.fecha.id_for_label }}" class="form-label-left">
-    Fecha <span class="req"></span>
-  </label>
-  <div class="form-field">
-    {% if readonly %}
-      {# 1) Si el form tiene instancia con fecha, úsala #}
-      {% if form.instance and form.instance.fecha %}
-        <input type="date" value="{{ form.instance.fecha|date:'Y-m-d' }}" disabled>
-      {# 2) Si llega 'venta' en el contexto (editar/ver), úsala #}
-      {% elif venta and venta.fecha %}
-        <input type="date" value="{{ venta.fecha|date:'Y-m-d' }}" disabled>
-      {# 3) Sin valor: deja el input vacío deshabilitado para mantener la visual #}
-      {% else %}
-        <input type="date" value="" disabled>
+      {# ===== Fecha (funciona en agregar, editar y readonly) ===== #}
+      {% if form.fecha %}
+        <label for="{{ form.fecha.id_for_label }}" class="form-label-left">
+          Fecha <span class="req"></span>
+        </label>
+        <div class="form-field">
+          {% if readonly %}
+            {# 1) Si el form tiene instancia con fecha, úsala #}
+            {% if form.instance and form.instance.fecha %}
+              <input type="date" value="{{ form.instance.fecha|date:'Y-m-d' }}" disabled>
+            {# 2) Si llega 'venta' en el contexto (editar/ver), úsala #}
+            {% elif venta and venta.fecha %}
+              <input type="date" value="{{ venta.fecha|date:'Y-m-d' }}" disabled>
+            {# 3) Sin valor: deja el input vacío deshabilitado para mantener la visual #}
+            {% else %}
+              <input type="date" value="" disabled>
+            {% endif %}
+          {% else %}
+            {{ form.fecha }}
+            {% for error in form.fecha.errors %}
+              <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
       {% endif %}
-    {% else %}
-      {{ form.fecha }}
-      {% for error in form.fecha.errors %}
-        <div class="invalid-feedback d-block">{{ error }}</div>
-      {% endfor %}
-    {% endif %}
-  </div>
-{% endif %}
-      {# Descuento total (Decimal) #}
+
+      {# Descuento total — mostramos % en readonly; en edición/agregar dejamos el form #}
       {% if form.descuento_total %}
         <label for="{{ form.descuento_total.id_for_label }}" class="form-label-left">
           Descuento (%)
         </label>
         <div class="form-field">
-          {{ form.descuento_total }}
-          {% for error in form.descuento_total.errors %}
-            <div class="invalid-feedback d-block">{{ error }}</div>
-          {% endfor %}
+          {% if readonly %}
+            <input type="text"
+                   class="form-control"
+                   value="{{ descuento_porcentaje|default_if_none:0|floatformat:2 }}"
+                   disabled>
+          {% else %}
+            {{ form.descuento_total }}
+            {% for error in form.descuento_total.errors %}
+              <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+          {% endif %}
         </div>
       {% endif %}
 
-
-
-
-
-      {# Impuesto (%) — en readonly mostrar como porcentaje (ej. 23.00 %), no como dinero #}
+      {# Impuesto (%) — readonly muestra el %; edición/agregar deja el form tal cual #}
       {% if form.impuesto %}
         <label for="{{ form.impuesto.id_for_label }}" class="form-label-left">Impuesto (%)</label>
         <div class="form-field">
           {% if readonly %}
             <input type="text"
-                  class="form-control"
-                  value="{{ impuesto_porcentaje|default:venta.impuesto_porcentaje|floatformat:2 }}"
-                  disabled>
-
+                   class="form-control"
+                   value="{{ impuesto_porcentaje|default_if_none:0|floatformat:2 }}"
+                   disabled>
           {% else %}
             {{ form.impuesto }}
             {% for error in form.impuesto.errors %}
@@ -84,28 +87,19 @@
         </div>
       {% endif %}
 
-
-
-
-
-
-
-
-
-{# Ganancia fija (50) — idéntica a Impuesto #}
-<label for="id_ganancia_pct" class="form-label-left">Ganancia (%)</label>
-<div class="form-field">
-  <input
-    type="number"
-    name="ganancia_pct"
-    id="id_ganancia_pct"
-    class="form-control"
-    value="50"
-    step="0.01" min="0" max="100"
-    readonly
-  >
-</div>
-
+      {# Ganancia fija (50) — informativa, sin cambios visuales #}
+      <label for="id_ganancia_pct" class="form-label-left">Ganancia (%)</label>
+      <div class="form-field">
+        <input
+          type="number"
+          name="ganancia_pct"
+          id="id_ganancia_pct"
+          class="form-control"
+          value="50"
+          step="0.01" min="0" max="100"
+          readonly
+        >
+      </div>
 
     </div>
   </div>

@@ -23,6 +23,18 @@ User = get_user_model()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Helpers genéricos (parseo seguro de números con coma/punto)
+# ─────────────────────────────────────────────────────────────────────────────
+def _safe_decimal(x, default="0"):
+    try:
+        return Decimal(str(x).replace(",", "."))
+    except Exception:
+        return Decimal(default)
+
+
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Helper: detectar "modo cliente"
 # Criterio: puede ver/crear ventas, pero NO tiene permisos de compras ni inventario.
 # (Excluye naturalmente a superusuarios, que tienen todo permitido.)
@@ -155,28 +167,21 @@ def editar_venta(request, pk):
     """
     Edita cabecera y líneas de una venta existente, reconciliando stock y totales.
 
-    Reglas de acceso:
-        - “Modo cliente” solo puede editar sus propias ventas; de lo contrario PermissionDenied.
-
-    Flujo:
-        1) Snapshot previo de líneas: {pk_linea: (producto_id, cantidad)}.
-        2) POST:
-            - Normaliza `descuento_total`.
-            - Valida y guarda cabecera + formset.
-            - Reconciliación de stock (services_ventas, si existe).
-            - Recalcula totales con tasa del form (si llega y hay services).
-        3) GET: muestra formulario con instance.
-
-    Render:
-        templates/ventas/editar_venta/editar_venta.html
+    En GET: precargamos % en los inputs de cabecera (descuento_total e impuesto).
+    En POST: guardamos y recalculamos importes en BD usando la tasa (impuesto% / 100).
     """
     venta = get_object_or_404(Venta, pk=pk)
 
-    # MODO CLIENTE: sólo puede editar sus propias ventas
     if _es_cliente(request.user) and getattr(venta, "cliente_id", None) != request.user.pk:
         raise PermissionDenied("No puedes editar ventas de otros usuarios.")
 
     estado_previo = {l.pk: (l.producto_id, l.cantidad) for l in venta.detalles.all()}
+
+    def _safe_decimal(x, default="0"):
+        try:
+            return Decimal(str(x).replace(",", "."))
+        except Exception:
+            return Decimal(default)
 
     if request.method == "POST":
         data = request.POST.copy()
@@ -186,36 +191,66 @@ def editar_venta(request, pk):
         form = VentaForm(data, instance=venta)
         formset = VentaProductoFormSet(data, instance=venta, prefix="lineas")
 
+        # % escritos por el usuario (0..100)
+        imp_pct_ctx = _safe_decimal(data.get("impuesto"), "0")
+
         if form.is_valid() and formset.is_valid():
             form.save()
             formset.save()
 
+            # Reconciliar stock
             if services_ventas:
                 try:
                     services_ventas.reconciliar_stock_tras_editar_venta(venta, estado_previo)
                 except Exception:
                     pass
-                # Recalcular totales con tasa si viene en el form
-                try:
-                    raw = (data.get("impuesto") or "").replace(",", ".")
-                    tasa_pct = Decimal(raw or "0") / Decimal("100")
-                    services_ventas.calcular_y_guardar_totales_venta(venta, tasa_impuesto_pct=tasa_pct)
-                except Exception:
-                    pass
+
+            # Recalcular importes (impuesto € y total) en BD a partir del %
+            tasa_pct = None
+            try:
+                if imp_pct_ctx <= 100:
+                    tasa_pct = imp_pct_ctx / Decimal("100")
+            except Exception:
+                tasa_pct = None
+
+            if services_ventas:
+                services_ventas.calcular_y_guardar_totales_venta(venta, tasa_impuesto_pct=tasa_pct)
+
+            # Persistir el % de impuesto para mostrarlo luego tal cual
+            try:
+                venta.impuesto_porcentaje = max(Decimal("0"), min(Decimal("100"), imp_pct_ctx))
+                venta.save(update_fields=["impuesto_porcentaje"])
+            except Exception:
+                pass
 
             messages.success(request, "Venta editada correctamente.")
             return redirect("ventas:detalle", pk=venta.pk)
+
+        return render(
+            request,
+            "ventas/editar_venta/editar_venta.html",
+            {"venta": venta, "form": form, "formset": formset, "readonly": False},
+        )
+
+    # ---------- GET: precargar % en los inputs ----------
+    form = VentaForm(instance=venta)
+    formset = VentaProductoFormSet(instance=venta, prefix="lineas")
+
+    imp_pct_ctx = getattr(venta, "impuesto_porcentaje", Decimal("0"))
+    if (venta.subtotal or Decimal("0")) > 0:
+        desc_pct_ctx = _round2((venta.descuento_total or Decimal("0")) * Decimal("100") / venta.subtotal)
     else:
-        form = VentaForm(instance=venta)
-        formset = VentaProductoFormSet(instance=venta, prefix="lineas")
+        desc_pct_ctx = Decimal("0")
+
+    # ⬅️ AQUÍ ESTÁ EL CAMBIO CLAVE
+    form.initial["impuesto"] = imp_pct_ctx
+    form.initial["descuento_total"] = desc_pct_ctx
 
     return render(
         request,
         "ventas/editar_venta/editar_venta.html",
         {"venta": venta, "form": form, "formset": formset, "readonly": False},
     )
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 # LISTAR
 # ─────────────────────────────────────────────────────────────────────────────
@@ -324,6 +359,10 @@ def ver_venta(request, pk):
     ganancia_pct_fija = Decimal("50")  # ← mismo valor que el input ganancia_pct del formulario de agregar
     ganancia = _round2((venta.subtotal or Decimal("0")) * ganancia_pct_fija / Decimal("100"))
 
+    desc_pct = Decimal("0")
+    if (venta.subtotal or Decimal("0")) > 0:
+        desc_pct = _round2((venta.descuento_total or Decimal("0")) * Decimal("100") / venta.subtotal)
+
     return render(
         request,
         "ventas/editar_venta/editar_venta.html",
@@ -334,6 +373,7 @@ def ver_venta(request, pk):
             "readonly": True,
             "impuesto_porcentaje": impuesto_porcentaje,  # 🔹 se envía directo al template
             "ganancia": ganancia,
+            "descuento_porcentaje": desc_pct,
         },
     )
 

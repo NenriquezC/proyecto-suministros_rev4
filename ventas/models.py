@@ -49,8 +49,8 @@ class Venta(models.Model):
     subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
     impuesto = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
     impuesto_porcentaje = models.DecimalField(max_digits=5,decimal_places=2,default=Decimal('0.00'),
-    validators=[MinValueValidator(Decimal('0')), MaxValueValidator(Decimal('100'))]
-)
+    validators=[MinValueValidator(Decimal('0')), MaxValueValidator(Decimal('100'))])
+    escuento_porcentaje = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'),validators=[MinValueValidator(Decimal('0')), MaxValueValidator(Decimal('100'))])
     descuento_total = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
     total = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
 

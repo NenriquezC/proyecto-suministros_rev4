@@ -227,6 +227,14 @@
         "documentation": {}
     },
     {
+        "label": "Decimal",
+        "importPath": "decimal",
+        "description": "decimal",
+        "isExtraImport": true,
+        "detail": "decimal",
+        "documentation": {}
+    },
+    {
         "label": "ROUND_HALF_UP",
         "importPath": "decimal",
         "description": "decimal",
@@ -380,6 +388,22 @@
     },
     {
         "label": "IntegrityError",
+        "importPath": "django.db",
+        "description": "django.db",
+        "isExtraImport": true,
+        "detail": "django.db",
+        "documentation": {}
+    },
+    {
+        "label": "migrations",
+        "importPath": "django.db",
+        "description": "django.db",
+        "isExtraImport": true,
+        "detail": "django.db",
+        "documentation": {}
+    },
+    {
+        "label": "models",
         "importPath": "django.db",
         "description": "django.db",
         "isExtraImport": true,
@@ -2261,6 +2285,15 @@
         "documentation": {}
     },
     {
+        "label": "Migration",
+        "kind": 6,
+        "importPath": "ventas.migrations.0003_venta_escuento_porcentaje",
+        "description": "ventas.migrations.0003_venta_escuento_porcentaje",
+        "peekOfCode": "class Migration(migrations.Migration):\n    dependencies = [\n        ('ventas', '0002_venta_impuesto_porcentaje'),\n    ]\n    operations = [\n        migrations.AddField(\n            model_name='venta',\n            name='escuento_porcentaje',\n            field=models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=5, validators=[django.core.validators.MinValueValidator(Decimal('0')), django.core.validators.MaxValueValidator(Decimal('100'))]),\n        ),",
+        "detail": "ventas.migrations.0003_venta_escuento_porcentaje",
+        "documentation": {}
+    },
+    {
         "label": "VentaAdmin",
         "kind": 6,
         "importPath": "ventas.admin",
@@ -2409,7 +2442,7 @@
         "kind": 2,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "def editar_venta(request, pk):\n    \"\"\"\n    Edita cabecera y líneas de una venta existente, reconciliando stock y totales.\n    Reglas de acceso:\n        - “Modo cliente” solo puede editar sus propias ventas; de lo contrario PermissionDenied.\n    Flujo:\n        1) Snapshot previo de líneas: {pk_linea: (producto_id, cantidad)}.\n        2) POST:\n            - Normaliza `descuento_total`.\n            - Valida y guarda cabecera + formset.",
+        "peekOfCode": "def editar_venta(request, pk):\n    \"\"\"\n    Edita cabecera y líneas de una venta existente, reconciliando stock y totales.\n    En GET: precargamos % en los inputs de cabecera (descuento_total e impuesto).\n    En POST: guardamos y recalculamos importes en BD usando la tasa (impuesto% / 100).\n    \"\"\"\n    venta = get_object_or_404(Venta, pk=pk)\n    if _es_cliente(request.user) and getattr(venta, \"cliente_id\", None) != request.user.pk:\n        raise PermissionDenied(\"No puedes editar ventas de otros usuarios.\")\n    estado_previo = {l.pk: (l.producto_id, l.cantidad) for l in venta.detalles.all()}",
         "detail": "ventas.views",
         "documentation": {}
     },
@@ -2454,7 +2487,7 @@
         "kind": 5,
         "importPath": "ventas.views",
         "description": "ventas.views",
-        "peekOfCode": "User = get_user_model()\n# ─────────────────────────────────────────────────────────────────────────────\n# Helper: detectar \"modo cliente\"\n# Criterio: puede ver/crear ventas, pero NO tiene permisos de compras ni inventario.\n# (Excluye naturalmente a superusuarios, que tienen todo permitido.)\n# ─────────────────────────────────────────────────────────────────────────────\ndef _es_cliente(user) -> bool:\n    \"\"\"\n    Determina si un usuario opera en “modo cliente”.\n    Regla:",
+        "peekOfCode": "User = get_user_model()\n# ─────────────────────────────────────────────────────────────────────────────\n# Helpers genéricos (parseo seguro de números con coma/punto)\n# ─────────────────────────────────────────────────────────────────────────────\ndef _safe_decimal(x, default=\"0\"):\n    try:\n        return Decimal(str(x).replace(\",\", \".\"))\n    except Exception:\n        return Decimal(default)\n# ─────────────────────────────────────────────────────────────────────────────",
         "detail": "ventas.views",
         "documentation": {}
     },

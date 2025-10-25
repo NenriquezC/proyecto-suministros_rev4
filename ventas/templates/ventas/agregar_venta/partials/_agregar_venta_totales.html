@@ -12,13 +12,7 @@
 
         <tr>
           <th>Descuento (€):</th>
-          <td class="text-end">
-            {# Mostrar SIEMPRE el valor de descuento_total del form #}
-            <span id="descuento-general">
-              {{ form.descuento_total.value|default_if_none:"0,00" }}
-            </span>
-            {# No duplicamos el input aquí para no enviar dos veces #}
-          </td>
+        <td class="text-end"><span id="descuento-general">0,00</span></td>
         </tr>
         <tr>
           <th>Impuestos (€):</th>

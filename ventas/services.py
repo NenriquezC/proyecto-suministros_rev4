@@ -145,7 +145,9 @@ def calcular_y_guardar_totales_venta(venta: Venta, tasa_impuesto_pct: Decimal | 
     venta.subtotal = _round2(subtotal_calc)
 
     if tasa_impuesto_pct is not None:
-        venta.impuesto = _round2(subtotal_calc * Decimal(str(tasa_impuesto_pct)))
+        desc = venta.descuento_total or Decimal("0")
+        base = max(Decimal("0"), subtotal_calc - desc)
+        venta.impuesto = _round2(base * Decimal(str(tasa_impuesto_pct)))
 
     desc = venta.descuento_total or Decimal("0")
     imp  = venta.impuesto or Decimal("0")
