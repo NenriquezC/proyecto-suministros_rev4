@@ -64,8 +64,20 @@
         </div>
     {% endif %}
 
+
+    
+
     <form method="post" novalidate>
     {% csrf_token %}
+    {# si venimos desde compras, conservar next en el POST #}
+    {% if request.GET.next %}
+        <input type="hidden" name="next" value="{{ request.GET.next }}">
+    {% endif %}
+
+
+
+
+
 
     {# ======= DATOS DEL PRODUCTO ======= #}
     {% include "inventario/productos/crear_producto/partials/_crear_producto_cabecera.html" with form=form %}

@@ -244,10 +244,6 @@
                     <i class="fas fa-box"></i> Productos <i class="fa fa-caret-down"></i>
                 </a>
                 <div class="submenu">
-                    <a href="{% url 'inventario:agregar_producto' %}"
-                        class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
-                        <i class="fa fa-plus"></i> Ingresar Producto
-                    </a>
                     <a href="{% url 'inventario:listar_productos' %}"
                         class="{% if not user.is_staff and not user.is_superuser %}disabled-link{% endif %}">
                         <i class="fa fa-edit"></i> Administrar Producto

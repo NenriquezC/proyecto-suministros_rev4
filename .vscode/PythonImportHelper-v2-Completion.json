@@ -1662,7 +1662,7 @@
         "kind": 2,
         "importPath": "compras.views",
         "description": "compras.views",
-        "peekOfCode": "def crear_compra(request):\n    \"\"\"\n    Crea una compra con sus líneas, en una única transacción.\n    Flujo:\n        1) Normaliza POST (descuento_total vacío → \"0\").\n        2) Valida y guarda cabecera (CompraForm) con usuario actual.\n        3) Valida y guarda líneas (CompraProductoFormSet).\n        4) Ajusta stock por cada línea recién creada.\n        5) Lee el % de impuesto desde el form, lo convierte a tasa (0.23) y\n        recalcula totales en `services.calcular_y_guardar_totales_compra`.",
+        "peekOfCode": "def crear_compra(request):\n    \"\"\"\n    Crea una compra con sus líneas, en una única transacción.\n    \"\"\"\n    FORMS_PREFIX = \"lineas\"\n    if request.method == \"POST\":\n        data = request.POST.copy()\n        if data.get(\"descuento_total\") in (None, \"\"):\n            data[\"descuento_total\"] = \"0\"\n        form = CompraForm(data)",
         "detail": "compras.views",
         "documentation": {}
     },
@@ -1950,7 +1950,7 @@
         "kind": 2,
         "importPath": "inventario.views",
         "description": "inventario.views",
-        "peekOfCode": "def agregar_producto(request):\n    \"\"\"\n    Crea un producto.\n    Flujo:\n    - GET: formulario vacío.\n    - POST: valida y guarda; redirige a ver_producto.\n    \"\"\"\n    if request.method == \"POST\":\n        data = request.POST.copy()\n        data[\"ganancia\"] = \"50\"  # fijo 50%",
+        "peekOfCode": "def agregar_producto(request):\n    \"\"\"\n    Crea un producto.\n    Flujo:\n    - GET: formulario vacío.\n    - POST: valida y guarda; redirige a ver_producto.\n    \"\"\"\n    next_url = request.POST.get(\"next\") or request.GET.get(\"next\")\n    if request.method == \"POST\":\n        data = request.POST.copy()",
         "detail": "inventario.views",
         "documentation": {}
     },

@@ -75,7 +75,7 @@
             <div class="d-flex align-items-center" style="gap: 8px;">
             <!-- Botón: Nuevo producto (abre crear_producto) -->
             <a
-            href="{% url 'inventario:agregar_producto' %}?next={% url 'compras:agregar_compra' %}"
+            href="{% url 'inventario:agregar_producto' %}?source=compras&next={% url 'compras:agregar_compra' %}"
             class="btn btn-outline"
             target="_blank" rel="noopener"
             id="btn-crear-nuevo-producto"

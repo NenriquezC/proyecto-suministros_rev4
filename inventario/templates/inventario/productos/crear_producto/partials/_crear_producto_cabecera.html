@@ -1,4 +1,6 @@
 {# Datos principales del producto #}
+{% with desde_compras=request.GET.source|default:"" %}
+
 <div class="card mb-3">
 <div class="card-header">
     <h2 class="card-title">Datos del producto</h2>
@@ -82,8 +84,8 @@
         {% endif %}
     {% endif %}
 
-    {# Stock inicial (opcional) #}
-    {% if form.stock %}
+    {# Stock inicial (opcional) — oculto si venimos de compras #}
+    {% if form.stock and desde_compras != "compras" %}
         <label class="form-label-left" for="{{ form.stock.id_for_label }}">Cantidad (Stock)</label>
         <div class="form-field">
         {{ form.stock }}
@@ -94,21 +96,45 @@
         {% endif %}
     {% endif %}
 
-    {# Stock minimo #}
-    {% if form.stock_minimo %}
-        <label class="form-label-left" for="{{ form.stock_minimo.id_for_label }}">Stock mínimo</label>
-        <div class="form-field">
-        {{ form.stock_minimo }}
-        </div>
-        {% if form.stock_minimo.errors %}
-        <div></div>
-        <div class="invalid-feedback d-block">{{ form.stock_minimo.errors|striptags }}</div>
-        {% endif %}
+    {# ← Si venimos desde compras, enviar stock=0 oculto #}
+    {% if form.stock and desde_compras == "compras" %}
+        <input type="hidden" name="stock" value="0">
     {% endif %}
 
 
-        {# ganancia (fija 50%) #}
-    {% if form.ganancia %}
+
+
+
+
+    {# Stock minimo #}
+    {% if form.stock_minimo %}
+  {% if desde_compras != "compras" %}
+    <label class="form-label-left" for="{{ form.stock_minimo.id_for_label }}">Stock mínimo</label>
+    <div class="form-field">
+      {{ form.stock_minimo }}
+    </div>
+    {% if form.stock_minimo.errors %}
+      <div></div>
+      <div class="invalid-feedback d-block">{{ form.stock_minimo.errors|striptags }}</div>
+    {% endif %}
+  {% else %}
+    <input type="hidden" name="stock_minimo" value="0">
+  {% endif %}
+{% endif %}
+
+
+
+    {# ← Si venimos desde compras, enviar stock_minimo=0 oculto #}
+    {% if form.stock_minimo and desde_compras == "compras" %}
+        <input type="hidden" name="stock_minimo" value="0">
+    {% endif %}
+
+
+
+
+
+    {# ganancia (fija 50%) — oculta si venimos de compras #}
+    {% if form.ganancia and desde_compras != "compras" %}
     <label class="form-label-left" for="{{ form.ganancia.id_for_label }}">Ganancia (%)</label>
     <div class="form-field">
         <input
@@ -138,3 +164,4 @@
     {% endif %}
 </div>
 </div>
+{% endwith %}

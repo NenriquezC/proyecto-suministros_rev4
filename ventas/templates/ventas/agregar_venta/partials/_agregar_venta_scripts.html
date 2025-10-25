@@ -1,19 +1,56 @@
 <script>
 /**
- * Scripts de VENTAS — agregar (alineado con tus nombres reales)
- * - Campos por línea: producto, cantidad, precio_unitario, descuento (%)
- * - Descuento global: form.descuento_total (valor absoluto en €)
- * - Impuesto (IVA): form.impuesto (porcentaje %)
- * - Totales UI: #subtotal-general, #descuento-general, #impuestos-general, #total-general
- * - Add/Remove + reindex formset
- * - Autorelleno de precio por producto vía data-endpoint-precio (URL con pk=0)
+ * Scripts de VENTAS — Agregar
+ * ------------------------------------------------------------
+ * Supuesto de negocio (alineado a tu expectativa):
+ *   El campo de cabecera `descuento_total` se INGRESA como PORCENTAJE (0–100),
+ *   pero el backend espera un MONTO en dinero. Este script:
+ *     1) Usa `descuento_total` como % para calcular el descuento en dinero.
+ *     2) Muestra el descuento en dinero en el panel de totales.
+ *     3) Justo antes de enviar el formulario, SOBREESCRIBE el valor del input
+ *        `descuento_total` con el dinero calculado, para que el backend reste
+ *        el monto correcto (sin cambiar tus vistas/servicios).
+ *
+ * Fórmulas:
+ *   - total_línea = cantidad * precio_unitario * (1 - descuento_linea%/100)
+ *   - subtotal    = Σ total_línea
+ *   - desc_money  = subtotal * (descuento_total% / 100)    <-- cabecera (este script)
+ *   - base        = subtotal - desc_money
+ *   - impuestos   = base * (impuesto% / 100)
+ *   - total       = base + impuestos
+ *   - ganancia    = subtotal * (ganancia% / 100)  (solo informativa)
+ *
+ * Requisitos en DOM (nombres reales que ya usas):
+ *   - Tabla de líneas:      #line-items-table (con <tbody> y filas .line-row)
+ *   - Template de fila:     #empty-form-template (con __prefix__)
+ *   - Botón agregar:        #btn-add-row
+ *   - Management formset:   inputs name$="-TOTAL_FORMS" y name$="-INITIAL_FORMS"
+ *   - Inputs por línea:
+ *       name="lineas-*-producto" (select, para autofill de precio)
+ *       name="lineas-*-cantidad" (number)
+ *       name="lineas-*-precio_unitario" (number)
+ *       name="lineas-*-descuento" (number, %, opcional)
+ *   - Inputs cabecera:
+ *       name="descuento_total"  <-- % (este script lo toma como porcentaje)
+ *       name="impuesto"         <-- % IVA
+ *       name="ganancia_pct"     <-- % (info)
+ *   - Totales UI:
+ *       #subtotal-general, #descuento-general, #ganancia-general,
+ *       #impuestos-general, #total-general
+ *   - Autofill de precio por producto:
+ *       La tabla debe traer data-endpoint-precio=".../0/..." (0 se reemplaza por el id real)
  */
+
 (function () {
-  // Helpers básicos
+  // ---------------- Utilidades ----------------
   const qs  = (s, c=document) => c.querySelector(s);
   const qsa = (s, c=document) => Array.from(c.querySelectorAll(s));
 
-  // "12.345,67" -> 12345.67 ; "12.90" -> 12.9
+  /**
+   * Convierte cadenas locales a número (acepta "12.345,67" o "12.67").
+   * @param {any} val
+   * @returns {number}
+   */
   function toNumber(val) {
     if (val == null) return 0;
     if (typeof val === 'number') return isFinite(val) ? val : 0;
@@ -22,9 +59,15 @@
     if (s.includes(',')) return Number(s.replace(/\./g, '').replace(',', '.')) || 0;
     return Number(s) || 0;
   }
+
+  /**
+   * Redondea a 2 decimales tipo dinero (mitigando errores binarios).
+   * @param {number} n
+   * @returns {string} "0.00"
+   */
   const fmt = (n) => (Math.round((n + Number.EPSILON) * 100) / 100).toFixed(2);
 
-  // Elementos base
+  // ---------------- Elementos base ----------------
   const table  = qs('#line-items-table');
   const btnAdd = qs('#btn-add-row');
   const tpl    = qs('#empty-form-template');
@@ -35,7 +78,7 @@
 
   const form = table.closest('form') || document;
 
-  // Management form (detecta prefijo del formset)
+  // Management form (prefijo del formset)
   const mgmtTotal   = qs('input[name$="-TOTAL_FORMS"]', form);
   const mgmtInitial = qs('input[name$="-INITIAL_FORMS"]', form);
   if (!mgmtTotal || !mgmtInitial) {
@@ -43,12 +86,12 @@
   }
   const PREFIX = mgmtTotal ? mgmtTotal.name.replace(/-TOTAL_FORMS$/, '') : 'lineas';
 
-  // Inputs de cabecera relevantes
-  const inDescGlobal = qs('input[name="descuento_total"]', form); // € absoluto
-  const inImpuesto   = qs('input[name="impuesto"]', form);        // % (23 -> 23%)
-  const inGanancia   = qs('input[name="ganancia_pct"]', form);    // % (ej. 50 -> 50%)
+  // ---------------- Inputs de cabecera ----------------
+  const inDescPct  = qs('input[name="descuento_total"]', form); // ← SE INGRESA COMO %
+  const inImpuesto = qs('input[name="impuesto"]', form);        // % IVA
+  const inGanancia = qs('input[name="ganancia_pct"]', form);    // % (informativa)
 
-  // IDs de totales UI (panel lateral)
+  // ---------------- Totales UI ----------------
   const ui = {
     subtotal:  qs('#subtotal-general'),
     descuento: qs('#descuento-general'),
@@ -57,10 +100,17 @@
     total:     qs('#total-general'),
   };
 
-  // Endpoint para precios por producto (colocado en la <table data-endpoint-precio=".../0/...">)
+  // ---------------- Endpoint de precio por producto ----------------
+  // Tabla debe venir con data-endpoint-precio=".../0/..." (el 0 se sustituye por el id real)
   const endpointTpl = table.dataset.endpointPrecio || null;
 
-  // --- Cálculos ---
+  // ---------------- Cálculos por línea ----------------
+  /**
+   * Calcula el total de una línea:
+   *   total = cantidad * precio_unitario * (1 - descuento_linea%/100)
+   * @param {HTMLTableRowElement} row
+   * @returns {number}
+   */
   function calcLinea(row) {
     const inCant = qs(`input[name^="${PREFIX}"][name$="-cantidad"]`, row);
     const inPU   = qs(`input[name^="${PREFIX}"][name$="-precio_unitario"]`, row);
@@ -68,44 +118,61 @@
 
     const cantidad = Math.max(0, toNumber(inCant?.value));
     const pu       = Math.max(0, toNumber(inPU?.value));
-    const descPct  = Math.max(0, Math.min(100, toNumber(inDesc?.value)));
+    const descPct  = Math.min(Math.max(0, toNumber(inDesc?.value)), 100);
 
     let line = cantidad * pu;
     if (descPct) line = line * (1 - descPct / 100);
     return line;
   }
 
+  // ---------------- Cálculo de totales ----------------
+  /**
+   * Recalcula todos los totales de la venta y refresca la UI.
+   * Interpreta `descuento_total` de cabecera como PORCENTAJE.
+   * Además, guarda el valor de descuento en dinero en un atributo de dataset
+   * para usarlo en el submit (evita sobrescribir el input mientras el usuario escribe).
+   */
   function updateTotals() {
+    // 1) Subtotal (suma de líneas ya con % de línea aplicado)
     const rows = qsa('.line-row', table.tBodies[0] || table);
     const subtotal = rows.reduce((acc, r) => acc + calcLinea(r), 0);
 
-    // Descuento global (absoluto, en €)
-    const descGlobal = Math.max(0, toNumber(inDescGlobal?.value));
+    // 2) Descuento global (cabecera) COMO PORCENTAJE
+    const pct = Math.min(Math.max(0, toNumber(inDescPct?.value)), 100); // 0..100
+    const descMoney = subtotal * (pct / 100);
 
-    // Base imponible
-    const base = Math.max(0, subtotal - descGlobal);
+    // Guardar el dinero calculado en dataset para el submit
+    if (inDescPct) {
+      inDescPct.dataset._moneyValue = String(descMoney); // p.ej. "49.5"
+      inDescPct.dataset._isPercent  = 'true';
+    }
 
-    // Impuesto como porcentaje (%)
-    const ivaPct = Math.max(0, toNumber(inImpuesto?.value));
+    // 3) Base, impuestos y total
+    const base = Math.max(0, subtotal - descMoney);
+
+    const ivaPct    = Math.min(Math.max(0, toNumber(inImpuesto?.value)), 100);
     const impuestos = base * (ivaPct / 100);
 
-    // Ganancia en €: se calcula SOBRE EL SUBTOTAL (antes de impuestos), SIN IVA
-  const gananciaPct = Math.max(0, toNumber(inGanancia?.value));
-  const ganancia = subtotal * (gananciaPct / 100);
+    const gananciaPct = Math.min(Math.max(0, toNumber(inGanancia?.value)), 100);
+    const ganancia    = subtotal * (gananciaPct / 100); // solo informativa
 
     const total = base + impuestos;
 
+    // 4) Refrescar UI en formato local (coma decimal en visual)
     if (ui.subtotal)  ui.subtotal.textContent  = fmt(subtotal).replace('.', ',');
-    if (ui.descuento) ui.descuento.textContent = fmt(descGlobal).replace('.', ',');
+    if (ui.descuento) ui.descuento.textContent = fmt(descMoney).replace('.', ',');
     if (ui.ganancia)  ui.ganancia.textContent  = fmt(ganancia).replace('.', ',');
     if (ui.impuestos) ui.impuestos.textContent = fmt(impuestos).replace('.', ',');
     if (ui.total)     ui.total.textContent     = fmt(total).replace('.', ',');
   }
 
-  // --- Reindex ---
+  // ---------------- Reindex / Add / Remove ----------------
+  /**
+   * Reindexa los atributos name/id/for de cada fila del formset tras cambios.
+   */
   function reindexAllRows() {
     const tbody = table.tBodies[0] || table;
-    const rows = qsa('tr.line-row', tbody); // incluye ocultas (marcadas DELETE)
+    const rows = qsa('tr.line-row', tbody); // incluye ocultas (DELETE marcadas)
     rows.forEach((tr, idx) => {
       qsa('input, select, textarea, label', tr).forEach(el => {
         ['name','id','for'].forEach(attr => {
@@ -118,7 +185,9 @@
     if (mgmtTotal) mgmtTotal.value = String(rows.length);
   }
 
-  // --- Add / Remove ---
+  /**
+   * Inserta una nueva fila a partir del template y recalcula totales.
+   */
   function addRow() {
     const tbody = table.tBodies[0] || table;
     const idx = qsa('tr.line-row', tbody).length;
@@ -135,6 +204,10 @@
     updateTotals();
   }
 
+  /**
+   * Quita (o marca para borrar) una fila del formset y recalcula totales.
+   * @param {HTMLElement} btn
+   */
   function removeRow(btn) {
     const tr = btn.closest('tr.line-row');
     if (!tr) return;
@@ -147,7 +220,7 @@
       if (delInput) delInput.checked = true;
       tr.style.display = 'none';
       tr.classList.add('hidden');
-      // No reindexamos para no romper índices de iniciales
+      // No reindex para no romper índices de iniciales
     } else {
       tr.remove();
       reindexAllRows();
@@ -155,7 +228,12 @@
     updateTotals();
   }
 
-  // --- Precio automático al elegir producto ---
+  // ---------------- Autofill de precio por producto ----------------
+  /**
+   * Escucha cambios en SELECT de producto dentro de la tabla y hace fetch
+   * al endpoint (reemplazando /0/ por el id real) para autocompletar precio_unitario.
+   * @param {HTMLElement} scope
+   */
   function attachPriceAutofill(scope) {
     scope.addEventListener('change', (e) => {
       const sel = e.target;
@@ -171,16 +249,15 @@
       const prodId = sel.value;
       if (!prodId) { priceInput.value = ''; updateTotals(); return; }
 
-      // Reemplaza la /0/ del template por el id real
+      // Sustituir la /0/ del template por el id real
       const url = endpointTpl.replace(/\/0(\/|$)/, `/${prodId}$1`);
       fetch(url, { method: 'GET' })
         .then(r => r.ok ? r.json() : Promise.reject(r))
         .then(data => {
           const precio = Number(data.precio_unitario || 0);
-          // Si es type=number usamos punto decimal y step 0.01
           if (priceInput.type === 'number') {
             if (!priceInput.step) priceInput.step = '0.01';
-            priceInput.value = fmt(precio);
+            priceInput.value = fmt(precio); // con punto para number
           } else {
             priceInput.value = fmt(precio).replace('.', ',');
           }
@@ -190,11 +267,19 @@
     });
   }
 
-  // --- Listeners por fila y globales ---
+  // ---------------- Listeners por fila y globales ----------------
+  /**
+   * Conecta listeners de inputs por fila para recalcular en vivo y remover filas.
+   * @param {HTMLElement} scope
+   */
   function attachRowListeners(scope=document) {
-    // Recalcular cuando cambian cantidad / precio_unitario / descuento
-    qsa(`input[name^="${PREFIX}"][name$="-cantidad"], input[name^="${PREFIX}"][name$="-precio_unitario"], input[name^="${PREFIX}"][name$="-descuento"]`, scope)
-      .forEach(inp => inp.addEventListener('input', updateTotals));
+    // Recalcular al cambiar cantidad / precio_unitario / descuento de línea
+    qsa(
+      `input[name^="${PREFIX}"][name$="-cantidad"],` +
+      `input[name^="${PREFIX}"][name$="-precio_unitario"],` +
+      `input[name^="${PREFIX}"][name$="-descuento"]`,
+      scope
+    ).forEach(inp => inp.addEventListener('input', updateTotals));
 
     // Quitar fila
     qsa('.remove-row', scope).forEach(btn => {
@@ -204,25 +289,43 @@
       });
     });
   }
-  
+
   // Botón agregar
   btnAdd.addEventListener('click', (ev) => { ev.preventDefault(); addRow(); });
 
   // Delegaciones globales
-  attachRowListeners();          // para filas ya renderizadas
-  attachPriceAutofill(table);    // precios por producto
-  // Cabecera: cambios en descuento_total (€) o impuesto (%)
-  inDescGlobal && inDescGlobal.addEventListener('input', updateTotals);
-  inImpuesto   && inImpuesto.addEventListener('input', updateTotals);
+  attachRowListeners();       // filas ya renderizadas
+  attachPriceAutofill(table); // autofill de precio
+
+  // Cabecera: cualquier cambio en % de descuento, IVA o ganancia recalcula totales
+  inDescPct  && inDescPct.addEventListener('input', updateTotals);
+  inImpuesto && inImpuesto.addEventListener('input', updateTotals);
   inGanancia && inGanancia.addEventListener('input', updateTotals);
 
-  // Init
-  // Asegurar TOTAL_FORMS correcto al cargar:
+  // ---------------- Submit: convertir % a dinero para el backend ----------------
+  /**
+   * Antes de enviar el formulario:
+   *  - Si interpretamos `descuento_total` como %, sustituimos su valor por el monto (€)
+   *    previamente calculado (guardado en dataset._moneyValue).
+   *  - Así el backend recibe el dinero correcto sin cambios en server.
+   */
+  form.addEventListener('submit', () => {
+    if (!inDescPct) return;
+    if (inDescPct.dataset._isPercent === 'true') {
+      // Usar punto decimal para POST
+      const money = Number(inDescPct.dataset._moneyValue || 0);
+      inDescPct.value = fmt(money);
+    }
+  });
+
+  // ---------------- Init ----------------
+  // Asegurar TOTAL_FORMS correcto al cargar
   (function ensureTotalForms() {
     const tbody = table.tBodies[0] || table;
     const count = qsa('tr.line-row', tbody).length;
     if (mgmtTotal) mgmtTotal.value = String(count);
   })();
+
   updateTotals();
 })();
 </script>

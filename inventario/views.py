@@ -275,18 +275,24 @@ def agregar_producto(request):
     - GET: formulario vacío.
     - POST: valida y guarda; redirige a ver_producto.
     """
+    next_url = request.POST.get("next") or request.GET.get("next")
+
     if request.method == "POST":
         data = request.POST.copy()
         data["ganancia"] = "50"  # fijo 50%
+        # Si venimos desde compras, garantizar defaults aunque se oculten en la UI
+        if (request.GET.get("source") == "compras"):
+            data.setdefault("stock", "0")
+            data.setdefault("stock_minimo", "0")
         form = ProductoForm(data)
         if form.is_valid():
             prod = form.save()
             messages.success(request, f'Producto "{prod}" creado correctamente.')
-            # Redirige a la lista (si prefieres otra, me dices)
-            #return redirect(reverse("inventario:listar_productos"))
-            return redirect("inventario:ver_producto", pk=prod.pk)  # ← ver detalle readonly
+            if next_url:
+                return redirect(next_url)
+            return redirect("inventario:ver_producto", pk=prod.pk)
     else:
-            form = ProductoForm()
+        form = ProductoForm()
 
     return render(
         request,

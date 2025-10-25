@@ -44,25 +44,6 @@ from decimal import Decimal
 def crear_compra(request):
     """
     Crea una compra con sus líneas, en una única transacción.
-
-    Flujo:
-        1) Normaliza POST (descuento_total vacío → "0").
-        2) Valida y guarda cabecera (CompraForm) con usuario actual.
-        3) Valida y guarda líneas (CompraProductoFormSet).
-        4) Ajusta stock por cada línea recién creada.
-        5) Lee el % de impuesto desde el form, lo convierte a tasa (0.23) y
-        recalcula totales en `services.calcular_y_guardar_totales_compra`.
-        6) Mensaje de éxito y redirección al detalle (readonly).
-
-    GET:
-        - Devuelve el form vacío y un formset con `prefix="lineas"`.
-
-    Render:
-        templates/compras/agregar_compra/agregar_compra.html
-
-    Notas:
-        - Mantiene `prefix` explícito para evitar choques de nombres en formsets.
-        - El impuesto se interpreta como porcentaje de UI; el monto se calcula en services.
     """
     FORMS_PREFIX = "lineas"
 
@@ -81,10 +62,43 @@ def crear_compra(request):
             if formset.is_valid():
                 formset.save()
 
-                # Stock tras crear (una sola vez)
+                # 1) Ajuste de stock por cada línea recién creada
                 services.aplicar_stock_despues_de_crear_compra(compra)
 
-                # Tomar el porcentaje escrito en el form y convertirlo a tasa (23 -> 0.23)
+                # 2) Ajuste de precio de referencia y stock_minimo (solo si está en 0)
+                for linea in compra.lineas.all():  # related_name="lineas" en CompraProducto
+                    p = linea.producto
+                    # precio_unitario según tu POST: lineas-*-precio_unitario
+                    precio_linea = getattr(linea, "precio_unitario", None)
+
+                    fields_to_update = []
+
+                    # 2.1) Actualiza precio_compra de Producto si ese campo existe
+                    if hasattr(p, "precio_compra") and precio_linea is not None:
+                        p.precio_compra = precio_linea
+                        fields_to_update.append("precio_compra")
+
+                    # 2.2) Si stock_minimo está vacío o 0, fijarlo al 90% de la primera cantidad
+                    try:
+                        sm_actual = getattr(p, "stock_minimo", 0) or 0
+                    except Exception:
+                        sm_actual = 0
+
+                    if sm_actual in (None, 0):
+                        try:
+                            nuevo_sm = max(0, int(linea.cantidad * 0.90))
+                        except Exception:
+                            nuevo_sm = 0
+                        # Solo agregamos si realmente hay campo
+                        if hasattr(p, "stock_minimo"):
+                            p.stock_minimo = nuevo_sm
+                            fields_to_update.append("stock_minimo")
+
+                    if fields_to_update:
+                        # Evitar duplicados en la lista
+                        p.save(update_fields=list(dict.fromkeys(fields_to_update)))
+
+                # 3) Convertir impuesto_total (%) a tasa y recalcular totales
                 raw = form.cleaned_data.get("impuesto_total")
                 tasa = None
                 try:
@@ -94,12 +108,12 @@ def crear_compra(request):
                 except Exception:
                     tasa = None
 
-                # Recalcular y persistir totales (impuesto sobre base = subtotal - descuento)
                 services.calcular_y_guardar_totales_compra(compra, tasa_impuesto_pct=tasa)
 
                 messages.success(request, "Compra creada correctamente.")
                 return redirect("compras:detalle", pk=compra.pk)
             else:
+                # Si el formset falló, limpia la cabecera creada para no dejarla colgada
                 print("DEBUG >>> formset.errors:", [f.errors for f in formset.forms], formset.non_form_errors())
                 compra.delete()
         else:

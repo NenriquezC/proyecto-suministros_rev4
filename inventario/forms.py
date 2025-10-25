@@ -65,6 +65,25 @@ class ProductoForm(forms.ModelForm):
             "descripcion": forms.Textarea(attrs={"rows": 3, "placeholder": "Detalle opcional"}),
         }
 
+
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if "stock_minimo" in self.fields:
+            # No bloquear el alta si viene vacío desde compras
+            self.fields["stock_minimo"].required = False
+
+
+
+
+
+
+
+
+
+
+
     # Valida solo nombres que EXISTAN realmente en tu modelo:
     def clean(self):
         """
@@ -89,6 +108,28 @@ class ProductoForm(forms.ModelForm):
         # Ajusta estos nombres a los reales de tu modelo:
         precio = cleaned.get("precio_compra") or cleaned.get("precio")
         stock  = cleaned.get("stock_inicial") or cleaned.get("stock")
+
+
+
+
+
+
+
+        # Si no enviaron stock_minimo, poner 0 por defecto
+        if "stock_minimo" in self.fields:
+            sm = cleaned.get("stock_minimo")
+            if sm in (None, ""):
+                cleaned["stock_minimo"] = 0
+
+
+
+
+
+
+
+
+                
+
         if precio is not None and precio < 0:
             self.add_error("precio_compra" if "precio_compra" in self.fields else "precio",
                         "El precio de compra no puede ser negativo.")
