@@ -2181,7 +2181,7 @@
         "kind": 5,
         "importPath": "suministros.settings",
         "description": "suministros.settings",
-        "peekOfCode": "LANGUAGE_CODE = 'es'\nTIME_ZONE = 'UTC'\nUSE_I18N = True\nUSE_TZ = True\n# Static files (CSS, JavaScript, Images)\n# https://docs.djangoproject.com/en/5.2/howto/static-files/\nSTATIC_URL = 'static/'\n# Si tienes la carpeta static en el mismo nivel que manage.py:\nSTATICFILES_DIRS = [\n    BASE_DIR / \"static\",",
+        "peekOfCode": "LANGUAGE_CODE = 'es'\nTIME_ZONE = 'UTC'\nUSE_I18N = True\nUSE_TZ = True\n# Static files (CSS, JavaScript, Images)\n# https://docs.djangoproject.com/en/5.2/howto/static-files/\nSTATIC_URL = 'static/'\nSTATIC_ROOT = BASE_DIR / \"staticfiles\"  # carpeta destino de collectstatic\n# Si tienes la carpeta static en el mismo nivel que manage.py:\nSTATICFILES_DIRS = [",
         "detail": "suministros.settings",
         "documentation": {}
     },
@@ -2190,7 +2190,7 @@
         "kind": 5,
         "importPath": "suministros.settings",
         "description": "suministros.settings",
-        "peekOfCode": "TIME_ZONE = 'UTC'\nUSE_I18N = True\nUSE_TZ = True\n# Static files (CSS, JavaScript, Images)\n# https://docs.djangoproject.com/en/5.2/howto/static-files/\nSTATIC_URL = 'static/'\n# Si tienes la carpeta static en el mismo nivel que manage.py:\nSTATICFILES_DIRS = [\n    BASE_DIR / \"static\",\n]",
+        "peekOfCode": "TIME_ZONE = 'UTC'\nUSE_I18N = True\nUSE_TZ = True\n# Static files (CSS, JavaScript, Images)\n# https://docs.djangoproject.com/en/5.2/howto/static-files/\nSTATIC_URL = 'static/'\nSTATIC_ROOT = BASE_DIR / \"staticfiles\"  # carpeta destino de collectstatic\n# Si tienes la carpeta static en el mismo nivel que manage.py:\nSTATICFILES_DIRS = [\n    BASE_DIR / \"static\",",
         "detail": "suministros.settings",
         "documentation": {}
     },
@@ -2199,7 +2199,7 @@
         "kind": 5,
         "importPath": "suministros.settings",
         "description": "suministros.settings",
-        "peekOfCode": "USE_I18N = True\nUSE_TZ = True\n# Static files (CSS, JavaScript, Images)\n# https://docs.djangoproject.com/en/5.2/howto/static-files/\nSTATIC_URL = 'static/'\n# Si tienes la carpeta static en el mismo nivel que manage.py:\nSTATICFILES_DIRS = [\n    BASE_DIR / \"static\",\n]\n# Default primary key field type",
+        "peekOfCode": "USE_I18N = True\nUSE_TZ = True\n# Static files (CSS, JavaScript, Images)\n# https://docs.djangoproject.com/en/5.2/howto/static-files/\nSTATIC_URL = 'static/'\nSTATIC_ROOT = BASE_DIR / \"staticfiles\"  # carpeta destino de collectstatic\n# Si tienes la carpeta static en el mismo nivel que manage.py:\nSTATICFILES_DIRS = [\n    BASE_DIR / \"static\",\n]",
         "detail": "suministros.settings",
         "documentation": {}
     },
@@ -2208,7 +2208,7 @@
         "kind": 5,
         "importPath": "suministros.settings",
         "description": "suministros.settings",
-        "peekOfCode": "USE_TZ = True\n# Static files (CSS, JavaScript, Images)\n# https://docs.djangoproject.com/en/5.2/howto/static-files/\nSTATIC_URL = 'static/'\n# Si tienes la carpeta static en el mismo nivel que manage.py:\nSTATICFILES_DIRS = [\n    BASE_DIR / \"static\",\n]\n# Default primary key field type\n# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field",
+        "peekOfCode": "USE_TZ = True\n# Static files (CSS, JavaScript, Images)\n# https://docs.djangoproject.com/en/5.2/howto/static-files/\nSTATIC_URL = 'static/'\nSTATIC_ROOT = BASE_DIR / \"staticfiles\"  # carpeta destino de collectstatic\n# Si tienes la carpeta static en el mismo nivel que manage.py:\nSTATICFILES_DIRS = [\n    BASE_DIR / \"static\",\n]\n# Default primary key field type",
         "detail": "suministros.settings",
         "documentation": {}
     },
@@ -2217,7 +2217,16 @@
         "kind": 5,
         "importPath": "suministros.settings",
         "description": "suministros.settings",
-        "peekOfCode": "STATIC_URL = 'static/'\n# Si tienes la carpeta static en el mismo nivel que manage.py:\nSTATICFILES_DIRS = [\n    BASE_DIR / \"static\",\n]\n# Default primary key field type\n# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field\nDEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'",
+        "peekOfCode": "STATIC_URL = 'static/'\nSTATIC_ROOT = BASE_DIR / \"staticfiles\"  # carpeta destino de collectstatic\n# Si tienes la carpeta static en el mismo nivel que manage.py:\nSTATICFILES_DIRS = [\n    BASE_DIR / \"static\",\n]\n# Default primary key field type\n# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field\nDEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'",
+        "detail": "suministros.settings",
+        "documentation": {}
+    },
+    {
+        "label": "STATIC_ROOT",
+        "kind": 5,
+        "importPath": "suministros.settings",
+        "description": "suministros.settings",
+        "peekOfCode": "STATIC_ROOT = BASE_DIR / \"staticfiles\"  # carpeta destino de collectstatic\n# Si tienes la carpeta static en el mismo nivel que manage.py:\nSTATICFILES_DIRS = [\n    BASE_DIR / \"static\",\n]\n# Default primary key field type\n# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field\nDEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'",
         "detail": "suministros.settings",
         "documentation": {}
     },
